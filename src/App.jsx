@@ -1,37 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 function App() {
-  // Create the count state.
-  const [count, setCount] = useState(0);
-  
-  // Create the counter (+1 every second).
-  useEffect(() => {
-    const timer = setTimeout(() => setCount(count + 1), 1000);
-    return () => clearTimeout(timer);
-  }, [count, setCount]);
-
-  // Return the App component.
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.jsx</code> and save to reload.
+    <div className="bg-white">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+        <h2 className="inline text-3xl font-bold tracking-tight text-gray-900 sm:block sm:text-4xl">
+          Want music?
+        </h2>
+        <p className="inline text-3xl font-bold tracking-tight text-indigo-600 sm:block sm:text-4xl">
+          Stream with <b className="font-extrabold">Megawave</b>.
         </p>
-        <p>
-          Page has been open for <code>{count}</code> seconds.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </p>
-      </header>
+      </div>
     </div>
   );
 }
