@@ -6,12 +6,16 @@
 
 - Install frontend [requirements](./packages/web/README.md#requirements)
 
-- Run api [locally](./packages/api/README.md#setup)
+- Run `start-dev.sh` or `start-dev.bat` (windows)
 
-  - Redo this whenever you make changes
+- (optional) Run each app separately
 
-- Run frontend [locally](./packages/web/README.md#npm-start)
+  - Run api [locally](./packages/api/README.md#setup)
 
-  - The dev server will automatically reload to reflect code changes
+    - Redo this whenever you make changes
 
-  - Re-run command if dependencies change
+  - Run frontend [locally](./packages/web/README.md#npm-start)
+
+    - The dev server will automatically reload to reflect code changes
+
+    - Re-run command if dependencies change
