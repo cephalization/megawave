@@ -1,4 +1,8 @@
 /** @type {import("snowpack").SnowpackUserConfig } */
+
+const httpProxy = require('http-proxy');
+const proxy = httpProxy.createServer({ target: 'http://localhost:3001' });
+
 module.exports = {
   mount: {
     public: '/',
@@ -13,6 +17,14 @@ module.exports = {
       { cmd: 'postcss', input: ['.css'], output: ['.css'] },
     ],
   ],
+  experiments: {
+    routes: [
+      {
+        src: '/*',
+        dest: (req, res) => proxy.web(req, res),
+      },
+    ],
+  },
 
   install: [
     /* ... */
