@@ -16,3 +16,6 @@ pytest-cov = "*"
 
 [requires]
 python_full_version = "3.7.7"
+
+[pipenv]
+allow_prereleases = true
