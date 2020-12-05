@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- python 3.7
+- python 3.7.7
 
 - pipenv
 
@@ -10,7 +10,9 @@
 
 ## Setup
 
-- run `pipenv install` to install python deps
+- run `pipenv install --dev` to install all python project deps
+
+- run `pipenv run flask run` to start api server on http://localhost:5000
 
 ## Environment
 

@@ -2,6 +2,10 @@
 
 > ✨ Bootstrapped with Create Snowpack App (CSA).
 
+## Requirements
+
+- Node v15.3.0
+
 ## Available Scripts
 
 ### npm start
