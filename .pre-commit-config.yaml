@@ -7,6 +7,7 @@ repos:
         language: system
         entry: pipenv run isort
         types: [python]
+        files: ^packages/api/
 
       - id: black
         name: black
@@ -14,6 +15,7 @@ repos:
         language: system
         entry: pipenv run black
         types: [python]
+        files: ^packages/api/
 
       - id: flake8
         name: flake8
@@ -22,6 +24,7 @@ repos:
         entry: pipenv run flake8
         types: [python]
         exclude: setup.py
+        files: ^packages/api/
 
       - id: mypy
         name: mypy
@@ -30,6 +33,7 @@ repos:
         entry: pipenv run mypy
         types: [python]
         pass_filenames: false
+        files: ^packages/api/
 
       - id: pytest
         name: pytest
@@ -37,6 +41,7 @@ repos:
         language: system
         entry: pipenv run pytest
         types: [python]
+        files: ^packages/api/
 
       - id: pytest-cov
         name: pytest
@@ -45,3 +50,4 @@ repos:
         entry: pipenv run pytest --cov --cov-fail-under=100
         types: [python]
         pass_filenames: false
+        files: ^packages/api/
