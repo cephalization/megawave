@@ -3,5 +3,5 @@
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
     "python.formatting.provider": "black",
-    "python.pythonPath": "~/.pyenv/versions/3.7.7/bin/python"
+    "python.pythonPath": "/home/tony/.local/share/virtualenvs/api-DM37V6Yz/bin/python"
 }
