@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+flask = "*"
 
 [dev-packages]
 black = "*"
@@ -14,4 +15,4 @@ pytest = "*"
 pytest-cov = "*"
 
 [requires]
-python_full_version = "3.7.9"
+python_full_version = "3.7.7"
