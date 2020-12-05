@@ -1,5 +1,5 @@
 [run]
-source = best_practices
+source = megawave
 
 [report]
 exclude_lines =
