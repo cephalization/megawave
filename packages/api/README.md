@@ -4,15 +4,19 @@
 
 - python 3.7.7
 
-- pipenv
+- [poetry](https://python-poetry.org/docs/#installation)
+
+  - python package and environment manager
 
 - git
 
 ## Setup
 
-- run `pipenv install --dev` to install all python project deps
+- run `poetry install` to install all python project deps
 
-- run `pipenv run flask run` to start api server on http://localhost:5000
+- run `poetry run flask run` to start api server on http://localhost:5000
+
+  - See [the docs](https://python-poetry.org/docs/basic-usage/#using-poetry-run) for more details
 
 ## Environment
 
