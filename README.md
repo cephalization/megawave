@@ -2,15 +2,15 @@
 
 ## Development
 
-- Install api [requirements](./packages/api/README.md#L3)
+- Install api [requirements](./packages/api/README.md#requirements)
 
-- Install frontend [requirements](./packages/web/README.md#L5)
+- Install frontend [requirements](./packages/web/README.md#requirements)
 
-- Run api [locally](./packages/api/README.md#L11)
+- Run api [locally](./packages/api/README.md#setup)
 
   - Redo this whenever you make changes
 
-- Run frontend [locally](./packages/web/README.md#L11)
+- Run frontend [locally](./packages/web/README.md#npm-start)
 
   - The dev server will automatically reload to reflect code changes
 
