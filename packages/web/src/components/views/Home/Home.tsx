@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PageContainer from '~/components/templates/PageContainer/PageContainer';
 
 export function Home() {
   const [data, setData] = useState('');
@@ -15,7 +16,7 @@ export function Home() {
   }, [setData]);
 
   return (
-    <div className="bg-white">
+    <PageContainer>
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
         <h2 className="inline text-3xl font-bold tracking-tight text-gray-900 sm:block sm:text-4xl">
           Want music?
@@ -37,6 +38,6 @@ export function Home() {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
