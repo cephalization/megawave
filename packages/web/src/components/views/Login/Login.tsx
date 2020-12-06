@@ -1,5 +1,5 @@
 import React from 'react';
-import PageContainer from '~/components/templates/PageContainer/PageContainer';
+import { PageContainer } from '~/components/templates/PageContainer';
 
 export function Login() {
   return (

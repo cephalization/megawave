@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import PageContainer from '~/components/templates/PageContainer/PageContainer';
+import { PageContainer } from '~/components/templates/PageContainer';
 
 export function Home() {
   const [data, setData] = useState('');
