@@ -2,15 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageContainer } from '~/components/templates/PageContainer';
 
+type audioFile = {
+  name: string;
+  id: string;
+  link: string;
+};
+
+type debugResponse = {
+  text: string;
+  audio: audioFile[];
+};
+
 export function Home() {
-  const [data, setData] = useState('');
+  const [data, setData] = useState<debugResponse | null>(null);
 
   useEffect(() => {
     async function fetchDebug() {
       const res = await fetch('http://localhost:5000/');
       const json = await res.json();
 
-      if (json) setData(JSON.stringify(json, null, 2));
+      if (json) setData({ text: JSON.stringify(json, null, 2), ...json });
     }
 
     fetchDebug();
@@ -44,8 +55,22 @@ export function Home() {
           </h3>
           <div className="mt-5">
             <pre className="rounded-md bg-gray-50 px-6 py-6 sm:flex sm:items-start sm:justify-between text-gray-700">
-              {data || 'Fetching...'}
+              {data?.text || 'Fetching...'}
             </pre>
+          </div>
+        </div>
+        <div className="bg-white sm:rounded-lg max-w-6xl mx-auto mt-8">
+          <div className="px-4 py-6 sm:p-6">
+            <ul>
+              {data?.audio &&
+                data.audio.map((a) => (
+                  <li className="p-2" key={a.link}>
+                    <a className="text-md" href={a.link}>
+                      - {a.name}
+                    </a>
+                  </li>
+                ))}
+            </ul>
           </div>
         </div>
       </div>
