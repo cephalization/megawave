@@ -26,6 +26,8 @@
 
   - allow devs to add compile-time type checking to python code
 
+  - https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html
+
 - pytest
 
   - test python files, check test coverage
