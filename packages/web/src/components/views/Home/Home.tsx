@@ -18,10 +18,10 @@ export function Home() {
 
   useEffect(() => {
     async function fetchDebug() {
-      const res = await fetch('http://localhost:5000/');
+      const res = await fetch('http://localhost:5000/debug');
       const json = await res.json();
 
-      if (json) setData({ text: JSON.stringify(json, null, 2), ...json });
+      if (json) setData({ text: JSON.stringify(json, null, 2), ...json.data });
     }
 
     fetchDebug();
