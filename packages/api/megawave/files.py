@@ -1,7 +1,8 @@
-import configparser
 import os
 from uuid import uuid4
 from typing import List, Dict, Union
+
+from megawave.config import fileDirectory
 
 VALID_AUDIO_EXTENSIONS = ["wav", "mp3"]
 
@@ -26,7 +27,7 @@ class AudioFile:
         return {
             "name": self.fileName,
             "id": self.id,
-            "link": f"http://127.0.0.1:5000/song/{self.id}",
+            "link": f"/songs/{self.id}",
         }
 
 
@@ -58,11 +59,6 @@ class AudioLibrary:
 
         return output
 
-
-# Parse config
-config = configparser.ConfigParser()
-config.read("../../config.ini")
-fileDirectory = config["server"]["audioDirectory"]
 
 # Read all files from directory specified in config
 audioLibrary = AudioLibrary()
