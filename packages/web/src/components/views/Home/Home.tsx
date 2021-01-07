@@ -15,17 +15,26 @@ type debugResponse = {
 
 export function Home() {
   const [data, setData] = useState<debugResponse | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     async function fetchDebug() {
       const res = await fetch('http://localhost:5000/debug');
       const json = await res.json();
 
-      if (json) setData({ text: JSON.stringify(json, null, 2), ...json.data });
+      if (json) {
+        setData({
+          text: JSON.stringify(json, null, 2),
+          audio: json.data.audio.filter((a) => a.meta?.tags),
+          ...json.data,
+        });
+      }
     }
 
     fetchDebug();
   }, [setData]);
+
+  console.log(data?.audio);
 
   return (
     <PageContainer>
@@ -53,23 +62,54 @@ export function Home() {
           <h3 className="text-lg leading-6 font-medium text-gray-500">
             Debug Server Response
           </h3>
-          <div className="mt-5">
-            <pre className="rounded-md bg-gray-50 px-6 py-6 sm:flex sm:items-start sm:justify-between text-gray-700">
-              {data?.text || 'Fetching...'}
-            </pre>
-          </div>
+          {!data?.text && (
+            <div className="mt-5">
+              <pre className="rounded-md bg-gray-50 px-6 py-6 sm:flex sm:items-start sm:justify-between text-gray-700">
+                'Fetching...'
+              </pre>
+            </div>
+          )}
         </div>
         <div className="bg-white sm:rounded-lg max-w-6xl mx-auto mt-8">
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Search Music
+            </label>
+            <div className="mt-1 flex rounded-md shadow-sm">
+              <div className="relative flex items-stretch flex-grow focus-within:z-10">
+                <input
+                  type="text"
+                  name="songs"
+                  id="songs"
+                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-none rounded-l-md pl-11 sm:text-sm border-gray-300"
+                  placeholder="Harder, Better, Faster, Stronger"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="px-4 py-6 sm:p-6">
             <ul>
               {data?.audio &&
-                data.audio.map((a) => (
-                  <li className="p-2" key={a.link}>
-                    <a className="text-md" href={a.link}>
-                      - {a.name}
-                    </a>
-                  </li>
-                ))}
+                data.audio
+                  .filter((a) =>
+                    a.name
+                      .toLocaleLowerCase()
+                      .includes(searchTerm.toLocaleLowerCase()),
+                  )
+                  .map((a) => (
+                    <li className="p-2" key={a.link}>
+                      <a className="text-md" href={a.link}>
+                        {a.name}
+                        {a?.artist ? ` - ${a.artist}` : null}
+                      </a>
+                    </li>
+                  ))}
             </ul>
           </div>
         </div>
