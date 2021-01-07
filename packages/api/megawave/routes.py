@@ -16,7 +16,7 @@ def index():
     }
 
 
-@app.route("/songs/")
+@app.route("/songs")
 def songs():
     return {"data": {"songs": files.audioLibrary.serialize()}}
 
