@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import { getLibrary, getLibraryResponse } from '~/queries/library';
 import { Track } from '~/types/library';
+import { WaveLoader } from '../WaveLoader';
 import {
   LibraryTableRow,
   LibraryTableHeaderRow,
@@ -13,7 +14,7 @@ export function LibraryTable() {
     getLibrary,
   );
 
-  if (isLoading || data === undefined) return null;
+  if (isLoading || data === undefined) return <WaveLoader />;
 
   if (error) return null;
 

@@ -9,7 +9,6 @@ export type getLibraryResponse = {
 };
 
 export async function getLibrary() {
-  console.log('fetching');
   const res = await axios.get<getLibraryResponse>(library());
 
   const tracks = res.data.data.songs;
