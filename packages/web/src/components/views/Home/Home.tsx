@@ -108,7 +108,7 @@ export function Home() {
                         d="M4 6h16M4 10h16M4 14h16M4 18h16"
                       />
                     </svg>
-                    My tasks
+                    Playlists
                   </a>
                   <a
                     href="#"
@@ -398,7 +398,7 @@ export function Home() {
           </div>
         </div>
         <main
-          className="flex-1 relative z-0 overflow-y-auto focus:outline-none"
+          className="flex-1 relative z-0 overflow-y-auto overflow-x-hidden focus:outline-none"
           tabIndex={0}
         >
           {/* Page title & actions */}

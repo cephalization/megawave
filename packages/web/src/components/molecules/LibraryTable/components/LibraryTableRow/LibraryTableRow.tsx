@@ -1,25 +1,6 @@
 import { Transition } from '@headlessui/react';
 import React, { useState } from 'react';
-
-export function LibraryTableHeaderRow() {
-  return (
-    <tr className="border-t border-gray-200">
-      <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        <span className="lg:pl-2">Title</span>
-      </th>
-      <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Artist
-      </th>
-      <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Album
-      </th>
-      <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-        Last played
-      </th>
-      <th className="pr-6 py-3 border-b border-gray-200 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" />
-    </tr>
-  );
-}
+import { Track } from '~/types/library';
 
 type LibraryTableRowMenuProps = {
   open?: boolean;
@@ -128,42 +109,93 @@ function LibraryTableRowMenu({ open = false }: LibraryTableRowMenuProps) {
   );
 }
 
+export function LibraryTableHeaderRow() {
+  return (
+    <tr className="border-t border-gray-200">
+      <th
+        scope="col"
+        className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+      >
+        <span className="lg:pl-2">Title</span>
+      </th>
+      <th
+        scope="col"
+        className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+      >
+        Artist
+      </th>
+      <th
+        scope="col"
+        className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+      >
+        Album
+      </th>
+      <th
+        scope="col"
+        className="py-3 border-b border-gray-200 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+      >
+        Length
+      </th>
+      <th
+        scope="col"
+        className="py-3 border-b border-gray-200 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+      >
+        Last played
+      </th>
+      <th
+        scope="col"
+        className="pr-6 py-3 px-3 border-b border-gray-200 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider"
+      />
+    </tr>
+  );
+}
+
 type LibraryTableRowProps = {
-  trackId?: string;
+  track: Track;
 };
 
-export function LibraryTableRow({ trackId }: LibraryTableRowProps) {
+export function LibraryTableRow({ track }: LibraryTableRowProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-
-  if (trackId === undefined) return null;
+  const { name, artist, album, link } = track;
 
   return (
-    <tr>
-      <td className="px-6 py-3 max-w-0 w-full whitespace-nowrap text-sm font-medium text-gray-900">
-        <div className="flex items-center space-x-3 lg:pl-2">
-          <div
-            className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-pink-600"
-            aria-hidden="true"
-          />
-          <a href="#" className="truncate hover:text-gray-600">
-            <span>Get Lucky</span>
+    <tr className="w-full">
+      <td
+        style={{ maxWidth: '15rem' }}
+        className="px-6 py-3 text-sm font-medium text-gray-900"
+      >
+        <div className="flex space-x-3 lg:pl-2">
+          <a href={link} title={name} className="truncate hover:text-gray-600">
+            {name}
           </a>
         </div>
       </td>
-      <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-        <a href="#" className="truncate hover:text-gray-600">
-          <span>Daft Punk</span>
-        </a>
+      <td className="px-6 py-3 max-w-0 text-sm font-medium text-gray-900">
+        <div className="flex space-x-2">
+          <a href="#" className="truncate hover:text-gray-600">
+            {artist}
+          </a>
+        </div>
       </td>
-      <td className="px-6 py-3 text-sm font-medium text-gray-900">
-        <a href="#" className="truncate hover:text-gray-600">
-          <span>RAM</span>
-        </a>
+      <td
+        style={{ maxWidth: '9rem' }}
+        className="px-6 py-3 text-sm font-medium text-gray-900"
+      >
+        <div className="flex space-x-3">
+          <a href="#" className="truncate hover:text-gray-600">
+            {album}
+          </a>
+        </div>
       </td>
-      <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-        March 17, 2020
+      <td className="py-3 max-w-xs text-sm whitespace-nowrap text-gray-900">
+        <div className="flex flex-shrink-1 flex-grow-0 justify-end">0:00</div>
       </td>
-      <td className="pr-6">
+      <td className="py-3 max-w-xs text-sm whitespace-nowrap text-gray-900">
+        <div className="flex flex-shrink-1 flex-grow-0 justify-end">
+          3-17-2020
+        </div>
+      </td>
+      <td className="pr-6 px-3">
         <div className="relative flex justify-end items-center">
           <button
             id="project-options-menu-0"
