@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from uuid import uuid4
 from typing import List, Dict, Union
 import mutagen
@@ -111,7 +112,7 @@ print(f'- - - Loading music library at "{fileDirectory}" - - - ')
 added = 0
 skipped = 0
 try:
-    for root, _, files in os.walk(os.path.expanduser(fileDirectory)):
+    for root, _, files in os.walk(Path(fileDirectory).absolute()):
         for name in files:
             if hasAudioFileExtension(name):
                 audio = AudioFile(root, name)
