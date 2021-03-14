@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react';
-import React, { useState } from 'react';
+import React, { TableHTMLAttributes, useState } from 'react';
 import { Track } from '~/types/library';
 
 type LibraryTableRowMenuProps = {
@@ -152,14 +152,15 @@ export function LibraryTableHeaderRow() {
 
 type LibraryTableRowProps = {
   track: Track;
+  style: React.CSSProperties;
 };
 
-export function LibraryTableRow({ track }: LibraryTableRowProps) {
+export function LibraryTableRow({ track, style }: LibraryTableRowProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { name, artist, album, link } = track;
 
   return (
-    <tr className="w-full">
+    <tr className="w-full" style={style}>
       <td
         style={{ maxWidth: '15rem' }}
         className="px-6 py-3 text-sm font-medium text-gray-900"

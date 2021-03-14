@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from 'react-query';
-import { useVirtual } from 'react-virtual';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeList } from 'react-window';
 import { getLibrary } from '~/queries/library';
 import { Track } from '~/types/library';
 import { WaveLoader } from '../WaveLoader';
@@ -9,45 +10,53 @@ import {
   LibraryTableHeaderRow,
 } from './components/LibraryTableRow';
 
+function LibraryTableRows({ rows }: { rows: Track[] }) {
+  return (
+    <div className="min-h-full flex">
+      <div className="align-middle flex-1 min-w-full border-b border-gray-200">
+        <table className="min-w-full min-h-full">
+          <thead>
+            <LibraryTableHeaderRow />
+          </thead>
+          <AutoSizer>
+            {({ height, width }) => (
+              <FixedSizeList
+                overscanCount={20}
+                innerElementType="tbody"
+                height={height}
+                width={width}
+                itemCount={rows.length}
+                itemSize={40}
+                className="bg-white divide-y divide-gray-100"
+              >
+                {({ index, style }) => {
+                  const track = rows[index];
+                  return (
+                    <LibraryTableRow
+                      key={track.id}
+                      track={track}
+                      style={style}
+                    />
+                  );
+                }}
+              </FixedSizeList>
+            )}
+          </AutoSizer>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export function LibraryTable() {
   const { isLoading, error, data } = useQuery<Track[], any>(
     'library',
     getLibrary,
   );
-  const parentRef = React.useRef(null);
-  const rowVirtualizer = useVirtual({
-    size: data?.length ?? 0,
-    parentRef,
-    estimateSize: React.useCallback(() => 45, [data]),
-    overscan: 10,
-  });
 
   if (isLoading || data === undefined) return <WaveLoader />;
 
   if (error) return null;
 
-  return (
-    <div className="block" ref={parentRef} style={{ overflow: 'auto' }}>
-      <div className="align-middle inline-block min-w-full border-b border-gray-200">
-        <table className="min-w-full">
-          <thead>
-            <LibraryTableHeaderRow />
-          </thead>
-          <tbody
-            style={{
-              height: `${rowVirtualizer.totalSize}px`,
-              width: '100%',
-              position: 'relative',
-            }}
-            className="bg-white divide-y divide-gray-100"
-          >
-            {rowVirtualizer.virtualItems.map(({ index }) => {
-              const track = data[index];
-              return <LibraryTableRow key={track.id} track={track} />;
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+  return <LibraryTableRows rows={data} />;
 }

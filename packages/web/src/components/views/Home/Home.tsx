@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { LibraryTable } from '~/components/molecules/LibraryTable';
+import { Controls } from '~/components/molecules/Controls/Controls';
+import { Library } from '~/components/molecules/Library';
 import { Nav } from '~/components/molecules/Nav';
 import { PageContainer } from '~/components/templates/PageContainer';
 
@@ -140,24 +141,26 @@ export function Home() {
           </div>
         </div>
         <main
-          className="flex-1 relative z-0 overflow-y-auto overflow-x-hidden focus:outline-none"
+          className="flex-1 flex-col flex-nowrap relative z-0 overflow-hidden focus:outline-none border-4 border-yellow-900"
           tabIndex={0}
+          id="library-container"
         >
           {/* Page title & actions */}
-          <div className="border-b border-gray-200 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <div className="border-b border-gray-200 px-4 py-4 sm:flex sm:flex-grow-0 sm:items-center sm:justify-between sm:px-6 lg:px-8">
             <div className="flex-1 min-w-0">
               <h1 className="text-lg font-medium leading-6 text-gray-900 sm:truncate">
                 Library
               </h1>
             </div>
           </div>
-          <div className="flex-1 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full">
+          <div className="flex-1 flex-grow-0 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full">
             <h2 className="text-sm leading-6 text-gray-500 font-semibold">
               Tracks: <span className="text-gray-600 font-bold">3000</span>
             </h2>
           </div>
-          {/* Projects table (small breakpoint and up) */}
-          <LibraryTable />
+          {/* Library table */}
+          <Library />
+          <Controls />
         </main>
       </div>
     </PageContainer>
