@@ -141,7 +141,7 @@ export function Home() {
           </div>
         </div>
         <main
-          className="flex-1 flex-col flex-nowrap relative z-0 overflow-hidden focus:outline-none border-4 border-yellow-900"
+          className="flex-1 flex-col flex-nowrap relative z-0 overflow-hidden focus:outline-none"
           tabIndex={0}
           id="library-container"
         >

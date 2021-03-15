@@ -1,5 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import throttle from 'lodash.throttle';
+import { FixedSizeList } from 'react-window';
+import { useQuery } from 'react-query';
+import AutoSizer from 'react-virtualized-auto-sizer';
+
+import { Track } from '~/types/library';
+import { getLibrary } from '~/queries/library';
+import { WaveLoader } from '../WaveLoader';
 
 function getAvailableHeight(
   parentId: string,
@@ -24,21 +31,27 @@ function getAvailableHeight(
   return 0;
 }
 
-function useDynamicHeight(
-  parentId: string,
-  refToUpdate: React.RefObject<HTMLDivElement>,
-  onChange: (arg0: number) => any,
-) {
+function useDynamicHeight(parentId: string) {
+  const [ref, setRef] = useState<HTMLElement | null>(null);
+  const [height, setHeight] = useState(0);
+
+  const refToMeasure = useCallback(
+    (node) => {
+      setRef(node);
+    },
+    [setRef],
+  );
+
   useEffect(() => {
     function resizeOnChange() {
-      const newHeight = getAvailableHeight(parentId, refToUpdate.current);
-      if (refToUpdate?.current?.style?.height) {
-        onChange(newHeight);
+      const newHeight = getAvailableHeight(parentId, ref);
+      if (ref?.style?.height != null) {
+        setHeight(newHeight);
       }
     }
     const tResizeOnChange = throttle(resizeOnChange, 50);
 
-    if (refToUpdate.current !== null) {
+    if (ref !== null) {
       resizeOnChange();
 
       window.addEventListener('resize', tResizeOnChange);
@@ -47,19 +60,55 @@ function useDynamicHeight(
     return () => {
       window.removeEventListener('resize', tResizeOnChange);
     };
-  }, [onChange, refToUpdate, parentId]);
+  }, [setHeight, ref, parentId]);
+
+  return { refToMeasure, height };
 }
 
 export function Library() {
-  const libraryRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState(0);
-  useDynamicHeight('library-container', libraryRef, setHeight);
+  // height of parent container - height of all children
+  // this derived height value can be used to perfectly size the library items
+  const { refToMeasure: libraryRef, height } = useDynamicHeight(
+    'library-container',
+  );
+
+  const { isLoading, error, data } = useQuery<Track[], any>(
+    'library',
+    getLibrary,
+  );
+
+  if (isLoading || data === undefined) return <WaveLoader />;
+
+  if (error) return null;
 
   return (
     <div
-      className="flex flex-grow p-4 border-red-300 border-4"
+      className="pl-5 border-t border-gray-200"
       style={{ height }}
       ref={libraryRef}
-    ></div>
+    >
+      <div className="h-full">
+        <AutoSizer>
+          {({ width, height: innerHeight }) => (
+            <FixedSizeList
+              height={innerHeight}
+              width={width}
+              itemCount={data.length}
+              itemSize={40}
+            >
+              {({ index, style }) => (
+                <a
+                  style={style}
+                  className="text-blue-400"
+                  href={data[index].link}
+                >
+                  {data[index].name}
+                </a>
+              )}
+            </FixedSizeList>
+          )}
+        </AutoSizer>
+      </div>
+    </div>
   );
 }
