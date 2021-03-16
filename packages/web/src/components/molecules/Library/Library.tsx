@@ -9,6 +9,7 @@ import { useDynamicHeight } from '~/hooks/useDynamicHeight';
 
 import { WaveLoader } from '../WaveLoader';
 import { LibraryRow } from './components/LibraryRow';
+import { LibraryHeader } from './components/LibraryHeader';
 
 export function Library() {
   // (height of parent container) - (height of all children)
@@ -27,29 +28,32 @@ export function Library() {
   if (error) return null;
 
   return (
-    <div
-      className="pl-5 border-t border-gray-200"
-      style={{ height }}
-      ref={libraryRef}
-    >
-      <div className="h-full">
-        <AutoSizer>
-          {({ width, height: innerHeight }) => (
-            <FixedSizeList
-              height={innerHeight}
-              width={width}
-              itemCount={data.length}
-              itemSize={40}
-            >
-              {({ index, style }) => {
-                const track = data[index];
+    <>
+      <LibraryHeader />
+      <div
+        className="border-t border-gray-200"
+        style={{ height }}
+        ref={libraryRef}
+      >
+        <div className="h-full">
+          <AutoSizer>
+            {({ width, height: innerHeight }) => (
+              <FixedSizeList
+                height={innerHeight}
+                width={width}
+                itemCount={data.length}
+                itemSize={40}
+              >
+                {({ index, style }) => {
+                  const track = data[index];
 
-                return <LibraryRow track={track} style={style} />;
-              }}
-            </FixedSizeList>
-          )}
-        </AutoSizer>
+                  return <LibraryRow track={track} style={style} />;
+                }}
+              </FixedSizeList>
+            )}
+          </AutoSizer>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
