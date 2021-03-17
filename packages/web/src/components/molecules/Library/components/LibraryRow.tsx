@@ -31,7 +31,7 @@ export function LibraryRow({ track, style }: LibraryRowProps) {
     >
       <div className="flex h-full w-full pl-5 sm:pl-6 lg:pl-8">
         <div
-          className="flex-1 min-w-0"
+          className="flex-1 min-w-0 flex-col sm:flex-row"
           style={{ flexGrow: sectionWidthRatio.title }}
         >
           <h2 className={clsx(styles.headerItem)} title={name}>
@@ -42,9 +42,12 @@ export function LibraryRow({ track, style }: LibraryRowProps) {
               {name}
             </a>
           </h2>
+          <a className="text-sm leading-6 text-gray-400 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden sm:hidden">
+            {artist}
+          </a>
         </div>
         <div
-          className="flex-1 min-w-0"
+          className="flex-1 sm:flex hidden min-w-0"
           style={{ flexGrow: sectionWidthRatio.artist }}
         >
           <h2 className={clsx(styles.headerItem)} title={artist}>
@@ -52,7 +55,7 @@ export function LibraryRow({ track, style }: LibraryRowProps) {
           </h2>
         </div>
         <div
-          className="flex-1 min-w-0"
+          className="flex-1 sm:flex hidden min-w-0"
           style={{ flexGrow: sectionWidthRatio.album }}
         >
           <h2 className={clsx(styles.headerItem)} title={album}>
@@ -60,7 +63,7 @@ export function LibraryRow({ track, style }: LibraryRowProps) {
           </h2>
         </div>
         <div
-          className="flex-1 min-w-0"
+          className="flex-1 sm:flex hidden min-w-0"
           style={{ flexGrow: sectionWidthRatio.duration }}
         >
           <h2 className={clsx(styles.headerItem)}>0:00</h2>

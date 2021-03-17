@@ -10,8 +10,11 @@ import { useDynamicHeight } from '~/hooks/useDynamicHeight';
 import { WaveLoader } from '../WaveLoader';
 import { LibraryRow } from './components/LibraryRow';
 import { LibraryHeader } from './components/LibraryHeader';
+import { useWindowWidth } from '~/hooks/useWindowWidth';
 
 export const LIST_PADDING = 16;
+
+const MOBILE_BREAKPOINT = 640;
 
 const innerElementType = forwardRef<
   HTMLDivElement,
@@ -38,11 +41,11 @@ export function Library() {
   const { refToMeasure: libraryRef, height } = useDynamicHeight(
     'library-container',
   );
-
   const { isLoading, error, data } = useQuery<Track[], any>(
     'library',
     getLibrary,
   );
+  const windowWidth = useWindowWidth();
 
   if (isLoading || data === undefined) return <WaveLoader />;
 
@@ -63,7 +66,9 @@ export function Library() {
                 height={innerHeight}
                 width={width}
                 itemCount={data.length}
-                itemSize={40}
+                // at window.width 640 or lower, this needs to get bumped up to 55
+                // anything higher and this should be 40
+                itemSize={windowWidth >= MOBILE_BREAKPOINT ? 40 : 55}
                 innerElementType={innerElementType}
               >
                 {({ index, style }) => {

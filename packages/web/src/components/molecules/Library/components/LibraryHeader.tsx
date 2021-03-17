@@ -18,13 +18,22 @@ export function LibraryHeader() {
       <div className="flex-1" style={{ flexGrow: sectionWidthRatio.title }}>
         <h2 className="text-sm leading-6 text-gray-500 font-semibold">Title</h2>
       </div>
-      <div className="flex-1" style={{ flexGrow: sectionWidthRatio.artist }}>
+      <div
+        className="sm:flex-1 sm:flex hidden"
+        style={{ flexGrow: sectionWidthRatio.artist }}
+      >
         <h2 className={clsx(styles.headerItem)}>Artist</h2>
       </div>
-      <div className="flex-1" style={{ flexGrow: sectionWidthRatio.album }}>
+      <div
+        className="sm:flex-1 sm:flex hidden"
+        style={{ flexGrow: sectionWidthRatio.album }}
+      >
         <h2 className={clsx(styles.headerItem)}>Album</h2>
       </div>
-      <div className="flex-1" style={{ flexGrow: sectionWidthRatio.duration }}>
+      <div
+        className="sm:flex-1 sm:flex hidden"
+        style={{ flexGrow: sectionWidthRatio.duration }}
+      >
         <h2 className={clsx(styles.headerItem)}>Duration</h2>
       </div>
     </div>
