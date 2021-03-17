@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { FixedSizeList } from 'react-window';
 import { useQuery } from 'react-query';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -10,6 +10,27 @@ import { useDynamicHeight } from '~/hooks/useDynamicHeight';
 import { WaveLoader } from '../WaveLoader';
 import { LibraryRow } from './components/LibraryRow';
 import { LibraryHeader } from './components/LibraryHeader';
+
+export const LIST_PADDING = 16;
+
+const innerElementType = forwardRef<
+  HTMLDivElement,
+  { style: React.CSSProperties }
+>(({ style, ...rest }, ref) => (
+  <div
+    ref={ref}
+    style={{
+      ...style,
+      height: `${
+        (typeof style.height === 'number'
+          ? (style.height as number)
+          : parseFloat(style.height || '0')) +
+        LIST_PADDING * 2
+      }px`,
+    }}
+    {...rest}
+  />
+));
 
 export function Library() {
   // (height of parent container) - (height of all children)
@@ -43,6 +64,7 @@ export function Library() {
                 width={width}
                 itemCount={data.length}
                 itemSize={40}
+                innerElementType={innerElementType}
               >
                 {({ index, style }) => {
                   const track = data[index];

@@ -8,7 +8,7 @@ const styles = {
 export const sectionWidthRatio = {
   title: 3,
   artist: 2,
-  album: 1,
+  album: 2,
   duration: 1,
 } as const;
 
@@ -18,29 +18,14 @@ export function LibraryHeader() {
       <div className="flex-1" style={{ flexGrow: sectionWidthRatio.title }}>
         <h2 className="text-sm leading-6 text-gray-500 font-semibold">Title</h2>
       </div>
-      <div className="flex-1">
-        <h2
-          className={clsx(styles.headerItem)}
-          style={{ flexGrow: sectionWidthRatio.artist }}
-        >
-          Artist
-        </h2>
+      <div className="flex-1" style={{ flexGrow: sectionWidthRatio.artist }}>
+        <h2 className={clsx(styles.headerItem)}>Artist</h2>
       </div>
-      <div className="flex-1">
-        <h2
-          className={clsx(styles.headerItem)}
-          style={{ flexGrow: sectionWidthRatio.album }}
-        >
-          Album
-        </h2>
+      <div className="flex-1" style={{ flexGrow: sectionWidthRatio.album }}>
+        <h2 className={clsx(styles.headerItem)}>Album</h2>
       </div>
-      <div className="flex-1">
-        <h2
-          className={clsx(styles.headerItem)}
-          style={{ flexGrow: sectionWidthRatio.duration }}
-        >
-          Duration
-        </h2>
+      <div className="flex-1" style={{ flexGrow: sectionWidthRatio.duration }}>
+        <h2 className={clsx(styles.headerItem)}>Duration</h2>
       </div>
     </div>
   );
