@@ -55,7 +55,7 @@ class AudioFile:
             "album": self.meta.get("album", None),
             "artist": self.meta.get("artist", None),
             "id": self.id,
-            "link": f"http://127.0.0.1:5000/songs/{self.id}",
+            "link": f"/api/songs/{self.id}",
             "meta": self.meta.pprint(),
         }
 
