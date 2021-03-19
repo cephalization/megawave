@@ -14,9 +14,16 @@ const styles = {
 type LibraryRowProps = {
   track: Track;
   style: React.CSSProperties;
+  isActive?: boolean;
+  onClickTrack: (track: Track) => void;
 };
 
-export function LibraryRow({ track, style }: LibraryRowProps) {
+export function LibraryRow({
+  track,
+  style,
+  isActive,
+  onClickTrack,
+}: LibraryRowProps) {
   const { name, artist, album, link } = track;
   return (
     <div
@@ -29,15 +36,21 @@ export function LibraryRow({ track, style }: LibraryRowProps) {
         }px`,
       }}
     >
-      <div className="flex h-full w-full pl-5 sm:pl-6 lg:pl-8">
+      <div
+        className={clsx(
+          'flex h-full w-full pl-5 sm:pl-6 lg:pl-8 items-center',
+          isActive && 'text-blue-700 bg-blue-50',
+        )}
+      >
         <div
           className="flex-1 min-w-0 flex-col sm:flex-row"
           style={{ flexGrow: sectionWidthRatio.title }}
         >
           <h2 className={clsx(styles.headerItem)} title={name}>
             <a
-              href={link}
-              className="hover:text-blue-700 transition-colors duration-300"
+              href={`#${link}`}
+              onClick={() => onClickTrack(track)}
+              className={'hover:text-blue-700 transition-colors duration-300'}
             >
               {name}
             </a>
