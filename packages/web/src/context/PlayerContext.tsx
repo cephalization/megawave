@@ -4,7 +4,7 @@ import { Track } from '~/types/library';
 export const PlayerContext = React.createContext<{
   track: Track | null;
   trackFilter: string;
-  setTrack: (track: Track) => void;
+  setTrack: (track: Track | null) => void;
   setTrackFilter: (trackFilter: string) => void;
 }>({
   track: null,

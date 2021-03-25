@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom';
 import App from './App.jsx';
 import './index.css';
 import 'tailwindcss/tailwind.css';
+import { mobileResizer } from './mobileResizer.js';
+
+mobileResizer();
 
 ReactDOM.render(
   <React.StrictMode>

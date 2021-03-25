@@ -151,7 +151,7 @@ export function Home() {
                 </h1>
               </div>
             </div>
-            <div className="flex-1 flex-grow-0 pl-5 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full">
+            <div className="flex-1 flex-grow-0 pl-5 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full hidden sm:flex">
               <h2 className="text-sm leading-6 text-gray-500 font-semibold">
                 Tracks: <span className="text-gray-600 font-bold">3000</span>
               </h2>
