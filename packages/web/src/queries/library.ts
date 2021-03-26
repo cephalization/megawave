@@ -8,7 +8,7 @@ export type getLibraryResponse = {
   };
 };
 
-export async function getLibrary() {
+export async function fetchAll() {
   const res = await axios.get<getLibraryResponse>(library());
 
   const tracks = res.data.data.songs;
@@ -16,6 +16,11 @@ export async function getLibrary() {
   return tracks;
 }
 
-export function getTrack(trackId: string) {
+export function fetchOne(trackId: string) {
   return axios.get(track(trackId));
 }
+
+export const libraryApi = {
+  fetchAll,
+  fetchOne,
+};
