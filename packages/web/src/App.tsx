@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 import { Home } from '~/components/views/Home';
+
 import { Login } from './components/views/Login';
 
 const queryClient = new QueryClient({

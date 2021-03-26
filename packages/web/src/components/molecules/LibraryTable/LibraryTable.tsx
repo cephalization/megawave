@@ -2,8 +2,10 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
+
 import { getLibrary } from '~/queries/library';
 import { Track } from '~/types/library';
+
 import { WaveLoader } from '../WaveLoader';
 import {
   LibraryTableRow,

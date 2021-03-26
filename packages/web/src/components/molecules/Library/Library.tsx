@@ -1,19 +1,19 @@
 import React, { forwardRef, useContext, useEffect } from 'react';
-import { FixedSizeList } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeList } from 'react-window';
 
 import { PlayerContext } from '~/context/PlayerContext';
-import { fetchLibrary, librarySelectors } from '~/store/slices/library';
 import {
   useAppDispatch,
   useAppSelector,
   useDynamicHeight,
   useWindowWidth,
 } from '~/hooks';
+import { fetchLibrary, librarySelectors } from '~/store/slices/library';
 
 import { WaveLoader } from '../WaveLoader';
-import { LibraryRow } from './components/LibraryRow';
 import { LibraryHeader } from './components/LibraryHeader';
+import { LibraryRow } from './components/LibraryRow';
 
 export const LIST_PADDING = 16;
 

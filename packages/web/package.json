@@ -28,6 +28,7 @@
     "@snowpack/plugin-typescript": "^1.1.1",
     "@snowpack/web-test-runner-plugin": "^0.1.4",
     "@testing-library/react": "^11.0.0",
+    "@trivago/prettier-plugin-sort-imports": "^2.0.1",
     "@types/lodash.debounce": "^4.0.6",
     "@types/lodash.throttle": "^4.1.6",
     "@types/react": "^17.0.0",

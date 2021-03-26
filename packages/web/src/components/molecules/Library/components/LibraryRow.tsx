@@ -1,13 +1,13 @@
+import { EntityId } from '@reduxjs/toolkit';
 import clsx from 'clsx';
 import React from 'react';
 
-import { Track } from '~/types/library';
-
-import { sectionWidthRatio } from './LibraryHeader';
-import { LIST_PADDING } from '../Library';
 import { useAppSelector } from '~/hooks';
 import { librarySelectors } from '~/store/slices/library';
-import { EntityId } from '@reduxjs/toolkit';
+import { Track } from '~/types/library';
+
+import { LIST_PADDING } from '../Library';
+import { sectionWidthRatio } from './LibraryHeader';
 
 const styles = {
   headerItem:

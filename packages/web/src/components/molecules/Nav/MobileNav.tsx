@@ -1,5 +1,6 @@
 import { Transition } from '@headlessui/react';
 import React from 'react';
+
 import { NavProps } from './Nav';
 
 type MobileNavProps = NavProps & {};
