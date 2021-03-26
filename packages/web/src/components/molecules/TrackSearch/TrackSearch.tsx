@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import debounce from 'lodash.debounce';
-import { useAppDispatch, useAppSelector } from '~/store/store';
+
+import { useAppDispatch, useAppSelector } from '~/hooks';
 import { libraryActions, librarySelectors } from '~/store/slices/library';
 
 export function TrackSearch() {

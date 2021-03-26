@@ -5,7 +5,7 @@ import { Track } from '~/types/library';
 
 import { sectionWidthRatio } from './LibraryHeader';
 import { LIST_PADDING } from '../Library';
-import { useAppSelector } from '~/store/store';
+import { useAppSelector } from '~/hooks';
 import { librarySelectors } from '~/store/slices/library';
 import { EntityId } from '@reduxjs/toolkit';
 

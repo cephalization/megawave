@@ -2,11 +2,14 @@ import React, { forwardRef, useContext, useEffect } from 'react';
 import { FixedSizeList } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
-import { useDynamicHeight } from '~/hooks/useDynamicHeight';
 import { PlayerContext } from '~/context/PlayerContext';
-import { useWindowWidth } from '~/hooks/useWindowWidth';
 import { fetchLibrary, librarySelectors } from '~/store/slices/library';
-import { useAppDispatch, useAppSelector } from '~/store/store';
+import {
+  useAppDispatch,
+  useAppSelector,
+  useDynamicHeight,
+  useWindowWidth,
+} from '~/hooks';
 
 import { WaveLoader } from '../WaveLoader';
 import { LibraryRow } from './components/LibraryRow';
