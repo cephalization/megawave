@@ -1,13 +1,12 @@
-import React, { forwardRef, useContext } from 'react';
+import React, { forwardRef, useContext, useEffect } from 'react';
 import { FixedSizeList } from 'react-window';
-import { useQuery } from 'react-query';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
-import { Track } from '~/types/library';
-import { getLibrary } from '~/queries/library';
 import { useDynamicHeight } from '~/hooks/useDynamicHeight';
 import { PlayerContext } from '~/context/PlayerContext';
 import { useWindowWidth } from '~/hooks/useWindowWidth';
+import { fetchLibrary, librarySelectors } from '~/store/slices/library';
+import { useAppDispatch, useAppSelector } from '~/store/store';
 
 import { WaveLoader } from '../WaveLoader';
 import { LibraryRow } from './components/LibraryRow';
@@ -38,35 +37,24 @@ const innerElementType = forwardRef<
   />
 ));
 
-const sanitizer = (s: string) => s?.toLocaleLowerCase?.() ?? '';
-
 export function Library() {
   // (height of parent container) - (height of all children)
   // this derived height value can be used to perfectly size the library items
   const { refToMeasure: libraryRef, height } = useDynamicHeight(
     'library-container',
   );
-  const { isLoading, error, data } = useQuery<Track[], any>(
-    'library',
-    getLibrary,
-  );
   const windowWidth = useWindowWidth();
-  const { track: currentTrack, setTrack, trackFilter } = useContext(
-    PlayerContext,
-  );
+  const dispatch = useAppDispatch();
 
-  if (isLoading || data === undefined) return <WaveLoader />;
+  useEffect(() => {
+    dispatch(fetchLibrary());
+  }, []);
 
-  if (error) return null;
+  const trackIDs = useAppSelector(librarySelectors.selectFilteredTrackIds);
+  const isLoading = useAppSelector(librarySelectors.selectLibraryLoading);
+  const { track: currentTrack, setTrack } = useContext(PlayerContext);
 
-  const tracks = data.filter((t) =>
-    ['name', 'artist', 'album'].some((p) =>
-      // @ts-expect-error keys are properties of track. This will move into redux eventually.\
-      sanitizer(Array.isArray(t[p]) ? t[p][0] : t[p]).includes(
-        sanitizer(trackFilter),
-      ),
-    ),
-  );
+  if (isLoading) return <WaveLoader />;
 
   return (
     <>
@@ -82,21 +70,21 @@ export function Library() {
               <FixedSizeList
                 height={innerHeight}
                 width={width}
-                itemCount={tracks.length}
+                itemCount={trackIDs.length}
                 // at window.width 640 or lower, this needs to get bumped up to 55
                 // anything higher and this should be 40
                 itemSize={windowWidth >= MOBILE_BREAKPOINT ? 40 : 55}
                 innerElementType={innerElementType}
               >
                 {({ index, style }) => {
-                  const track = tracks[index];
+                  const trackId = trackIDs[index];
 
                   return (
                     <LibraryRow
-                      track={track}
+                      trackId={trackId}
                       style={style}
                       onClickTrack={setTrack}
-                      isActive={track.id === currentTrack?.id}
+                      isActive={trackId === currentTrack?.id}
                     />
                   );
                 }}

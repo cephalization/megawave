@@ -1,16 +1,17 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import debounce from 'lodash.debounce';
-
-import { PlayerContext } from '~/context/PlayerContext';
+import { useAppDispatch, useAppSelector } from '~/store/store';
+import { libraryActions, librarySelectors } from '~/store/slices/library';
 
 export function TrackSearch() {
-  const { trackFilter, setTrackFilter } = useContext(PlayerContext);
-  const [localFilter, setLocalFilter] = useState(trackFilter);
+  const dispatch = useAppDispatch();
+  const libraryFilter = useAppSelector(librarySelectors.selectLibraryFilter);
+  const [localFilter, setLocalFilter] = useState(libraryFilter);
   const dSetFilter = useCallback(
-    debounce((value: string) => {
-      setTrackFilter(value);
+    debounce((filter: string) => {
+      dispatch(libraryActions.setLibraryFilter({ filter }));
     }, 300),
-    [setTrackFilter],
+    [],
   );
   const onChange = useCallback(
     (e) => {

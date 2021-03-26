@@ -5,6 +5,9 @@ import { Track } from '~/types/library';
 
 import { sectionWidthRatio } from './LibraryHeader';
 import { LIST_PADDING } from '../Library';
+import { useAppSelector } from '~/store/store';
+import { librarySelectors } from '~/store/slices/library';
+import { EntityId } from '@reduxjs/toolkit';
 
 const styles = {
   headerItem:
@@ -12,19 +15,26 @@ const styles = {
 } as const;
 
 type LibraryRowProps = {
-  track: Track;
+  trackId: EntityId;
   style: React.CSSProperties;
   isActive?: boolean;
   onClickTrack: (track: Track) => void;
 };
 
 export function LibraryRow({
-  track,
+  trackId,
   style,
   isActive,
   onClickTrack,
 }: LibraryRowProps) {
+  const track = useAppSelector((s) =>
+    librarySelectors.selectTrackById(s, trackId),
+  );
+
+  if (track === undefined) return null;
+
   const { name, artist, album, link } = track;
+
   return (
     <div
       style={{
