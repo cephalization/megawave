@@ -2,9 +2,8 @@
   "scripts": {
     "start": "snowpack dev",
     "build": "snowpack build",
-    "test": "web-test-runner \"src/**/*.test.jsx\"",
-    "format": "prettier --write \"src/**/*.{js,jsx}\"",
-    "lint": "prettier --check \"src/**/*.{js,jsx}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "lint": "prettier --check \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@headlessui/react": "^0.2.0",
