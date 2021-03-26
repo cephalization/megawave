@@ -6,8 +6,11 @@ import { Nav } from '~/components/molecules/Nav';
 import { TrackSearch } from '~/components/molecules/TrackSearch';
 import { PageContainer } from '~/components/templates/PageContainer';
 import { PlayerProvider } from '~/context/PlayerContext';
+import { useAppSelector } from '~/hooks';
+import { librarySelectors } from '~/store/slices/library';
 
 export function Home() {
+  const trackCount = useAppSelector(librarySelectors.selectTotalTracks);
   const [navOpen, setNavOpen] = useState(false);
   const toggleNavOpen = useCallback(() => setNavOpen((o) => !o), [setNavOpen]);
 
@@ -153,7 +156,8 @@ export function Home() {
             </div>
             <div className="flex-1 flex-grow-0 pl-5 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full hidden sm:flex">
               <h2 className="text-sm leading-6 text-gray-500 font-semibold">
-                Tracks: <span className="text-gray-600 font-bold">3000</span>
+                Tracks:{' '}
+                <span className="text-gray-600 font-bold">{trackCount}</span>
               </h2>
             </div>
             {/* Library table */}
