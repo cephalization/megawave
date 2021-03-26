@@ -1,15 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+
 import App from './App.jsx';
+import { mobileResizer } from './mobileResizer.js';
+
 import './index.css';
 import 'tailwindcss/tailwind.css';
-import { mobileResizer } from './mobileResizer.js';
+import store from './store/store.js';
 
 mobileResizer();
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>,
   document.getElementById('root'),
 );
