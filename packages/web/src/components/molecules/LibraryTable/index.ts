@@ -1,1 +1,0 @@
-export { LibraryTable } from './LibraryTable';
