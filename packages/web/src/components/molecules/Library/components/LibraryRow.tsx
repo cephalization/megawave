@@ -7,11 +7,11 @@ import { librarySelectors } from '~/store/slices/library';
 import { Track } from '~/types/library';
 
 import { LIST_PADDING } from '../Library';
-import { sectionWidthRatio } from './LibraryHeader';
+import { sectionWidthRatio, styles as headerStyles } from './LibraryHeader';
 
 const styles = {
   headerItem:
-    'text-sm leading-6 text-gray-700 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden',
+    'text-sm leading-6 text-gray-700 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden pr-2',
 } as const;
 
 type LibraryRowProps = {
@@ -48,7 +48,8 @@ export function LibraryRow({
     >
       <div
         className={clsx(
-          'flex h-full w-full pl-5 sm:pl-6 lg:pl-8 items-center',
+          'flex h-full w-full items-center',
+          headerStyles.rowPadding,
           isActive && 'text-blue-700 bg-blue-50',
         )}
       >
@@ -86,7 +87,7 @@ export function LibraryRow({
           </h2>
         </div>
         <div
-          className="flex-1 sm:flex hidden min-w-0"
+          className="flex-1 sm:flex hidden min-w-0 justify-end"
           style={{ flexGrow: sectionWidthRatio.duration }}
         >
           <h2 className={clsx(styles.headerItem)}>0:00</h2>
