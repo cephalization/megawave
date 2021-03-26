@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import { librarySlice } from './slices';
@@ -7,6 +7,7 @@ const store = configureStore({
   reducer: {
     library: librarySlice.reducer,
   },
+  middleware: [...getDefaultMiddleware({ immutableCheck: false })],
 });
 
 export type RootState = ReturnType<typeof store.getState>;
