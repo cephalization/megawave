@@ -1,12 +1,7 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useRef } from 'react';
 
-import { PlayerContext } from '~/context/PlayerContext';
+import { usePlayer } from '~/hooks/usePlayer';
+import { PLAYER_STATUS } from '~/store/slices/player/player';
 
 const iconSizeScalar = 1.6;
 
@@ -28,101 +23,20 @@ const formatTime = (seconds: number) => {
 };
 
 export function Controls() {
-  const { track } = useContext(PlayerContext);
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [playing, setPlaying] = useState(false);
-
-  const durationPercentage =
-    (currentTime / (audioRef?.current?.duration ?? 0)) * 100;
-
-  const handleScrub = useCallback((e) => {
-    if (audioRef?.current !== null && progressBarRef?.current !== null) {
-      const audio = audioRef?.current;
-      const progressBar = progressBarRef?.current;
-      const sideNavWidth =
-        document.getElementById('side-nav')?.offsetWidth ?? 0;
-
-      const clickPosition =
-        (e.pageX - progressBar.offsetLeft - sideNavWidth) /
-        progressBar.offsetWidth;
-      const clickTime = clickPosition * audio.duration;
-
-      setCurrentTime(clickTime);
-      audio.currentTime = clickTime;
-    }
-  }, []);
-
-  const handleCurrentTimeChange = useCallback(() => {
-    if (audioRef?.current !== null) {
-      const audio = audioRef.current;
-
-      setCurrentTime(audio.currentTime);
-    }
-  }, []);
-
-  const handleCanPlay = useCallback(() => {
-    if (audioRef?.current !== null) {
-      const audio = audioRef.current;
-
-      audio.play();
-      setPlaying(true);
-    }
-  }, []);
-
-  const handlePause = useCallback(() => {
-    if (audioRef?.current !== null) {
-      const audio = audioRef.current;
-
-      audio.pause();
-      setPlaying(false);
-    }
-  }, []);
-
-  const handlePlay = useCallback(() => {
-    if (audioRef?.current !== null) {
-      const audio = audioRef?.current;
-
-      if (audio.getAttribute('src') !== '' && audio.paused) {
-        audio.play();
-        setPlaying(true);
-      }
-    }
-  }, []);
-
-  // reset element when track changes
-  useEffect(() => {
-    // const handlerEvents = [];
-    const addEventToAudio = (eventTuple: [string, EventListener]) => {
-      if (audioRef?.current !== null) {
-        // handlerEvents.push(eventTuple);
-        audioRef.current.addEventListener(...eventTuple);
-      }
-    };
-
-    if (audioRef?.current !== null && track?.link) {
-      const audio = audioRef.current;
-
-      audio.setAttribute('src', track.link);
-      const canplayEventArgs: [string, EventListener] = [
-        'canplay',
-        handleCanPlay,
-      ];
-      const timeupdateEventArgs: [string, EventListener] = [
-        'timeupdate',
-        handleCurrentTimeChange,
-      ];
-      addEventToAudio(canplayEventArgs);
-      addEventToAudio(timeupdateEventArgs);
-      audio.load();
-    } else if (audioRef?.current !== null && !track?.link) {
-      const audio = audioRef.current;
-
-      audio.setAttribute('src', '');
-      audio.load();
-    }
-  }, [track]);
+  const {
+    track,
+    status,
+    play: handlePlay,
+    pause: handlePause,
+    scrub: handleScrub,
+    playNext: handleNext,
+    playPrev: handlePrev,
+    currentTime,
+    durationPercentage,
+  } = usePlayer(audioRef, progressBarRef);
+  const playing = status === PLAYER_STATUS.PLAYING;
 
   return (
     <div className="flex w-full flex-wrap bg-gray-100 dark:bg-gray-900 h-20  border-t border-gray-200 relative bottom-0 z-50 py-1">
@@ -131,9 +45,11 @@ export function Controls() {
         title={`${track?.name} ${track?.artist ? `- ${track?.artist}` : ''}`}
       ></audio>
       <div className="text-gray-600 dark:text-white lg:rounded-b-xl px-1 sm:px-3 lg:px-1 xl:px-3 flex w-full justify-center items-center">
+        {/* Prev button */}
         <button
           type="button"
           className="hidden sm:block mx-1  hover:text-gray-900"
+          onClick={handlePrev}
         >
           <svg
             width={8 * iconSizeScalar}
@@ -189,9 +105,11 @@ export function Controls() {
             </svg>
           )}
         </button>
+        {/* Next Button */}
         <button
           type="button"
           className="hidden sm:block mx-1  hover:text-gray-900"
+          onClick={handleNext}
         >
           <svg
             width={8 * iconSizeScalar}

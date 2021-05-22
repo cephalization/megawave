@@ -26,7 +26,7 @@ type LibraryState = {
   loading: boolean;
   error: SerializedError | null;
   filter: string;
-  activeTrack: number | null;
+  activeTrackIndex: number | null;
   queue: EntityId[];
 };
 
@@ -35,7 +35,7 @@ const initialState = libraryAdapter.getInitialState<LibraryState>({
   error: null,
   filter: '',
   // queue
-  activeTrack: null,
+  activeTrackIndex: null,
   queue: [],
 });
 
@@ -72,14 +72,14 @@ export const librarySlice = createSlice({
 
       if (payload !== null && payload !== undefined) {
         // if a track was provided, seek its position in the queue
-        state.activeTrack = state.queue.findIndex((id) => id === payload);
+        state.activeTrackIndex = state.queue.findIndex((id) => id === payload);
       } else {
         // if a track was not provided, just start from the top of the queue
-        state.activeTrack = 0;
+        state.activeTrackIndex = 0;
       }
     });
     builder.addCase(playerActions.stop, (state) => {
-      state.activeTrack = null;
+      state.activeTrackIndex = null;
       state.queue = [];
     });
   },
@@ -96,8 +96,8 @@ const {
 const selectLibraryLoading = (state: RootState) => state.library.loading;
 const selectLibraryFilter = (state: RootState) => state.library.filter;
 const selectLibraryQueue = (state: RootState) => state.library.queue;
-const selectLibraryActiveTrack = (state: RootState) =>
-  state.library.activeTrack;
+const selectLibraryActiveTrackIndex = (state: RootState) =>
+  state.library.activeTrackIndex;
 
 const selectFilteredTrackIds = createSelector(
   selectLibraryFilter,
@@ -117,6 +117,11 @@ const selectFilteredTrackIds = createSelector(
       .map((t) => t.id);
   },
 );
+const selectLibraryActiveTrackId = createSelector(
+  selectLibraryActiveTrackIndex,
+  selectLibraryQueue,
+  (index, queue) => (index !== null ? queue[index] : null),
+);
 
 export const librarySelectors = {
   // entity selectors
@@ -129,9 +134,10 @@ export const librarySelectors = {
   selectLibraryLoading,
   selectLibraryFilter,
   selectLibraryQueue,
-  selectLibraryActiveTrack,
+  selectLibraryActiveTrackIndex,
   // memoized selectors
   selectFilteredTrackIds,
+  selectLibraryActiveTrackId,
 };
 
 export const libraryActions = librarySlice.actions;

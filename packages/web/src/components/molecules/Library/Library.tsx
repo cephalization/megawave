@@ -1,6 +1,7 @@
 import React, { forwardRef, useContext, useEffect } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
+import { bindActionCreators } from 'redux';
 
 import { PlayerContext } from '~/context/PlayerContext';
 import {
@@ -9,6 +10,7 @@ import {
   useDynamicHeight,
   useWindowWidth,
 } from '~/hooks';
+import { playerActions } from '~/store/slices';
 import { fetchLibrary, librarySelectors } from '~/store/slices/library';
 
 import { WaveLoader } from '../WaveLoader';
@@ -55,7 +57,15 @@ export function Library() {
 
   const trackIDs = useAppSelector(librarySelectors.selectFilteredTrackIds);
   const isLoading = useAppSelector(librarySelectors.selectLibraryLoading);
-  const { track: currentTrack, setTrack } = useContext(PlayerContext);
+  const activeTrackId = useAppSelector(
+    librarySelectors.selectLibraryActiveTrackId,
+  );
+  const currentTrack = useAppSelector((state) =>
+    activeTrackId !== null
+      ? librarySelectors.selectTrackById(state, activeTrackId)
+      : null,
+  );
+  const play = bindActionCreators(playerActions.play, useAppDispatch());
 
   if (isLoading) return <WaveLoader />;
 
@@ -86,7 +96,7 @@ export function Library() {
                     <LibraryRow
                       trackId={trackId}
                       style={style}
-                      onClickTrack={setTrack}
+                      onClickTrack={play}
                       isActive={trackId === currentTrack?.id}
                     />
                   );

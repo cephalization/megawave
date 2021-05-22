@@ -1,9 +1,12 @@
 import { EntityId } from '@reduxjs/toolkit';
+import debounce from 'lodash.debounce';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { playerActions } from '~/store/slices';
 import { librarySelectors } from '~/store/slices/library';
+import { playerSelectors } from '~/store/slices/player/player';
+import { Track } from '~/types/library';
 
 import { useAppSelector } from './useAppSelector';
 
@@ -11,8 +14,6 @@ type _Player = {
   play: (arg0?: EntityId | null) => void;
   pause: () => void;
   stop: () => void;
-  playNext: () => void;
-  playPrev: () => void;
 
   prevTrackId: EntityId | null;
   nextTrackId: EntityId | null;
@@ -23,6 +24,9 @@ type RegisteredPlayer = {
   play: (arg0?: EntityId | null) => void;
   pause: () => void;
   scrub: (arg0: React.MouseEvent) => void;
+  track: Track | null;
+  playNext: () => void;
+  playPrev: () => void;
 };
 
 const useRegisteredAudioComponent = (
@@ -73,7 +77,7 @@ const useRegisteredAudioComponent = (
 
       if (audio.getAttribute('src') !== '' && audio.paused) {
         audio.play();
-        player.play();
+        player.play(activeTrackId);
       }
     }
   };
@@ -81,6 +85,7 @@ const useRegisteredAudioComponent = (
   // register new audio element handlers when track changes
   useEffect(() => {
     if (track != null) {
+      console.log(track.id);
       const handleCurrentTimeChange = () => {
         if (audioRef?.current !== null) {
           const audio = audioRef.current;
@@ -89,12 +94,12 @@ const useRegisteredAudioComponent = (
         }
       };
 
-      const handleCanPlay = () => {
+      const handleCanPlay = async () => {
+        console.log('canplay');
         if (audioRef?.current !== null) {
           const audio = audioRef.current;
 
           audio.play();
-          player.play(activeTrackId);
         }
       };
 
@@ -146,21 +151,29 @@ const useRegisteredAudioComponent = (
     pause: handlePause,
     scrub: handleScrub,
     durationPercentage,
+    currentTime,
+    track,
   };
 };
 
 export const usePlayer = (
   audioRef: React.RefObject<HTMLAudioElement>,
   progressBarRef: React.RefObject<HTMLDivElement>,
-): RegisteredPlayer => {
+) => {
   const dispatch = useDispatch();
   const queue = useAppSelector(librarySelectors.selectLibraryQueue);
-  const activeTrackId = useAppSelector(
-    librarySelectors.selectLibraryActiveTrack,
+  const activeTrackIndex = useAppSelector(
+    librarySelectors.selectLibraryActiveTrackIndex,
   );
+  const activeTrackId = useAppSelector(
+    librarySelectors.selectLibraryActiveTrackId,
+  );
+  const status = useAppSelector(playerSelectors.selectPlayerStatus);
 
-  const prevTrackId = activeTrackId !== null ? queue[activeTrackId - 1] : null;
-  const nextTrackId = activeTrackId !== null ? queue[activeTrackId + 1] : null;
+  const prevTrackId =
+    activeTrackIndex !== null ? queue[activeTrackIndex - 1] : null;
+  const nextTrackId =
+    activeTrackIndex !== null ? queue[activeTrackIndex + 1] : null;
 
   // Create handlers into redux
   const play = useCallback<_Player['play']>(
@@ -212,5 +225,5 @@ export const usePlayer = (
     _player,
   );
 
-  return registeredPlayer;
+  return { ...registeredPlayer, status, playNext, playPrev };
 };

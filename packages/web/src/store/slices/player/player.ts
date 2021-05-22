@@ -1,5 +1,7 @@
 import { createAction, createSlice, EntityId } from '@reduxjs/toolkit';
 
+import { RootState } from '~/store/store';
+
 export const enum PLAYER_STATUS {
   PLAYING,
   PAUSED,
@@ -40,3 +42,9 @@ export const playerSlice = createSlice({
       });
   },
 });
+
+const selectPlayerStatus = (state: RootState) => state.player.status;
+
+export const playerSelectors = {
+  selectPlayerStatus,
+};

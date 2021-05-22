@@ -4,7 +4,6 @@ import React from 'react';
 
 import { useAppSelector } from '~/hooks';
 import { librarySelectors } from '~/store/slices/library';
-import { Track } from '~/types/library';
 
 import { LIST_PADDING } from '../Library';
 import { sectionWidthRatio, styles as headerStyles } from './LibraryHeader';
@@ -18,7 +17,7 @@ type LibraryRowProps = {
   trackId: EntityId;
   style: React.CSSProperties;
   isActive?: boolean;
-  onClickTrack: (track: Track) => void;
+  onClickTrack: (arg0: EntityId) => void;
 };
 
 export function LibraryRow({
@@ -60,7 +59,7 @@ export function LibraryRow({
           <h2 className={clsx(styles.headerItem)} title={name}>
             <a
               href={`#${link}`}
-              onClick={() => onClickTrack(track)}
+              onClick={() => onClickTrack(trackId)}
               className={'hover:text-blue-700 transition-colors duration-300'}
             >
               {name}
