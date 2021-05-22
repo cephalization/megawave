@@ -1,2 +1,2 @@
-export const stringSanitizer = (s: string | undefined) =>
-  s?.toLocaleLowerCase?.() ?? '';
+export const stringSanitizer = (s: string | null | undefined) =>
+  !s ? '' : s?.toLocaleLowerCase?.() ?? '';

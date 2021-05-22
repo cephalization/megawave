@@ -22,6 +22,8 @@ const formatTime = (seconds: number) => {
   return new Date(seconds * 1000).toISOString().substr(11, 8);
 };
 
+// VERY EXPENSIVE COMPONENT
+// RE-RENDERS ONCE PER TRACK SECOND
 export function Controls() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);

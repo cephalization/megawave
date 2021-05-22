@@ -4,6 +4,7 @@ import React from 'react';
 
 import { useAppSelector } from '~/hooks';
 import { librarySelectors } from '~/store/slices/library';
+import { getArrayString } from '~/utils/trackMeta';
 
 import { LIST_PADDING } from '../Library';
 import { sectionWidthRatio, styles as headerStyles } from './LibraryHeader';
@@ -73,7 +74,10 @@ export function LibraryRow({
           className="flex-1 sm:flex hidden min-w-0"
           style={{ flexGrow: sectionWidthRatio.artist }}
         >
-          <h2 className={clsx(styles.headerItem)} title={artist}>
+          <h2
+            className={clsx(styles.headerItem)}
+            title={getArrayString(artist)}
+          >
             {artist}
           </h2>
         </div>
@@ -81,7 +85,7 @@ export function LibraryRow({
           className="flex-1 sm:flex hidden min-w-0"
           style={{ flexGrow: sectionWidthRatio.album }}
         >
-          <h2 className={clsx(styles.headerItem)} title={album}>
+          <h2 className={clsx(styles.headerItem)} title={getArrayString(album)}>
             {album}
           </h2>
         </div>

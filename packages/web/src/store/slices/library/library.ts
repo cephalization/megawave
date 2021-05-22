@@ -11,6 +11,7 @@ import { libraryApi } from '~/queries/library';
 import { RootState } from '~/store/store';
 import { Track } from '~/types/library';
 import { stringSanitizer } from '~/utils/stringSanitizer';
+import { getArrayString } from '~/utils/trackMeta';
 
 import { playerActions } from '../player';
 
@@ -109,9 +110,10 @@ const selectFilteredTrackIds = createSelector(
     return tracks
       .filter((t) =>
         (['name', 'artist', 'album'] as (keyof Track)[]).some((p) =>
-          stringSanitizer(Array.isArray(t[p]) ? t?.[p]?.[0] : t[p]).includes(
-            stringSanitizer(filter),
-          ),
+          stringSanitizer(
+            // @ts-expect-error
+            Array.isArray(t[p]) ? getArrayString(t?.[p]) : t[p],
+          ).includes(stringSanitizer(filter)),
         ),
       )
       .map((t) => t.id);
@@ -121,6 +123,11 @@ const selectLibraryActiveTrackId = createSelector(
   selectLibraryActiveTrackIndex,
   selectLibraryQueue,
   (index, queue) => (index !== null ? queue[index] : null),
+);
+const selectLibraryActiveTrack = createSelector(
+  selectLibraryActiveTrackId,
+  (state) => (id: EntityId) => selectTrackById(state, id),
+  (trackId, tracksById) => (trackId !== null ? tracksById(trackId) : null),
 );
 
 export const librarySelectors = {
@@ -138,6 +145,7 @@ export const librarySelectors = {
   // memoized selectors
   selectFilteredTrackIds,
   selectLibraryActiveTrackId,
+  selectLibraryActiveTrack,
 };
 
 export const libraryActions = librarySlice.actions;

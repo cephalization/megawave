@@ -14,6 +14,8 @@ type _Player = {
   play: (arg0?: EntityId | null) => void;
   pause: () => void;
   stop: () => void;
+  playNext: () => void;
+  playPrev: () => void;
 
   prevTrackId: EntityId | null;
   nextTrackId: EntityId | null;
@@ -35,11 +37,7 @@ const useRegisteredAudioComponent = (
   player: _Player,
 ) => {
   const { activeTrackId, nextTrackId } = player;
-  const track = useAppSelector((state) =>
-    activeTrackId !== null
-      ? librarySelectors.selectTrackById(state, activeTrackId)
-      : null,
-  );
+  const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
   const [currentTime, setCurrentTime] = useState(0);
 
   const durationPercentage =
