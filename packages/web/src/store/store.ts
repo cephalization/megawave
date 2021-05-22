@@ -1,10 +1,11 @@
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
 
-import { librarySlice } from './slices';
+import { librarySlice, playerSlice } from './slices';
 
 const store = configureStore({
   reducer: {
     library: librarySlice.reducer,
+    player: playerSlice.reducer,
   },
   middleware: [...getDefaultMiddleware({ immutableCheck: false })],
 });

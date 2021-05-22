@@ -3,7 +3,8 @@
     "start": "snowpack dev",
     "build": "snowpack build",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "lint": "prettier --check \"src/**/*.{ts,tsx}\""
+    "lint": "prettier --check \"src/**/*.{ts,tsx}\"",
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@headlessui/react": "^0.2.0",
