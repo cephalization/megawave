@@ -10,10 +10,15 @@ export const enum PLAYER_STATUS {
 
 type PlayerState = {
   status: PLAYER_STATUS;
+  seekTime: number;
 };
 
-// Shared Actions
-export const playerActions = {
+const initialState: PlayerState = {
+  status: PLAYER_STATUS.STOPPED,
+  seekTime: 0,
+};
+
+const sharedPlayerActions = {
   play: createAction<EntityId | null | undefined>('player/play'),
   nextTrack: createAction('player/nextTrack'),
   prevTrack: createAction('player/prevTrack'),
@@ -21,30 +26,38 @@ export const playerActions = {
   stop: createAction('player/stop'),
 };
 
-const initialState: PlayerState = {
-  status: PLAYER_STATUS.STOPPED,
-};
-
 export const playerSlice = createSlice({
   name: 'player',
   initialState,
-  reducers: {},
+  reducers: {
+    setSeekTime(state, { payload }) {
+      state.seekTime = payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(playerActions.play, (state) => {
+      .addCase(sharedPlayerActions.play, (state) => {
         state.status = PLAYER_STATUS.PLAYING;
       })
-      .addCase(playerActions.pause, (state) => {
+      .addCase(sharedPlayerActions.pause, (state) => {
         state.status = PLAYER_STATUS.PAUSED;
       })
-      .addCase(playerActions.stop, (state) => {
+      .addCase(sharedPlayerActions.stop, (state) => {
         state.status = PLAYER_STATUS.STOPPED;
       });
   },
 });
 
+// Shared Actions
+export const playerActions = {
+  ...sharedPlayerActions,
+  ...playerSlice.actions,
+};
+
 const selectPlayerStatus = (state: RootState) => state.player.status;
+const selectPlayerSeekTime = (state: RootState) => state.player.seekTime;
 
 export const playerSelectors = {
   selectPlayerStatus,
+  selectPlayerSeekTime,
 };

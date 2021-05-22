@@ -35,7 +35,7 @@ export function Controls() {
     scrub: handleScrub,
     playNext: handleNext,
     playPrev: handlePrev,
-    currentTime,
+    seekTime: currentTime,
     durationPercentage,
   } = usePlayer(audioRef, progressBarRef);
   const playing = status === PLAYER_STATUS.PLAYING;

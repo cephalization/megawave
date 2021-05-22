@@ -1,6 +1,5 @@
-import { EntityId } from '@reduxjs/toolkit';
-import debounce from 'lodash.debounce';
-import React, { useCallback, useEffect, useState } from 'react';
+import { bindActionCreators, EntityId } from '@reduxjs/toolkit';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { playerActions } from '~/store/slices';
@@ -37,11 +36,13 @@ const useRegisteredAudioComponent = (
   player: _Player,
 ) => {
   const { activeTrackId, nextTrackId } = player;
+  const dispatch = useDispatch();
   const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
-  const [currentTime, setCurrentTime] = useState(0);
+  const seekTime = useAppSelector(playerSelectors.selectPlayerSeekTime);
+  const setSeekTime = bindActionCreators(playerActions.setSeekTime, dispatch);
 
   const durationPercentage =
-    (currentTime / (audioRef?.current?.duration ?? 0)) * 100;
+    (seekTime / (audioRef?.current?.duration ?? 0)) * 100;
 
   const handleScrub: RegisteredPlayer['scrub'] = (e) => {
     if (audioRef?.current !== null && progressBarRef?.current !== null) {
@@ -55,7 +56,7 @@ const useRegisteredAudioComponent = (
         progressBar.offsetWidth;
       const clickTime = clickPosition * audio.duration;
 
-      setCurrentTime(clickTime);
+      setSeekTime(clickTime);
       audio.currentTime = clickTime;
     }
   };
@@ -88,7 +89,7 @@ const useRegisteredAudioComponent = (
         if (audioRef?.current !== null) {
           const audio = audioRef.current;
 
-          setCurrentTime(audio.currentTime);
+          setSeekTime(audio.currentTime);
         }
       };
 
@@ -149,7 +150,7 @@ const useRegisteredAudioComponent = (
     pause: handlePause,
     scrub: handleScrub,
     durationPercentage,
-    currentTime,
+    seekTime,
     track,
   };
 };
