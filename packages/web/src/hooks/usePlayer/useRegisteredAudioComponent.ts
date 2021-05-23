@@ -64,7 +64,6 @@ export const useRegisteredAudioComponent = (
   // register new audio element handlers when track changes
   useEffect(() => {
     if (track != null) {
-      console.log(track.id);
       const handleCurrentTimeChange = () => {
         if (audioRef?.current !== null) {
           const audio = audioRef.current;
