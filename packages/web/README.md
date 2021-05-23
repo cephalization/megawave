@@ -4,7 +4,7 @@
 
 ## Requirements
 
-- Node v14.15.4
+- Node v16.2.0
 
 ## Available Scripts
 
