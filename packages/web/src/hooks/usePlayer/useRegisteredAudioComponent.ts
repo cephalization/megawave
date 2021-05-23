@@ -1,42 +1,22 @@
-import { bindActionCreators, EntityId } from '@reduxjs/toolkit';
-import React, { useCallback, useEffect } from 'react';
+import { bindActionCreators } from '@reduxjs/toolkit';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { playerActions } from '~/store/slices';
 import { librarySelectors } from '~/store/slices/library';
-import { playerSelectors } from '~/store/slices/player/player';
-import { Track } from '~/types/library';
+import { playerActions, playerSelectors } from '~/store/slices/player/player';
 
-import { useAppSelector } from './useAppSelector';
+import { useAppSelector } from '../useAppSelector';
+import { RegisteredPlayer, _Player } from './definitions';
 
-type _Player = {
-  play: (arg0?: EntityId | null) => void;
-  pause: () => void;
-  stop: () => void;
-  playNext: () => void;
-  playPrev: () => void;
-
-  prevTrackId: EntityId | null;
-  nextTrackId: EntityId | null;
-  activeTrackId: EntityId | null;
-};
-
-type RegisteredPlayer = {
-  play: (arg0?: EntityId | null) => void;
-  pause: () => void;
-  scrub: (arg0: React.MouseEvent) => void;
-  track: Track | null;
-  playNext: () => void;
-  playPrev: () => void;
-};
-
-const useRegisteredAudioComponent = (
+export const useRegisteredAudioComponent = (
   audioRef: React.RefObject<HTMLAudioElement>,
   progressBarRef: React.RefObject<HTMLDivElement>,
-  player: _Player,
-) => {
-  const { activeTrackId, nextTrackId } = player;
+  _player: _Player,
+): RegisteredPlayer => {
   const dispatch = useDispatch();
+  const activeTrackId = useAppSelector(
+    librarySelectors.selectLibraryActiveTrackId,
+  );
   const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
   const seekTime = useAppSelector(playerSelectors.selectPlayerSeekTime);
   const setSeekTime = bindActionCreators(playerActions.setSeekTime, dispatch);
@@ -66,7 +46,7 @@ const useRegisteredAudioComponent = (
       const audio = audioRef.current;
 
       audio.pause();
-      player.pause();
+      _player._pause();
     }
   };
 
@@ -76,7 +56,7 @@ const useRegisteredAudioComponent = (
 
       if (audio.getAttribute('src') !== '' && audio.paused) {
         audio.play();
-        player.play(activeTrackId);
+        _player._play(activeTrackId);
       }
     }
   };
@@ -104,14 +84,12 @@ const useRegisteredAudioComponent = (
 
       const handleTrackEnd = () => {
         if (audioRef?.current !== null) {
-          nextTrackId != null ? player.playNext() : player.stop();
+          _player.playNext();
         }
       };
 
-      // const handlerEvents = [];
       const addEventToAudio = (eventTuple: [string, EventListener]) => {
         if (audioRef?.current !== null) {
-          // handlerEvents.push(eventTuple);
           audioRef.current.addEventListener(...eventTuple);
         }
       };
@@ -153,76 +131,4 @@ const useRegisteredAudioComponent = (
     seekTime,
     track,
   };
-};
-
-export const usePlayer = (
-  audioRef: React.RefObject<HTMLAudioElement>,
-  progressBarRef: React.RefObject<HTMLDivElement>,
-) => {
-  const dispatch = useDispatch();
-  const queue = useAppSelector(librarySelectors.selectLibraryQueue);
-  const activeTrackIndex = useAppSelector(
-    librarySelectors.selectLibraryActiveTrackIndex,
-  );
-  const activeTrackId = useAppSelector(
-    librarySelectors.selectLibraryActiveTrackId,
-  );
-  const status = useAppSelector(playerSelectors.selectPlayerStatus);
-
-  const prevTrackId =
-    activeTrackIndex !== null ? queue[activeTrackIndex - 1] : null;
-  const nextTrackId =
-    activeTrackIndex !== null ? queue[activeTrackIndex + 1] : null;
-
-  // Create handlers into redux
-  const play = useCallback<_Player['play']>(
-    (trackId) => {
-      dispatch(playerActions.play(trackId));
-    },
-    [dispatch],
-  );
-
-  const pause = useCallback<_Player['stop']>(() => {
-    dispatch(playerActions.pause());
-  }, [dispatch]);
-
-  const stop = useCallback<_Player['stop']>(() => {
-    dispatch(playerActions.stop());
-  }, [dispatch]);
-
-  const playNext = useCallback<_Player['playNext']>(() => {
-    if (nextTrackId) {
-      dispatch(playerActions.play(nextTrackId));
-    } else {
-      dispatch(playerActions.stop());
-    }
-  }, [dispatch, nextTrackId]);
-
-  const playPrev = useCallback<_Player['playPrev']>(() => {
-    if (prevTrackId) {
-      dispatch(playerActions.play(prevTrackId));
-    } else {
-      dispatch(playerActions.stop());
-    }
-  }, [dispatch, prevTrackId]);
-
-  const _player: _Player = {
-    play,
-    pause,
-    stop,
-    playNext,
-    playPrev,
-
-    nextTrackId,
-    prevTrackId,
-    activeTrackId,
-  };
-
-  const registeredPlayer = useRegisteredAudioComponent(
-    audioRef,
-    progressBarRef,
-    _player,
-  );
-
-  return { ...registeredPlayer, status, playNext, playPrev };
 };
