@@ -1,4 +1,5 @@
 import React, { forwardRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 import { bindActionCreators } from 'redux';
@@ -11,6 +12,7 @@ import {
 } from '~/hooks';
 import { playerActions } from '~/store/slices';
 import { fetchLibrary, librarySelectors } from '~/store/slices/library';
+import { getArrayString } from '~/utils/trackMeta';
 
 import { WaveLoader } from '../WaveLoader';
 import { LibraryHeader } from './components/LibraryHeader';
@@ -56,13 +58,8 @@ export function Library() {
 
   const trackIDs = useAppSelector(librarySelectors.selectFilteredTrackIds);
   const isLoading = useAppSelector(librarySelectors.selectLibraryLoading);
-  const activeTrackId = useAppSelector(
-    librarySelectors.selectLibraryActiveTrackId,
-  );
-  const currentTrack = useAppSelector((state) =>
-    activeTrackId !== null
-      ? librarySelectors.selectTrackById(state, activeTrackId)
-      : null,
+  const currentTrack = useAppSelector(
+    librarySelectors.selectLibraryActiveTrack,
   );
   const play = bindActionCreators(playerActions.play, useAppDispatch());
 
@@ -70,6 +67,17 @@ export function Library() {
 
   return (
     <>
+      {currentTrack && (
+        <Helmet>
+          <title>
+            {currentTrack.name}
+            {getArrayString(currentTrack.artist)
+              ? ` - ${getArrayString(currentTrack.artist)}`
+              : ''}
+            &nbsp;| Megawave
+          </title>
+        </Helmet>
+      )}
       <LibraryHeader />
       <div
         className="border-t border-gray-200"
