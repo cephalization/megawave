@@ -1,9 +1,8 @@
-import React, { forwardRef, useContext, useEffect } from 'react';
+import React, { forwardRef, useEffect } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 import { bindActionCreators } from 'redux';
 
-import { PlayerContext } from '~/context/PlayerContext';
 import {
   useAppDispatch,
   useAppSelector,

@@ -46,11 +46,7 @@ export function Controls() {
   return (
     <div className="flex w-full justify-start bg-gray-100 dark:bg-gray-900 h-20  border-t border-gray-200 relative bottom-0 z-50 py-1">
       <div className="flex w-1/4">
-        <CurrentTrack
-          title={track?.name}
-          album={track?.album}
-          artist={track?.artist}
-        />
+        <CurrentTrack title={track?.name} artist={track?.artist} />
       </div>
       <div className="flex w-2/4 flex-wrap">
         <audio

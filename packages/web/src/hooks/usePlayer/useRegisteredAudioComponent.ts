@@ -128,6 +128,5 @@ export const useRegisteredAudioComponent = (
     scrub: handleScrub,
     durationPercentage,
     seekTime,
-    track,
   };
 };

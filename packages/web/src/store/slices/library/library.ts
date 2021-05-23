@@ -127,7 +127,15 @@ const selectLibraryActiveTrackId = createSelector(
 const selectLibraryActiveTrack = createSelector(
   selectLibraryActiveTrackId,
   (state) => (id: EntityId) => selectTrackById(state, id),
-  (trackId, tracksById) => (trackId !== null ? tracksById(trackId) : null),
+  (trackId, tracksById) => {
+    if (trackId === null) return null;
+
+    const track = tracksById(trackId);
+
+    if (!track) return null;
+
+    return track;
+  },
 );
 
 export const librarySelectors = {

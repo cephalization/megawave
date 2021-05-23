@@ -19,6 +19,7 @@ export const usePlayer = (
     librarySelectors.selectLibraryActiveTrackIndex,
   );
   const status = useAppSelector(playerSelectors.selectPlayerStatus);
+  const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
 
   const prevTrackId =
     activeTrackIndex !== null ? queue[activeTrackIndex - 1] : null;
@@ -70,5 +71,5 @@ export const usePlayer = (
     _player,
   );
 
-  return { ...registeredPlayer, status, playNext, playPrev };
+  return { ...registeredPlayer, status, playNext, playPrev, track };
 };
