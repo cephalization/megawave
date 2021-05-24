@@ -35,6 +35,7 @@ export const playerSlice = createSlice({
   initialState,
   reducers: {
     setSeekTime(state, { payload }) {
+      // this action is blacklisted redux devtools and will not appear there
       state.seekTime = payload;
     },
     setDuration(state, { payload }) {

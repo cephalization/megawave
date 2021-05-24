@@ -1,6 +1,6 @@
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
 
-import { librarySlice, playerSlice } from './slices';
+import { librarySlice, playerActions, playerSlice } from './slices';
 
 const store = configureStore({
   reducer: {
@@ -8,6 +8,9 @@ const store = configureStore({
     player: playerSlice.reducer,
   },
   middleware: [...getDefaultMiddleware({ immutableCheck: false })],
+  devTools: {
+    actionsBlacklist: [playerActions.setSeekTime.toString()],
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
