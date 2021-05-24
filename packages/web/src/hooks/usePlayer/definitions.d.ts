@@ -13,6 +13,7 @@ type RegisteredPlayer = {
   pause: () => void;
   scrub: (arg0: React.MouseEvent) => void;
 
+  duration: number;
   durationPercentage: number;
   seekTime: number;
   track?: Track | null;

@@ -28,8 +28,8 @@ export const usePlayer = (
 
   // Create internal handlers into redux
   const _play = useCallback<_Player['_play']>(
-    (trackId) => {
-      dispatch(playerActions.play(trackId));
+    (...args) => {
+      dispatch(playerActions.play(...args));
     },
     [dispatch],
   );
@@ -42,14 +42,14 @@ export const usePlayer = (
   // create external handlers into redux
   const playNext = useCallback<_Player['playNext']>(() => {
     if (nextTrackId) {
-      dispatch(playerActions.play(nextTrackId));
+      dispatch(playerActions.play({ trackId: nextTrackId }));
     } else {
       dispatch(playerActions.stop());
     }
   }, [dispatch, nextTrackId]);
   const playPrev = useCallback<_Player['playPrev']>(() => {
     if (prevTrackId) {
-      dispatch(playerActions.play(prevTrackId));
+      dispatch(playerActions.play({ trackId: prevTrackId }));
     } else {
       dispatch(playerActions.stop());
     }

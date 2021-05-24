@@ -39,6 +39,7 @@ export function Controls() {
     playNext: handleNext,
     playPrev: handlePrev,
     seekTime: currentTime,
+    duration,
     durationPercentage,
   } = usePlayer(audioRef, progressBarRef);
   const playing = status === PLAYER_STATUS.PLAYING;
@@ -70,9 +71,7 @@ export function Controls() {
             onScrub={handleScrub}
             percentage={durationPercentage}
           />
-          <div className="text-sm ml-1">
-            {formatTime(audioRef?.current?.duration ?? 0)}
-          </div>
+          <div className="text-sm ml-1">{formatTime(duration)}</div>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import {
   createAsyncThunk,
+  createDraftSafeSelector,
   createEntityAdapter,
   createSelector,
   createSlice,
@@ -40,6 +41,25 @@ const initialState = libraryAdapter.getInitialState<LibraryState>({
   queue: [],
 });
 
+function filterTracksByValue(
+  filter: LibraryState['filter'],
+  tracks: Track[],
+  trackIDs: EntityId[],
+) {
+  if (filter === '') return trackIDs;
+
+  return tracks
+    .filter((t) =>
+      (['name', 'artist', 'album'] as (keyof Track)[]).some((p) =>
+        stringSanitizer(
+          // @ts-expect-error
+          Array.isArray(t[p]) ? getArrayString(t?.[p]) : t[p],
+        ).includes(stringSanitizer(filter)),
+      ),
+    )
+    .map((t) => t.id);
+}
+
 export const librarySlice = createSlice({
   name: 'library',
   initialState,
@@ -66,14 +86,20 @@ export const librarySlice = createSlice({
     });
     // player reducers
     builder.addCase(playerActions.play, (state, { payload }) => {
+      const { trackId, requeue } = payload;
+
       // if there does not already exist a queue of tracks, create one
-      if (!state.queue.length) {
-        state.queue = libraryAdapter.getSelectors().selectIds(state);
+      if (!state.queue.length || requeue) {
+        state.queue = filterTracksByValue(
+          state.filter,
+          libraryAdapter.getSelectors().selectAll(state),
+          libraryAdapter.getSelectors().selectIds(state),
+        );
       }
 
-      if (payload !== null && payload !== undefined) {
+      if (trackId != null) {
         // if a track was provided, seek its position in the queue
-        state.activeTrackIndex = state.queue.findIndex((id) => id === payload);
+        state.activeTrackIndex = state.queue.findIndex((id) => id === trackId);
       } else {
         // if a track was not provided, just start from the top of the queue
         state.activeTrackIndex = 0;
@@ -100,24 +126,11 @@ const selectLibraryQueue = (state: RootState) => state.library.queue;
 const selectLibraryActiveTrackIndex = (state: RootState) =>
   state.library.activeTrackIndex;
 
-const selectFilteredTrackIds = createSelector(
+const selectFilteredTrackIds = createDraftSafeSelector(
   selectLibraryFilter,
   selectAllTracks,
   selectTrackIds,
-  (filter, tracks, trackIDs) => {
-    if (filter === '') return trackIDs;
-
-    return tracks
-      .filter((t) =>
-        (['name', 'artist', 'album'] as (keyof Track)[]).some((p) =>
-          stringSanitizer(
-            // @ts-expect-error
-            Array.isArray(t[p]) ? getArrayString(t?.[p]) : t[p],
-          ).includes(stringSanitizer(filter)),
-        ),
-      )
-      .map((t) => t.id);
-  },
+  filterTracksByValue,
 );
 const selectLibraryActiveTrackId = createSelector(
   selectLibraryActiveTrackIndex,

@@ -103,7 +103,7 @@ export function Library() {
                     <LibraryRow
                       trackId={trackId}
                       style={style}
-                      onClickTrack={play}
+                      onClickTrack={() => play({ trackId, requeue: true })}
                       isActive={trackId === currentTrack?.id}
                     />
                   );

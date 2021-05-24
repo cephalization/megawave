@@ -19,7 +19,9 @@ export const useRegisteredAudioComponent = (
   );
   const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
   const seekTime = useAppSelector(playerSelectors.selectPlayerSeekTime);
+  const duration = useAppSelector(playerSelectors.selectPlayerDuration);
   const setSeekTime = bindActionCreators(playerActions.setSeekTime, dispatch);
+  const setDuration = bindActionCreators(playerActions.setDuration, dispatch);
 
   const durationPercentage =
     (seekTime / (audioRef?.current?.duration ?? 0)) * 100;
@@ -54,9 +56,10 @@ export const useRegisteredAudioComponent = (
     if (audioRef?.current !== null) {
       const audio = audioRef?.current;
 
-      if (audio.getAttribute('src') !== '' && audio.paused) {
+      _player._play({ trackId: activeTrackId });
+
+      if (audio.paused && activeTrackId != null) {
         audio.play();
-        _player._play(activeTrackId);
       }
     }
   };
@@ -73,7 +76,6 @@ export const useRegisteredAudioComponent = (
       };
 
       const handleCanPlay = async () => {
-        console.log('canplay');
         if (audioRef?.current !== null) {
           const audio = audioRef.current;
 
@@ -84,6 +86,12 @@ export const useRegisteredAudioComponent = (
       const handleTrackEnd = () => {
         if (audioRef?.current !== null) {
           _player.playNext();
+        }
+      };
+
+      const handleDurationChange = () => {
+        if (audioRef?.current !== null) {
+          setDuration(audioRef.current.duration);
         }
       };
 
@@ -109,16 +117,22 @@ export const useRegisteredAudioComponent = (
           'ended',
           handleTrackEnd,
         ];
+        const durationChangeEventArgs: [string, EventListener] = [
+          'durationchange',
+          handleDurationChange,
+        ];
         addEventToAudio(canplayEventArgs);
         addEventToAudio(timeupdateEventArgs);
         addEventToAudio(endedEventArgs);
-        audio.load();
-      } else if (audioRef?.current !== null && !track?.link) {
-        const audio = audioRef.current;
-
-        audio.setAttribute('src', '');
+        addEventToAudio(durationChangeEventArgs);
         audio.load();
       }
+    } else if (audioRef?.current != null) {
+      console.log('no track');
+      const audio = audioRef.current;
+
+      audio.setAttribute('src', '');
+      audio.load();
     }
   }, [track]);
 
@@ -126,6 +140,7 @@ export const useRegisteredAudioComponent = (
     play: handlePlay,
     pause: handlePause,
     scrub: handleScrub,
+    duration,
     durationPercentage,
     seekTime,
   };

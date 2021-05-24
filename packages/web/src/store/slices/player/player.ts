@@ -11,15 +11,19 @@ export const enum PLAYER_STATUS {
 type PlayerState = {
   status: PLAYER_STATUS;
   seekTime: number;
+  duration: number;
 };
 
 const initialState: PlayerState = {
   status: PLAYER_STATUS.STOPPED,
   seekTime: 0,
+  duration: 0,
 };
 
 const sharedPlayerActions = {
-  play: createAction<EntityId | null | undefined>('player/play'),
+  play: createAction<{ trackId?: EntityId | null; requeue?: boolean }>(
+    'player/play',
+  ),
   nextTrack: createAction('player/nextTrack'),
   prevTrack: createAction('player/prevTrack'),
   pause: createAction('player/pause'),
@@ -33,6 +37,9 @@ export const playerSlice = createSlice({
     setSeekTime(state, { payload }) {
       state.seekTime = payload;
     },
+    setDuration(state, { payload }) {
+      state.duration = payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -44,6 +51,8 @@ export const playerSlice = createSlice({
       })
       .addCase(sharedPlayerActions.stop, (state) => {
         state.status = PLAYER_STATUS.STOPPED;
+        state.seekTime = 0;
+        state.duration = 0;
       });
   },
 });
@@ -56,8 +65,10 @@ export const playerActions = {
 
 const selectPlayerStatus = (state: RootState) => state.player.status;
 const selectPlayerSeekTime = (state: RootState) => state.player.seekTime;
+const selectPlayerDuration = (state: RootState) => state.player.duration;
 
 export const playerSelectors = {
   selectPlayerStatus,
   selectPlayerSeekTime,
+  selectPlayerDuration,
 };
