@@ -1,21 +1,23 @@
 import os
 from pathlib import Path
-from typing import List, Dict, Union
+from typing import List, Dict, Tuple, Union
 from megawave.id import getId
 import mutagen
 from mutagen.easyid3 import EasyID3
+from mutagen.mp3 import MP3
+from mutagen.wave import WAVE
 
 from megawave.config import fileDirectory
 
 VALID_AUDIO_EXTENSIONS = ["wav", "mp3"]
 
 
-def hasAudioFileExtension(fileName: str) -> bool:
-    for ext in VALID_AUDIO_EXTENSIONS:
-        if fileName.endswith(ext):
-            return True
+def hasAudioFileExtension(fileName: str) -> Union[Tuple[bool, str], bool]:
+    fileExt = fileName.split(".")[-1]
+    if fileExt in VALID_AUDIO_EXTENSIONS:
+        return True, fileExt
 
-    return False
+    return False, None
 
 
 class AudioFile:
@@ -25,17 +27,25 @@ class AudioFile:
     Contains information about a discovered audio file.
     """
 
-    def __init__(self, rootDir: str, fileName: str):
+    def __init__(self, rootDir: str, fileName: str, fileType: str):
         self.ok = True
         self.rootDir: str = rootDir
         self.fileName: str = fileName
         self.filePath: str = os.path.join(rootDir, fileName)
         self.fileDir: str = os.path.abspath(rootDir)
+        self.fileType: str = fileType
         self.id: str = getId()
         self.meta = None
+        self.info = None
 
         try:
+            if self.fileType == "mp3":
+                self.info = MP3(self.filePath).info
+            elif self.fileType == "wav":
+                self.info = WAVE(self.filePath).info
+
             self.meta = EasyID3(self.filePath)
+
             if self.meta is None:
                 raise ValueError
         except mutagen.MutagenError:
@@ -54,9 +64,11 @@ class AudioFile:
             "name": self.meta.get("title", [self.fileName])[0],
             "album": self.meta.get("album", None),
             "artist": self.meta.get("artist", None),
+            "length": self.info.length,
             "id": self.id,
             "link": f"/api/songs/{self.id}",
             "meta": self.meta.pprint(),
+            "fileType": self.fileType,
         }
 
 
@@ -114,8 +126,9 @@ skipped = 0
 try:
     for root, _, files in os.walk(Path(fileDirectory).absolute()):
         for name in files:
-            if hasAudioFileExtension(name):
-                audio = AudioFile(root, name)
+            hasExt, ext = hasAudioFileExtension(name)
+            if hasExt:
+                audio = AudioFile(root, name, ext)
                 # if mutagen cannot parse the audio file within the AudioFile
                 # constructor we do not add the file to the library
                 if audio.ok:
