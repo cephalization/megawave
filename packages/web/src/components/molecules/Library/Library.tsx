@@ -68,7 +68,7 @@ export function Library() {
   return (
     <>
       {currentTrack && (
-        <Helmet>
+        <Helmet defer={false}>
           <title>
             {currentTrack.name}
             {getArrayString(currentTrack.artist)
