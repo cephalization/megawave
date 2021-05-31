@@ -4,6 +4,7 @@ import React from 'react';
 
 import { useAppSelector } from '~/hooks';
 import { librarySelectors } from '~/store/slices/library';
+import { formatTime } from '~/utils/formatTime';
 import { getArrayString } from '~/utils/trackMeta';
 
 import { LIST_PADDING } from '../Library';
@@ -93,7 +94,9 @@ export function LibraryRow({
           className="flex-1 sm:flex hidden min-w-0 justify-end"
           style={{ flexGrow: sectionWidthRatio.duration }}
         >
-          <h2 className={clsx(styles.headerItem)}>0:00</h2>
+          <h2 className={clsx(styles.headerItem)}>
+            {formatTime(parseInt(track.length, 10))}
+          </h2>
         </div>
       </div>
     </div>
