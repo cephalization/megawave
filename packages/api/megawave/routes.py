@@ -1,7 +1,5 @@
-from megawave import app
+from megawave import app, files
 from flask import send_from_directory
-
-from . import files
 
 
 @app.route("/songs")
