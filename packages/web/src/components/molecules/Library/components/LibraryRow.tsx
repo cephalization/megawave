@@ -94,7 +94,7 @@ export function LibraryRow({
           className="flex-1 sm:flex hidden min-w-0 justify-end"
           style={{ flexGrow: sectionWidthRatio.duration }}
         >
-          <h2 className={clsx(styles.headerItem)}>
+          <h2 className={clsx(styles.headerItem, 'tabular-nums')}>
             {formatTime(parseInt(track.length, 10))}
           </h2>
         </div>

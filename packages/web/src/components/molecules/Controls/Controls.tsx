@@ -49,13 +49,17 @@ export function Controls() {
         </div>
 
         <div className="flex w-full items-center px-12">
-          <div className="text-sm mr-1">{formatTime(currentTime)}</div>
+          <div className="text-sm mr-1 tabular-nums">
+            {formatTime(currentTime)}
+          </div>
           <ProgressBar
             ref={progressBarRef}
             onScrub={handleScrub}
             percentage={durationPercentage}
           />
-          <div className="text-sm ml-1">{formatTime(duration)}</div>
+          <div className="text-sm ml-1 tabular-nums">
+            {formatTime(duration)}
+          </div>
         </div>
       </div>
     </div>
