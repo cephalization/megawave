@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-from uuid import uuid4
 from typing import List, Dict, Union
+from megawave.id import getId
 import mutagen
 from mutagen.easyid3 import EasyID3
 
@@ -31,7 +31,7 @@ class AudioFile:
         self.fileName: str = fileName
         self.filePath: str = os.path.join(rootDir, fileName)
         self.fileDir: str = os.path.abspath(rootDir)
-        self.id: str = str(uuid4())
+        self.id: str = getId()
         self.meta = None
 
         try:
