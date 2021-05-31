@@ -4,7 +4,7 @@ from megawave.audio import AudioFile, AudioLibrary, hasAudioFileExtension
 
 from megawave.config import fileDirectory
 
-# Read all files from directory specified in config
+# Initialize a new audio library to store tracks in
 audioLibrary = AudioLibrary()
 
 # https://realpython.com/working-with-files-in-python/
@@ -12,6 +12,7 @@ print(f'- - - Loading music library at "{fileDirectory}" - - - ')
 added = 0
 skipped = 0
 try:
+    # Read all files from directory specified in config
     for root, _, files in os.walk(Path(fileDirectory).absolute()):
         for name in files:
             hasExt, ext = hasAudioFileExtension(name)
@@ -21,7 +22,6 @@ try:
                 # constructor we do not add the file to the library
                 if audio.ok:
                     audioLibrary.append(audio)
-                    # print(f'* "{name}"')
                     added += 1
                 else:
                     print(f'*SKIPPED* "{name}"')
