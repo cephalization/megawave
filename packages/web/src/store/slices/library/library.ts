@@ -24,12 +24,13 @@ export const fetchLibrary = createAsyncThunk('/library/fetchAll', async () => {
 
 const libraryAdapter = createEntityAdapter<Track>();
 
-type LibraryState = {
+export type LibraryState = {
   loading: boolean;
   error: SerializedError | null;
   filter: string;
   activeTrackIndex: number | null;
   queue: EntityId[];
+  history: EntityId[];
 };
 
 const initialState = libraryAdapter.getInitialState<LibraryState>({
@@ -39,6 +40,8 @@ const initialState = libraryAdapter.getInitialState<LibraryState>({
   // queue
   activeTrackIndex: null,
   queue: [],
+  // history
+  history: [],
 });
 
 function filterTracksByValue(
@@ -103,6 +106,12 @@ export const librarySlice = createSlice({
       } else {
         // if a track was not provided, just start from the top of the queue
         state.activeTrackIndex = 0;
+      }
+
+      // add the track to the history if it is not the active track
+      const activeTrackId = state.queue[state.activeTrackIndex];
+      if (state.history[state.history.length - 1] !== activeTrackId) {
+        state.history.push(activeTrackId);
       }
     });
     builder.addCase(playerActions.stop, (state) => {
