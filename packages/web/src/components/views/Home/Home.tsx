@@ -22,7 +22,7 @@ export function Home() {
         {/* Main column */}
         <div className="flex flex-col w-0 flex-1 overflow-hidden">
           {/* Search header */}
-          <div className="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-gray-200">
+          <div className="relative z-8 flex-shrink-0 flex h-16 bg-white border-b border-gray-200">
             {/* Sidebar toggle, controls the 'sidebarOpen' sidebar state. */}
             <button
               onClick={toggleNavOpen}
