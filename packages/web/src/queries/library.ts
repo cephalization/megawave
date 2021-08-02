@@ -11,7 +11,7 @@ export type getLibraryResponse = {
 };
 
 export async function fetchAll() {
-  const res = await axios.get<getLibraryResponse>(library());
+  const res = await axios.get<getLibraryResponse>(`${library()}?sort=artist`);
 
   const tracks = res.data.data.songs;
 
