@@ -1,15 +1,18 @@
 import os
 from typing import Optional, Union
+
 from fastapi import APIRouter, Request
+from starlette.responses import StreamingResponse
 
 from megawave import files
 from megawave.audio import AudioFile, AudioFile_Serialized
-from starlette.responses import FileResponse, StreamingResponse
 
 BYTES_PER_RESPONSE = 325160
 
 # https://github.com/tiangolo/fastapi/issues/1240
 # todo: move this
+
+
 def chunk_generator_from_stream(stream, chunk_size, start, size):
     bytes_read = 0
 
@@ -51,7 +54,7 @@ router = APIRouter()
 @router.get("/songs")
 def songs(sort: Optional[str] = None):
     songs = files.audioLibrary.serialize()
-    if sort != None:
+    if sort is not None:
         assert isinstance(sort, str)
         reverse = sort.startswith("-")
         sortKey = sort.replace("-", "")
@@ -91,7 +94,9 @@ def song(id: str, req: Request):
             chunk_generator,
             headers={
                 "Accept-Ranges": "bytes",
-                "Content-Range": f"bytes {start_byte_requested}-{end_byte_planned}/{total_size}",
+                "Content-Range": (
+                    f"bytes {start_byte_requested}-" f"{end_byte_planned}/{total_size}"
+                ),
                 "Content-Type": get_media_type(song.serialize()),
             },
             status_code=206,

@@ -1,13 +1,13 @@
 import os
 from typing import Dict, List, Tuple, Union
-from typing_extensions import TypedDict
+
 from mutagen import MutagenError
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
 from mutagen.wave import WAVE
+from typing_extensions import TypedDict
 
 from megawave.id import getId
-
 
 VALID_AUDIO_EXTENSIONS = ["wav", "mp3"]
 

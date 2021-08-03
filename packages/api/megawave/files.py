@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-from megawave.audio import AudioFile, AudioLibrary, hasAudioFileExtension
 
+from megawave.audio import AudioFile, AudioLibrary, hasAudioFileExtension
 from megawave.config import fileDirectory
 
 # Initialize a new audio library to store tracks in
