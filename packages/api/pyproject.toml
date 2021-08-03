@@ -7,9 +7,10 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-Flask = "^1.1.2"
-Flask-Cors = "^3.0.9"
 mutagen = "^1.45.1"
+fastapi = "^0.68.0"
+uvicorn = "^0.14.0"
+aiofiles = "^0.7.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
