@@ -51,11 +51,10 @@ def songs(sort: Optional[str] = None):
 @router.get("/songs/{id}")
 def song(id: str, req: Request):
     song = files.audioLibrary.getById(id)
+    requested_byte_range = req.headers.get("Range") or None
 
     # todo: move this streaming logic
-    if song is not None:
-        requested_byte_range = req.headers.get("Range")
-
+    if song is not None and requested_byte_range is not None:
         chunk_generator, content_range_header = get_file_chunk_generator(
             song.filePath, requested_byte_range
         )
