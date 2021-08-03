@@ -1,4 +1,3 @@
-import os
 from typing import Optional, Union
 
 from fastapi import APIRouter, Request
@@ -6,24 +5,7 @@ from starlette.responses import StreamingResponse
 
 from megawave import files
 from megawave.audio import AudioFile, AudioFile_Serialized
-
-BYTES_PER_RESPONSE = 325160
-
-# https://github.com/tiangolo/fastapi/issues/1240
-# todo: move this
-
-
-def chunk_generator_from_stream(stream, chunk_size, start, size):
-    bytes_read = 0
-
-    stream.seek(start)
-
-    while bytes_read < size:
-        bytes_to_read = min(chunk_size, size - bytes_read)
-        yield stream.read(bytes_to_read)
-        bytes_read = bytes_read + bytes_to_read
-
-    stream.close()
+from megawave.streaming_audio import get_file_chunk_generator
 
 
 def get_audio_file_sort_value(
@@ -72,31 +54,17 @@ def song(id: str, req: Request):
 
     # todo: move this streaming logic
     if song is not None:
-        asked = req.headers.get("Range")
+        requested_byte_range = req.headers.get("Range")
 
-        # todo: optimize this, songs take too long to start streaming
-        stream = open(song.filePath, mode="rb")
-        total_size = os.path.getsize(song.filePath)
-
-        start_byte_requested = int(asked.split("=")[-1][:-1])
-        end_byte_planned = (
-            min(start_byte_requested + BYTES_PER_RESPONSE, total_size) - 1
-        )
-
-        chunk_generator = chunk_generator_from_stream(
-            stream,
-            chunk_size=50000,
-            start=start_byte_requested,
-            size=BYTES_PER_RESPONSE,
+        chunk_generator, content_range_header = get_file_chunk_generator(
+            song.filePath, requested_byte_range
         )
 
         return StreamingResponse(
             chunk_generator,
             headers={
                 "Accept-Ranges": "bytes",
-                "Content-Range": (
-                    f"bytes {start_byte_requested}-" f"{end_byte_planned}/{total_size}"
-                ),
+                "Content-Range": content_range_header,
                 "Content-Type": get_media_type(song.serialize()),
             },
             status_code=206,
