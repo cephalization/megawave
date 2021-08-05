@@ -7,27 +7,27 @@ import { librarySelectors } from '~/store/slices/library';
 import { formatTime } from '~/utils/formatTime';
 import { getArrayString } from '~/utils/trackMeta';
 
-import { LIST_PADDING } from '../Library';
-import { sectionWidthRatio, styles as headerStyles } from './LibraryHeader';
+import { LIST_PADDING } from '../TrackList';
+import { sectionWidthRatio, styles as headerStyles } from './TrackListHeader';
 
 const styles = {
   headerItem:
     'text-sm leading-6 text-gray-700 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden pr-2',
 } as const;
 
-type LibraryRowProps = {
+type TrackListRowProps = {
   trackId: EntityId;
   style: React.CSSProperties;
   isActive?: boolean;
   onClickTrack: (arg0: EntityId) => void;
 };
 
-export function LibraryRow({
+export function TrackListRow({
   trackId,
   style,
   isActive,
   onClickTrack,
-}: LibraryRowProps) {
+}: TrackListRowProps) {
   const track = useAppSelector((s) =>
     librarySelectors.selectTrackById(s, trackId),
   );

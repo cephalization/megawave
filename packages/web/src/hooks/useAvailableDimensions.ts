@@ -1,6 +1,14 @@
 import throttle from 'lodash.throttle';
 import { useCallback, useEffect, useState } from 'react';
 
+// this function assumes parent has full width children
+function getAvailableWidth(parentId: string) {
+  const parent = document.getElementById(parentId);
+
+  return parent?.clientWidth || 0;
+}
+
+// this function assumes siblings are stacked in a column within the parent
 function getAvailableHeight(
   parentId: string,
   referenceToSelf: HTMLElement | null,
@@ -24,9 +32,10 @@ function getAvailableHeight(
   return 0;
 }
 
-export function useDynamicHeight(parentId: string) {
+export function useAvailableDimensions(parentId: string) {
   const [ref, setRef] = useState<HTMLElement | null>(null);
   const [height, setHeight] = useState(0);
+  const [width, setWidth] = useState(0);
 
   const refToMeasure = useCallback(
     (node) => {
@@ -38,6 +47,8 @@ export function useDynamicHeight(parentId: string) {
   useEffect(() => {
     function resizeOnChange() {
       const newHeight = getAvailableHeight(parentId, ref);
+      const newWidth = getAvailableWidth(parentId);
+      setWidth(newWidth);
       if (ref?.style?.height != null) {
         setHeight(newHeight);
       }
@@ -55,5 +66,5 @@ export function useDynamicHeight(parentId: string) {
     };
   }, [setHeight, ref, parentId]);
 
-  return { refToMeasure, height };
+  return { refToMeasure, height, width };
 }

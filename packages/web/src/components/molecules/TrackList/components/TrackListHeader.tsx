@@ -13,7 +13,7 @@ export const sectionWidthRatio = {
   duration: 1,
 } as const;
 
-export function LibraryHeader() {
+export function TrackListHeader() {
   return (
     <div
       className={clsx(
