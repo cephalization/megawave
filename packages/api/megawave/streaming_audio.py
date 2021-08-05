@@ -2,28 +2,35 @@ import os
 from typing import Tuple
 
 MAX_BYTES_PER_RESPONSE = 100000
+MAX_CHUNK_SIZE = 50000
 
 # techniques implemented based on:
 # https://github.com/tiangolo/fastapi/issues/1240
 
 
-def chunk_generator_from_stream(filepath, chunk_size, start, size):
+def chunk_generator_from_stream(filepath, start, size):
     with open(filepath, mode="rb") as stream:
         bytes_read = 0
 
         stream.seek(start)
 
         while bytes_read < size:
-            bytes_to_read = min(chunk_size, size - bytes_read)
+            bytes_to_read = min(MAX_CHUNK_SIZE, size - bytes_read)
             yield stream.read(bytes_to_read)
             bytes_read = bytes_read + bytes_to_read
 
 
-def get_byte_range_bounds(byte_range_str: str) -> Tuple[int, int]:
+def get_byte_range_bounds(byte_range_str: str, total_size: int) -> Tuple[int, int]:
     """Return the start and end byte of a byte range string."""
     byte_range_str = byte_range_str.replace("bytes=", "")
-    start_byte = int(byte_range_str.split("-")[0])
-    end_byte = int(byte_range_str.split("-")[-1])
+    segments = byte_range_str.split("-")
+    start_byte = int(segments[0])
+    # chrome does not send end_byte but safari does
+    # we need to handle this case and generate an end_byte if not provided
+    end_byte = min(
+        int(segments[-1]) if segments[-1] else start_byte + MAX_CHUNK_SIZE,
+        total_size,
+    )
 
     return start_byte, end_byte
 
@@ -33,7 +40,9 @@ def get_file_chunk_generator(filepath: str, byte_range: str):
     byte_range should be of the form 'bytes=0-10'
     """
     total_size = os.path.getsize(filepath)
-    start_byte_requested, end_byte_requested = get_byte_range_bounds(byte_range)
+    start_byte_requested, end_byte_requested = get_byte_range_bounds(
+        byte_range, total_size
+    )
 
     # generate appropriate byte range; we don't want to send more than requested or more than our server max
     end_byte_planned = min(
@@ -43,7 +52,6 @@ def get_file_chunk_generator(filepath: str, byte_range: str):
 
     chunk_generator = chunk_generator_from_stream(
         filepath,
-        chunk_size=50000,
         start=start_byte_requested,
         size=end_byte_planned,
     )
