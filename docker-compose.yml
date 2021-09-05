@@ -1,0 +1,15 @@
+version: "3.4"
+
+services:
+  api:
+    build:
+      context: ./packages/api
+    volumes:
+      - ${MUSIC_LIBRARY_PATH}:/musiclibrary
+    ports:
+      - "5000:5000"
+  web:
+    build:
+      context: ./packages/web
+    ports:
+      - "80:80"

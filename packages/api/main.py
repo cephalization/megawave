@@ -1,9 +1,9 @@
-from megawave.files import initialize_library
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from megawave import library_router
+from megawave.files import initialize_library
 
 app = FastAPI()
 
