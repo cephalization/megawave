@@ -11,7 +11,9 @@ export type getLibraryResponse = {
 };
 
 export async function fetchAll() {
-  const res = await axios.get<getLibraryResponse>(`${library()}?sort=artist`);
+  const res = await axios.get<getLibraryResponse>(`${library()}?sort=artist`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 
   const tracks = res.data.data.songs;
 
