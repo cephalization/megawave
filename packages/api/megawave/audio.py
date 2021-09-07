@@ -80,7 +80,7 @@ class AudioFile:
             "artist": self.meta.get("artist", None),
             "length": self.info.length if self.info is not None else None,
             "id": self.id,
-            "link": f"/api/songs/{self.id}",
+            "link": f"/api/library/songs/{self.id}",
             "meta": self.meta.pprint(),
             "fileType": self.fileType,
         }
