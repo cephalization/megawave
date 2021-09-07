@@ -1,4 +1,4 @@
-version: "3.4"
+version: "3.9"
 
 services:
   api:
@@ -6,10 +6,20 @@ services:
       context: ./packages/api
     volumes:
       - ${MUSIC_LIBRARY_PATH}:/musiclibrary
-    ports:
-      - "5000:5000"
+    networks:
+      - api
   web:
     build:
       context: ./packages/web
     ports:
       - "80:80"
+    networks:
+      - web
+      - api
+    depends_on:
+      - api
+    restart: "on-failure"
+
+networks:
+  web:
+  api:
