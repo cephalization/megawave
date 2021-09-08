@@ -8,6 +8,8 @@ services:
       - ${MUSIC_LIBRARY_PATH}:/musiclibrary
     networks:
       - api
+    environment:
+      - MUSIC_LIBRARY_PATH=/musiclibrary
   web:
     build:
       context: ./packages/web
