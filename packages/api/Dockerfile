@@ -28,7 +28,6 @@ FROM base as final
 RUN apk add --no-cache libffi libpq
 COPY --from=builder /venv /venv
 COPY --from=builder /app/main.py .
-COPY --from=builder /app/config.ini .
 COPY docker-entrypoint.sh ./
 CMD ["./docker-entrypoint.sh"] 
 

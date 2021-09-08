@@ -1,8 +1,7 @@
-import configparser
+import os
 
-# Parse config
-config = configparser.ConfigParser()
-config.read("./config.ini")
+# Parse env
+fileDirectory = os.getenv("MUSIC_LIBRARY_PATH")
 
-# files
-fileDirectory = config["server"]["audioDirectory"]
+if fileDirectory is None:
+    raise TypeError("Environment variable: MUSIC_LIBRARY_PATH missing from .env")
