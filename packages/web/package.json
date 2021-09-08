@@ -17,7 +17,6 @@
     "clsx": "^1.1.1",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
-    "postcss": "^8.3.6",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-helmet": "^6.1.0",
@@ -26,7 +25,7 @@
     "react-router-dom": "^5.2.0",
     "react-virtualized-auto-sizer": "^1.0.5",
     "react-window": "^1.8.6",
-    "tailwindcss": "^2.2.7"
+    "tailwindcss": "^2.2.14"
   },
   "devDependencies": {
     "@snowpack/plugin-dotenv": "^2.1.0",
@@ -56,6 +55,7 @@
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "http2-proxy": "^5.0.53",
+    "postcss": "^8.3.6",
     "postcss-cli": "^8.3.1",
     "prettier": "^2.0.5",
     "snowpack": "^3.8.3",
