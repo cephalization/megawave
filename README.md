@@ -2,6 +2,12 @@
 
 ## Development
 
+- (optional) Copy default vscode workspace setup for proper autocomplete and linting in python and javascript
+
+  - `cp .vscode.default .vscode`
+
+  - Install recommended extensions when prompted by vscode
+
 - Install api [requirements](./packages/api/README.md#requirements)
 
 - Install frontend [requirements](./packages/web/README.md#requirements)
