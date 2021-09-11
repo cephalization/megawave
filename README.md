@@ -2,6 +2,12 @@
 
 ## Development
 
+Development is tested and supported on Linux, Mac OS, and WSL 2
+
+The only barrier supporting native windows development is .env parsing and management.
+
+Follow these steps to get a development environment setup (approximately 5-10 minutes).
+
 - (optional) Copy default vscode workspace setup for proper autocomplete and linting in python and javascript
 
   - `cp .vscode.default .vscode`
@@ -31,6 +37,8 @@
     - Re-run command if dependencies change
 
 ## Deployment
+
+Megawave is still not completely production ready but it can run in a production-like environment pretty quickly with Docker.
 
 - Install Docker
 
