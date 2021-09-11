@@ -1,6 +1,12 @@
 # ~~ MEGAWAVE Client ~~
 
-> ✨ Bootstrapped with Create Snowpack App (CSA).
+Built with:
+
+- React
+
+- Tailwind CSS + UI
+
+- Vite
 
 ## Requirements
 
@@ -8,22 +14,12 @@
 
 ## Available Scripts
 
-### npm start
+- `npm run start` standup a development server that proxies to the API
 
-Runs the app in the development mode.
-Open http://localhost:8080 to view it in the browser.
+- `npm run build` bundle a production version of the web client
 
-The page will reload if you make edits.
-You will also see any lint errors in the console.
+- `npm run format` format code using eslint/prettier
 
-### npm run build
+- `npm run lint` lint code using eslint/prettier
 
-Builds a static copy of your site to the `build/` folder.
-Your app is ready to be deployed!
-
-**For the best production performance:** Add a build bundler plugin like "@snowpack/plugin-webpack" to your `snowpack.config.js` config file.
-
-### npm test
-
-Launches the application test runner.
-Run with the `--watch` flag (`npm test -- --watch`) to run in interactive watch mode.
+- `npm run check` typecheck code using typescript
