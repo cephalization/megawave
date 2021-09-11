@@ -6,7 +6,11 @@
 
 - Install frontend [requirements](./packages/web/README.md#requirements)
 
-- Run `start-dev.sh` or `start-dev.bat` (windows)
+- `cp .env.example .env`
+
+- Configure music library path in `.env`
+
+- Run `start-dev.sh`
 
 - (optional) Run each app separately
 
@@ -19,3 +23,15 @@
     - The dev server will automatically reload to reflect code changes
 
     - Re-run command if dependencies change
+
+## Deployment
+
+- Install Docker
+
+- `cp .env.example .env`
+
+- Configure music library path in `.env`
+
+- `docker-compose up`
+
+- Go to [localhost](http://localhost)
