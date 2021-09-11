@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "freakypie.code-python-isort",
+    "naumovs.color-highlight",
+    "dbaeumer.vscode-eslint",
+    "wix.vscode-import-cost",
+    "ms-python.python",
+    "bradlc.vscode-tailwindcss"
+  ]
+}

@@ -1,2 +1,2 @@
-export const library = () => '/api/songs';
-export const track = (id: string) => `/api/songs/${id}`;
+export const library = () => '/api/library/songs';
+export const track = (id: string) => `/api/library/songs/${id}`;

@@ -2,11 +2,21 @@
 
 ## Development
 
+- (optional) Copy default vscode workspace setup for proper autocomplete and linting in python and javascript
+
+  - `cp .vscode.default .vscode`
+
+  - Install recommended extensions when prompted by vscode
+
 - Install api [requirements](./packages/api/README.md#requirements)
 
 - Install frontend [requirements](./packages/web/README.md#requirements)
 
-- Run `start-dev.sh` or `start-dev.bat` (windows)
+- `cp .env.example .env`
+
+- Configure music library path in `.env`
+
+- Run `start-dev.sh`
 
 - (optional) Run each app separately
 
@@ -19,3 +29,15 @@
     - The dev server will automatically reload to reflect code changes
 
     - Re-run command if dependencies change
+
+## Deployment
+
+- Install Docker
+
+- `cp .env.example .env`
+
+- Configure music library path in `.env`
+
+- `docker-compose up`
+
+- Go to [localhost](http://localhost)

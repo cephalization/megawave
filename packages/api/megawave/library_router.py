@@ -30,7 +30,7 @@ def get_media_type(audio: AudioFile_Serialized) -> str:
     return ""
 
 
-router = APIRouter()
+router = APIRouter(prefix="/library")
 
 
 @router.get("/songs")

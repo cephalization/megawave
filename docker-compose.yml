@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ./packages/api
+    volumes:
+      - ${MUSIC_LIBRARY_PATH}:/musiclibrary
+    networks:
+      - api
+    environment:
+      - MUSIC_LIBRARY_PATH=/musiclibrary
+  web:
+    build:
+      context: ./packages/web
+    ports:
+      - "80:80"
+    networks:
+      - web
+      - api
+    depends_on:
+      - api
+    restart: "on-failure"
+
+networks:
+  web:
+  api:

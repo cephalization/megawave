@@ -1,0 +1,26 @@
+{
+  "python.formatting.provider": "black",
+  "python.linting.flake8Enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.enabled": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/packages/api"
+  ],
+  "python.defaultInterpreterPath": "${workspaceFolder}/packages/api/.venv",
+  "python.autoComplete.extraPaths": [
+  "${workspaceFolder}/packages/api"
+  ],
+  "python.envFile": "${workspaceFolder}/packages/api/.env",
+  "python.linting.flake8Args": [
+    "--config=${workspaceFolder}/packages/api/setup.cfg"
+  ],
+  "python.sortImports.args": [
+    "--settings-file=${workspaceFolder}/packages/api/setup.cfg"
+  ],
+  "[python]": {
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    }
+},
+"editor.formatOnSave": true
+}

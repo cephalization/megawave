@@ -14,7 +14,7 @@
 
 - run `poetry install` to install all python project deps
 
-- run `poetry run python main.py` to start api server on http://localhost:5000
+- run `start.sh` to start api server on http://localhost:5000
 
   - See [the docs](https://python-poetry.org/docs/basic-usage/#using-poetry-run) for more details
 
@@ -46,12 +46,10 @@
 
 ## Libraries (for now)
 
-- pyscopg2
+- mutagen
 
-  - postgresql adapter
+  - parse music files and their metadata
 
-## Troubleshooting
+- fastAPI
 
-- I need to commit but pre-commit hooks are not working
-
-  - Add the `--no-verify` flag to your git commit command to bypass pre-commit checks temporarily
+  - super fast and simple API library

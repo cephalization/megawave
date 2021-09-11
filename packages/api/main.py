@@ -1,16 +1,14 @@
-from megawave.files import initialize_library
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.routing import APIRouter
 
-from megawave import library_router
+from megawave import health_router, library_router
+from megawave.files import initialize_library
 
 app = FastAPI()
 
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-]
+origins = ["http://localhost", "http://localhost:8080", "http://web"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,7 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(library_router.router)
+router = APIRouter(prefix="/api")
+router.include_router(health_router.router)
+router.include_router(library_router.router)
+app.include_router(router)
 
 app.on_event("startup")(initialize_library)
 
