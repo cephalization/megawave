@@ -1,5 +1,7 @@
 import React from 'react';
 
+import logo from '~/assets/logo.svg';
+
 import { MobileNav } from './MobileNav';
 
 export type NavProps = {
@@ -15,11 +17,7 @@ export function Nav({ open = false, toggleNav }: NavProps) {
       <div className="hidden lg:flex lg:flex-shrink-0" id="side-nav">
         <div className="flex flex-col w-64 border-r border-gray-200 pt-5 pb-4 bg-gray-100">
           <div className="flex items-center flex-shrink-0 px-6">
-            <img
-              className="h-8 w-auto"
-              src="/src/assets/logo.svg"
-              alt="Megawave"
-            />
+            <img className="h-8 w-auto" src={logo} alt="Megawave" />
             <h2 className="text-xl pl-2 ">
               <b className="font-extrabold">Megawave</b>
             </h2>
