@@ -18,6 +18,8 @@
 
   - See [the docs](https://python-poetry.org/docs/basic-usage/#using-poetry-run) for more details
 
+  - If the server complains of an in use port and you are running Mac OS Monterey, follow [these instructions](https://developer.apple.com/forums/thread/682332)
+
 ## Environment
 
 [Built with this guide](https://sourcery.ai/blog/python-best-practices/)
