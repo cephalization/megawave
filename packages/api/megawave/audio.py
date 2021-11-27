@@ -1,9 +1,10 @@
 import os
 from typing import Dict, List, Tuple, Union
 
+import mutagen
 from mutagen import MutagenError
 from mutagen.easyid3 import EasyID3
-from mutagen.mp3 import MP3
+from mutagen.mp3 import MP3, HeaderNotFoundError
 from mutagen.wave import WAVE
 from typing_extensions import TypedDict
 
@@ -53,19 +54,52 @@ class AudioFile:
         self.info = None
 
         try:
+            # load file info
+            self.initialize_info()
+            # load file meta
+            self.initialize_meta()
+
+        except HeaderNotFoundError:
+            self.ok = False
+
+    def initialize_info(self):
+        self.ok = False
+        try:
             if self.fileType == "mp3":
                 self.info = MP3(self.filePath).info
             elif self.fileType == "wav":
                 self.info = WAVE(self.filePath).info
+            self.ok = True
 
-            self.meta = EasyID3(self.filePath)
-
-            if self.meta is None:
-                raise ValueError
         except MutagenError:
-            self.ok = False
+            song = mutagen.File(self.filePath, easy=True)
+            song.add_tags()
+            song.save(self.filePath, v1=2)
+            if self.fileType == "mp3":
+                self.info = MP3(self.filePath).info
+            elif self.fileType == "wav":
+                self.info = WAVE(self.filePath).info
+            self.ok = True
         except ValueError:
-            self.ok = False
+            pass
+
+    def initialize_meta(self):
+        try:
+            self.meta = EasyID3(self.filePath)
+        except MutagenError:
+
+            class meta:
+                def __init__(self):
+                    pass
+
+                def get(self, prop, default):
+                    return default
+
+                def pprint(self):
+                    return {}
+
+            self.meta = meta()
+            pass
 
     def serialize(self) -> Union[AudioFile_Serialized, None]:
         """Convert AudioFile into a representation that can be sent over the
