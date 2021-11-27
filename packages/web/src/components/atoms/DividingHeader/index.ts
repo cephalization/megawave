@@ -1,0 +1,1 @@
+export { DividingHeader } from './DividingHeader';

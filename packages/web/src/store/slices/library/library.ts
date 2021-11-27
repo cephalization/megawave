@@ -141,6 +141,10 @@ const selectFilteredTrackIds = createDraftSafeSelector(
   selectTrackIds,
   filterTracksByValue,
 );
+const selectFilteredTrackIdCount = createSelector(
+  selectFilteredTrackIds,
+  (filteredTrackIds) => filteredTrackIds?.length ?? 0,
+);
 const selectLibraryActiveTrackId = createSelector(
   selectLibraryActiveTrackIndex,
   selectLibraryQueue,
@@ -176,6 +180,7 @@ export const librarySelectors = {
   selectFilteredTrackIds,
   selectLibraryActiveTrackId,
   selectLibraryActiveTrack,
+  selectFilteredTrackIdCount,
 };
 
 export const libraryActions = librarySlice.actions;
