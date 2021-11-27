@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { SidebarButton } from '~/components/atoms/SidebarButton/SidebarButton';
+import { SidebarButton } from '~/components/atoms/SidebarButton';
 
 import { ProfileMenu } from '../ProfileMenu';
 import { TrackSearch } from '../TrackSearch';
