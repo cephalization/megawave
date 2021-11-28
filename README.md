@@ -28,7 +28,9 @@ Follow these steps to get a development environment setup (approximately 5-10 mi
 
   - Run api [locally](./packages/api/README.md#setup)
 
-    - Redo this whenever you make changes
+    - The api server will automatically reload to reflect (most) code changes
+
+    - Re-run command if dependencies change
 
   - Run frontend [locally](./packages/web/README.md#npm-start)
 
