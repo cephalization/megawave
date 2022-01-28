@@ -8,7 +8,13 @@ from megawave.files import initialize_library
 
 app = FastAPI()
 
-origins = ["http://localhost", "http://localhost:8080", "http://web"]
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://web",
+    "http://0.0.0.0",
+    "https://localhost",
+]
 
 app.add_middleware(
     CORSMiddleware,
