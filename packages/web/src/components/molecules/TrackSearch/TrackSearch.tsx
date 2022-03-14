@@ -1,6 +1,6 @@
 import { SearchIcon } from '@heroicons/react/outline';
 import debounce from 'lodash.debounce';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
 import { libraryActions } from '~/store/slices/library/library';
@@ -25,6 +25,14 @@ export function TrackSearch() {
     },
     [dSetFilter, setLocalFilter],
   );
+
+  console.log({ libraryFilter });
+
+  useEffect(() => {
+    if (localFilter !== libraryFilter) {
+      setLocalFilter(libraryFilter);
+    }
+  }, [libraryFilter]);
 
   return (
     <div className="flex-1 flex">

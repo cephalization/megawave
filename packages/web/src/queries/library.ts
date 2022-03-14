@@ -10,10 +10,19 @@ export type getLibraryResponse = {
   };
 };
 
-export async function fetch(filter?: string) {
-  const filterString = filter ? `&subkeyfilter=${filter}` : '';
+export async function fetch({
+  filter,
+  sort,
+  subkeyfilter,
+}: { filter?: string; sort?: string; subkeyfilter?: string } = {}) {
+  const filterString = filter ? `filter=${filter}` : '';
+  const sortString = sort ? `sort=${sort}` : '';
+  const subkeyfilterString = subkeyfilter ? `subkeyfilter=${subkeyfilter}` : '';
+  const params = [filterString, sortString, subkeyfilterString].filter(
+    (p) => !!p,
+  );
   const res = await axios.get<getLibraryResponse>(
-    `${library()}?sort=artist${filterString}`,
+    `${library()}${params.length ? `?${params.join('&')}` : ''}`,
     {
       headers: { 'Content-Type': 'application/json' },
     },

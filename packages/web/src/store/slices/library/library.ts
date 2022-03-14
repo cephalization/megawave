@@ -39,11 +39,7 @@ export const librarySlice = createSlice({
     // library reducers
     builder.addCase(fetchLibrary.fulfilled, (state, { payload }) => {
       state.loading = false;
-      if (payload.filter) {
-        libraryAdapter.setAll(state, payload.tracks);
-      } else {
-        libraryAdapter.upsertMany(state, payload.tracks);
-      }
+      libraryAdapter.setAll(state, payload.tracks);
     });
     builder.addCase(fetchLibrary.pending, (state) => {
       state.loading = true;
