@@ -1,11 +1,13 @@
+import { EntityId } from '@reduxjs/toolkit';
 import React, { forwardRef } from 'react';
-import { useAvailableDimensions } from '~/hooks';
-import { TrackListHeader } from '../TrackList/components/TrackListHeader';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
-import { EntityId } from '@reduxjs/toolkit';
-import { TrackListRow } from '../TrackList/components/TrackListRow';
+
+import { useAvailableDimensions } from '~/hooks';
 import { Track } from '~/types/library';
+
+import { TrackListHeader } from '../TrackList/components/TrackListHeader';
+import { TrackListRow } from '../TrackList/components/TrackListRow';
 
 export type TrackListProps = {
   trackIDs: EntityId[];
@@ -13,6 +15,7 @@ export type TrackListProps = {
     trackId?: EntityId | null;
     requeue?: boolean;
   }) => void;
+  onFilterLibrary: (field: keyof Track, trackId: EntityId) => void;
   currentTrack?: Track | null;
 };
 
@@ -43,12 +46,14 @@ const innerElementType = forwardRef<
 export const TrackList = ({
   trackIDs,
   onPlayTrackId,
+  onFilterLibrary,
   currentTrack,
 }: TrackListProps) => {
   // (height of parent container) - (height of all children)
   // this derived height value can be used to perfectly size the library items
-  const { refToMeasure: libraryRef, height } =
-    useAvailableDimensions('library-container');
+  const { refToMeasure: libraryRef, height } = useAvailableDimensions(
+    'library-container',
+  );
 
   return (
     <>
@@ -79,6 +84,9 @@ export const TrackList = ({
                       style={style}
                       onClickTrack={() =>
                         onPlayTrackId({ trackId, requeue: true })
+                      }
+                      onClickField={(field: keyof Track) =>
+                        onFilterLibrary(field, trackId)
                       }
                       isActive={trackId === currentTrack?.id}
                     />

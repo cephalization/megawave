@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 
 import { useAppSelector } from '~/hooks/useAppSelector';
 import { playerActions } from '~/store/slices';
-import { librarySelectors } from '~/store/slices/library';
+import { librarySelectors } from '~/store/slices/library/selectors';
 import { playerSelectors } from '~/store/slices/player/player';
 
 import { _Player } from './definitions';

@@ -1,4 +1,5 @@
 import random
+from typing import Dict
 
 
 def getId() -> str:
@@ -24,3 +25,19 @@ def getId() -> str:
         print(f"Could not generate byte: {e}")
 
     return str(id, "UTF-8")
+
+
+def filter_by_field(filter: str, target_field: str, target_dict: Dict):
+    target_dict_field = target_dict.get(target_field, None)
+    if target_dict_field is None:
+        return False
+
+    try:
+        for value in target_dict_field:
+            if value == filter:
+                return True
+    except TypeError:
+        if value == filter:
+            return True
+
+    return False

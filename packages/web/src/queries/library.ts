@@ -10,10 +10,23 @@ export type getLibraryResponse = {
   };
 };
 
-export async function fetchAll() {
-  const res = await axios.get<getLibraryResponse>(`${library()}?sort=artist`, {
-    headers: { 'Content-Type': 'application/json' },
-  });
+export async function fetch({
+  filter,
+  sort,
+  subkeyfilter,
+}: { filter?: string; sort?: string; subkeyfilter?: string } = {}) {
+  const filterString = filter ? `filter=${filter}` : '';
+  const sortString = sort ? `sort=${sort}` : '';
+  const subkeyfilterString = subkeyfilter ? `subkeyfilter=${subkeyfilter}` : '';
+  const params = [filterString, sortString, subkeyfilterString].filter(
+    (p) => !!p,
+  );
+  const res = await axios.get<getLibraryResponse>(
+    `${library()}${params.length ? `?${params.join('&')}` : ''}`,
+    {
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
 
   const tracks = res.data.data.songs;
 
@@ -25,6 +38,6 @@ export function fetchOne(trackId: string) {
 }
 
 export const libraryApi = {
-  fetchAll,
+  fetch,
   fetchOne,
 };
