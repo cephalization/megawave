@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useAppSelector } from '~/hooks';
-import { librarySelectors } from '~/store/slices/library';
+import { librarySelectors } from '~/store/slices/library/selectors';
 
 export const TrackCount = () => {
   const trackCount = useAppSelector(

@@ -4,10 +4,14 @@ import { bindActionCreators } from 'redux';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
 import { playerActions } from '~/store/slices';
-import { fetchLibrary, librarySelectors } from '~/store/slices/library';
+import { librarySelectors } from '~/store/slices/library/selectors';
+import {
+  fetchFilteredLibrary,
+  fetchLibrary,
+} from '~/store/slices/library/thunks';
 import { getArrayString } from '~/utils/trackMeta';
-import { TrackList } from '../TrackList';
 
+import { TrackList } from '../TrackList';
 import { WaveLoader } from '../WaveLoader';
 
 export function Library() {
@@ -22,7 +26,8 @@ export function Library() {
   const currentTrack = useAppSelector(
     librarySelectors.selectLibraryActiveTrack,
   );
-  const play = bindActionCreators(playerActions.play, useAppDispatch());
+  const play = bindActionCreators(playerActions.play, dispatch);
+  const filterByArtist = bindActionCreators(fetchFilteredLibrary, dispatch);
 
   if (isLoading) return <WaveLoader />;
 
@@ -42,6 +47,7 @@ export function Library() {
       <TrackList
         trackIDs={trackIDs}
         onPlayTrackId={play}
+        onFilterLibrary={(field, trackId) => filterByArtist({ field, trackId })}
         currentTrack={currentTrack}
       />
     </>

@@ -3,7 +3,8 @@ import debounce from 'lodash.debounce';
 import React, { useCallback, useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
-import { libraryActions, librarySelectors } from '~/store/slices/library';
+import { libraryActions } from '~/store/slices/library/library';
+import { librarySelectors } from '~/store/slices/library/selectors';
 
 export function TrackSearch() {
   const dispatch = useAppDispatch();

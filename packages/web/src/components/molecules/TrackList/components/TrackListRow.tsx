@@ -3,7 +3,8 @@ import clsx from 'clsx';
 import React from 'react';
 
 import { useAppSelector } from '~/hooks';
-import { librarySelectors } from '~/store/slices/library';
+import { librarySelectors } from '~/store/slices/library/selectors';
+import { Track } from '~/types/library';
 import { formatTime } from '~/utils/formatTime';
 import { getArrayString } from '~/utils/trackMeta';
 
@@ -19,7 +20,8 @@ type TrackListRowProps = {
   trackId: EntityId;
   style: React.CSSProperties;
   isActive?: boolean;
-  onClickTrack: (arg0: EntityId) => void;
+  onClickTrack: () => void;
+  onClickField: (arg0: keyof Track) => void;
 };
 
 export function TrackListRow({
@@ -27,6 +29,7 @@ export function TrackListRow({
   style,
   isActive,
   onClickTrack,
+  onClickField,
 }: TrackListRowProps) {
   const track = useAppSelector((s) =>
     librarySelectors.selectTrackById(s, trackId),
@@ -61,7 +64,7 @@ export function TrackListRow({
           <h2 className={clsx(styles.headerItem)} title={name}>
             <a
               href={`#${link}`}
-              onClick={() => onClickTrack(trackId)}
+              onClick={() => onClickTrack()}
               className={'hover:text-blue-700 transition-colors duration-300'}
             >
               {name}
@@ -79,7 +82,13 @@ export function TrackListRow({
             className={clsx(styles.headerItem)}
             title={getArrayString(artist)}
           >
-            {artist}
+            <a
+              href={`#${link}/subkeyfilter=${artist}`}
+              onClick={() => onClickField('artist')}
+              className="hover:text-blue-700 transition-colors duration-300"
+            >
+              {artist}
+            </a>
           </h2>
         </div>
         <div
@@ -87,7 +96,13 @@ export function TrackListRow({
           style={{ flexGrow: sectionWidthRatio.album }}
         >
           <h2 className={clsx(styles.headerItem)} title={getArrayString(album)}>
-            {album}
+            <a
+              href={`#${link}/subkeyfilter=${album}`}
+              onClick={() => onClickField('album')}
+              className="hover:text-blue-700 transition-colors duration-300"
+            >
+              {album}
+            </a>
           </h2>
         </div>
         <div

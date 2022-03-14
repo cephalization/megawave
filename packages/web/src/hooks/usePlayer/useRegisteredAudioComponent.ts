@@ -2,7 +2,7 @@ import { bindActionCreators } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { librarySelectors } from '~/store/slices/library';
+import { librarySelectors } from '~/store/slices/library/selectors';
 import { playerActions, playerSelectors } from '~/store/slices/player/player';
 
 import { useAppSelector } from '../useAppSelector';
