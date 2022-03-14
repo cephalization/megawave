@@ -140,6 +140,33 @@ class AudioFile:
         }
 
     @staticmethod
+    def matches_filter(
+        audio: AudioFile_Serialized, filter_term: str
+    ) -> Tuple[bool, Union[str, None]]:
+        """
+        Returns a union that describes if this song would match filter_term and at what key would it match
+        """
+        sanitized_filter_term = filter_term.lower()
+
+        if audio is None:
+            return False, None
+
+        if sanitized_filter_term in audio["name"].lower():
+            return True, "name"
+
+        if audio["artist"] is not None:
+            for artist in audio["artist"]:
+                if sanitized_filter_term in artist.lower():
+                    return True, "artist"
+
+        if audio["album"] is not None:
+            for album in audio["album"]:
+                if sanitized_filter_term in album.lower():
+                    return True, "album"
+
+        return False, None
+
+    @staticmethod
     def getSafeArtist(audio: AudioFile_Serialized) -> str:
         artist_value = audio.get("artist")
 

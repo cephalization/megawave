@@ -1,10 +1,10 @@
-from typing import Optional
+from typing import Dict, Optional
 
 from fastapi import APIRouter, Request
 from starlette.responses import StreamingResponse
 
 from megawave import files
-from megawave.audio import get_audio_file_sort_value, get_media_type
+from megawave.audio import AudioFile, get_audio_file_sort_value, get_media_type
 from megawave.streaming_audio import get_file_chunk_generator
 from megawave.util import filter_by_field
 
@@ -12,9 +12,13 @@ router = APIRouter(prefix="/library")
 
 
 @router.get("/songs")
-def songs(sort: Optional[str] = None, subkeyfilter: Optional[str] = None):
+def songs(
+    sort: Optional[str] = None,
+    filter: Optional[str] = None,
+    subkeyfilter: Optional[str] = None,
+):
     """
-    /songs?[sort]=[-]sortKeyStr&[subkeyfilter]=filterKeyStr-filterValueStr
+    /songs?[sort]=[-]sortKeyStr&[filter]=filterStr&[subkeyfilter]=filterKeyStr-filterValueStr
 
     ex: /songs
       returns an unsorted/unfiltered list of songs
@@ -22,11 +26,27 @@ def songs(sort: Optional[str] = None, subkeyfilter: Optional[str] = None):
       returns a list of songs, sorted by artist alphabetically ascending
     ex: /songs?sort=-album
       returns a list of songs, sorted by album alphabetically descending
+    ex: /songs?filter=Daft%20Punk
+      returns a list of songs, filtered by any whose keys contain the string "Daft Punk"
     ex: /songs?subkeyfilter=artist-Daft%20Punk
       returns a list of songs, filtered by the artist key "Daft Punk"
     """
     songs = files.audioLibrary.serialize()
 
+    # Handle general song filtering
+    if filter is not None:
+        assert isinstance(filter, str)
+        grouped_by_key: Dict = {"artist": [], "album": [], "name": []}
+        for song in songs:
+            would_match, match_key = AudioFile.matches_filter(song, filter)
+            if would_match and match_key in grouped_by_key:
+                grouped_by_key[match_key].append(song)
+        songs = [
+            *grouped_by_key["artist"],
+            *grouped_by_key["name"],
+            *grouped_by_key["album"],
+        ]
+    # Handle song subkey filtering
     if subkeyfilter is not None:
         assert isinstance(subkeyfilter, str)
         field = subkeyfilter.split("-")[0]
@@ -34,6 +54,7 @@ def songs(sort: Optional[str] = None, subkeyfilter: Optional[str] = None):
             term = "".join(subkeyfilter.split(f"{field}-")[1:])
             songs = [song for song in songs if filter_by_field(term, field, song)]
         # TODO: return a warning about incorrect filter format if subkeyfilter does not contain "-"
+    # Handle song subkey sorting
     if sort is not None:
         assert isinstance(sort, str)
         reverse = sort.startswith("-")

@@ -32,7 +32,11 @@ def filter_by_field(filter: str, target_field: str, target_dict: Dict):
     if target_dict_field is None:
         return False
 
-    for value in target_dict_field:
+    try:
+        for value in target_dict_field:
+            if value == filter:
+                return True
+    except TypeError:
         if value == filter:
             return True
 
