@@ -4,11 +4,11 @@ from typing import Dict, List, Tuple, Union
 import mutagen
 from mutagen import MutagenError
 from mutagen.easyid3 import EasyID3
-from mutagen.mp3 import MP3, HeaderNotFoundError
+from mutagen.mp3 import MP3
 from mutagen.wave import WAVE
 from typing_extensions import TypedDict
 
-from megawave.id import getId
+from megawave.util import getId
 
 VALID_AUDIO_EXTENSIONS = ["wav", "mp3"]
 
@@ -25,6 +25,26 @@ AudioFile_Serialized = TypedDict(
         "fileType": str,
     },
 )
+
+
+def get_audio_file_sort_value(
+    audio: AudioFile_Serialized, sort: str
+) -> Union[str, int]:
+    if sort == "artist":
+        return AudioFile.getSafeArtist(audio).lower()
+
+    return ""
+
+
+def get_media_type(ext: str) -> str:
+    if ext == "mp3":
+        print("audio/mpeg")
+        return "audio/mpeg"
+    elif ext == "wav":
+        print("audio/wav")
+        return "audio/wav"
+
+    return ""
 
 
 def hasAudioFileExtension(fileName: str) -> Tuple[bool, Union[str, None]]:
@@ -59,7 +79,7 @@ class AudioFile:
             # load file meta
             self.initialize_meta()
 
-        except HeaderNotFoundError:
+        except Exception:
             self.ok = False
 
     def initialize_info(self):
