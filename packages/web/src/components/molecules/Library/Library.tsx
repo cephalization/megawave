@@ -4,13 +4,12 @@ import { bindActionCreators } from 'redux';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
 import { usePrevious } from '~/hooks/usePrevious';
-import { playerActions } from '~/store/slices';
-import { libraryActions } from '~/store/slices/library';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import {
   fetchFilteredLibrary,
   fetchLibrary,
 } from '~/store/slices/library/thunks';
+import { playTrack } from '~/store/slices/player/player';
 import { getArrayString } from '~/utils/trackMeta';
 
 import { TrackList } from '../TrackList';
@@ -20,12 +19,15 @@ export function Library() {
   const dispatch = useAppDispatch();
 
   const tracksFilter = useAppSelector(librarySelectors.selectLibraryFilter);
-  const trackIDs = useAppSelector(librarySelectors.selectTrackIds);
+  const trackIDs = useAppSelector(librarySelectors.selectFilteredTrackIds);
+  const isInitialized = useAppSelector(
+    librarySelectors.selectLibraryInitialized,
+  );
   const isLoading = useAppSelector(librarySelectors.selectLibraryLoading);
   const currentTrack = useAppSelector(
     librarySelectors.selectLibraryActiveTrack,
   );
-  const play = bindActionCreators(playerActions.play, dispatch);
+  const play = bindActionCreators(playTrack, dispatch);
   const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
 
   const lastTracksFilter = usePrevious(tracksFilter);
@@ -36,7 +38,7 @@ export function Library() {
     }
   }, [tracksFilter, lastTracksFilter, isLoading]);
 
-  if (isLoading) return <WaveLoader />;
+  if (!isInitialized) return <WaveLoader />;
 
   return (
     <>

@@ -26,8 +26,6 @@ export function TrackSearch() {
     [dSetFilter, setLocalFilter],
   );
 
-  console.log({ libraryFilter });
-
   useEffect(() => {
     if (localFilter !== libraryFilter) {
       setLocalFilter(libraryFilter);

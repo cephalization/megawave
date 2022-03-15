@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useAppSelector } from '~/hooks/useAppSelector';
 import { playerActions } from '~/store/slices';
 import { librarySelectors } from '~/store/slices/library/selectors';
-import { playerSelectors } from '~/store/slices/player/player';
+import { playerSelectors, playTrack } from '~/store/slices/player/player';
 
 import { _Player } from './definitions';
 import { useRegisteredAudioComponent } from './useRegisteredAudioComponent';
@@ -29,7 +29,7 @@ export const usePlayer = (
   // Create internal handlers into redux
   const _play = useCallback<_Player['_play']>(
     (...args) => {
-      dispatch(playerActions.play(...args));
+      dispatch(playTrack(...args));
     },
     [dispatch],
   );
@@ -42,14 +42,14 @@ export const usePlayer = (
   // create external handlers into redux
   const playNext = useCallback<_Player['playNext']>(() => {
     if (nextTrackId) {
-      dispatch(playerActions.play({ trackId: nextTrackId }));
+      dispatch(playTrack({ trackId: nextTrackId }));
     } else {
       dispatch(playerActions.stop());
     }
   }, [dispatch, nextTrackId]);
   const playPrev = useCallback<_Player['playPrev']>(() => {
     if (prevTrackId) {
-      dispatch(playerActions.play({ trackId: prevTrackId }));
+      dispatch(playTrack({ trackId: prevTrackId }));
     } else {
       dispatch(playerActions.stop());
     }

@@ -3,21 +3,24 @@ import { createSlice, EntityId, SerializedError } from '@reduxjs/toolkit';
 import { playerActions } from '../player';
 import { libraryAdapter } from './adapter';
 import { fetchLibrary } from './thunks';
-import { filterTracksByValue } from './utils';
 
 export type LibraryState = {
   loading: boolean;
+  initialized: boolean;
   error: SerializedError | null;
   filter: string;
   activeTrackIndex: number | null;
   queue: EntityId[];
   history: EntityId[];
+  tracksByFilter: Record<string, EntityId[]>;
 };
 
 const initialState = libraryAdapter.getInitialState<LibraryState>({
   loading: false,
+  initialized: false,
   error: null,
   filter: '',
+  tracksByFilter: {},
   // queue
   activeTrackIndex: null,
   queue: [],
@@ -39,7 +42,12 @@ export const librarySlice = createSlice({
     // library reducers
     builder.addCase(fetchLibrary.fulfilled, (state, { payload }) => {
       state.loading = false;
-      libraryAdapter.setAll(state, payload.tracks);
+      state.initialized = true;
+      libraryAdapter.upsertMany(state, payload.tracks);
+
+      if (payload.filter) {
+        state.tracksByFilter[payload.filter] = payload.tracks.map((t) => t.id);
+      }
     });
     builder.addCase(fetchLibrary.pending, (state) => {
       state.loading = true;
@@ -51,15 +59,11 @@ export const librarySlice = createSlice({
     });
     // player reducers
     builder.addCase(playerActions.play, (state, { payload }) => {
-      const { trackId, requeue } = payload;
+      const { trackId, requeue, trackContext } = payload;
 
       // if there does not already exist a queue of tracks, create one
       if (!state.queue.length || requeue) {
-        state.queue = filterTracksByValue(
-          state.filter,
-          libraryAdapter.getSelectors().selectAll(state),
-          libraryAdapter.getSelectors().selectIds(state),
-        );
+        state.queue = trackContext;
       }
 
       if (trackId != null) {

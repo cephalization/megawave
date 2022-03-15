@@ -83,7 +83,10 @@ export const TrackList = ({
                       trackId={trackId}
                       style={style}
                       onClickTrack={() =>
-                        onPlayTrackId({ trackId, requeue: true })
+                        onPlayTrackId({
+                          trackId,
+                          requeue: true,
+                        })
                       }
                       onClickField={(field: keyof Track) =>
                         onFilterLibrary(field, trackId)

@@ -1,13 +1,8 @@
-import {
-  createDraftSafeSelector,
-  createSelector,
-  EntityId,
-} from '@reduxjs/toolkit';
+import { createSelector, EntityId } from '@reduxjs/toolkit';
 
 import { RootState } from '~/store';
 
 import { libraryAdapter } from './adapter';
-import { filterTracksByValue } from './utils';
 
 const {
   selectById: selectTrackById,
@@ -17,17 +12,27 @@ const {
   selectTotal: selectTotalTracks,
 } = libraryAdapter.getSelectors<RootState>((state) => state.library);
 
+const selectLibraryInitialized = (state: RootState) =>
+  state.library.initialized;
 const selectLibraryLoading = (state: RootState) => state.library.loading;
 const selectLibraryFilter = (state: RootState) => state.library.filter;
 const selectLibraryQueue = (state: RootState) => state.library.queue;
 const selectLibraryActiveTrackIndex = (state: RootState) =>
   state.library.activeTrackIndex;
+const selectLibraryTracksByFilter = (state: RootState) =>
+  state.library.tracksByFilter;
 
-const selectFilteredTrackIds = createDraftSafeSelector(
+const selectFilteredTrackIds = createSelector(
   selectLibraryFilter,
-  selectAllTracks,
+  selectLibraryTracksByFilter,
   selectTrackIds,
-  filterTracksByValue,
+  (filter, trackIDsByFilter, trackIDs) => {
+    if (filter) {
+      return trackIDsByFilter[filter] || [];
+    }
+
+    return trackIDs;
+  },
 );
 const selectFilteredTrackIdCount = createSelector(
   selectFilteredTrackIds,
@@ -60,10 +65,12 @@ export const librarySelectors = {
   selectAllTracks,
   selectTotalTracks,
   // normal selectors
+  selectLibraryInitialized,
   selectLibraryLoading,
   selectLibraryFilter,
   selectLibraryQueue,
   selectLibraryActiveTrackIndex,
+  selectLibraryTracksByFilter,
   // memoized selectors
   selectFilteredTrackIds,
   selectLibraryActiveTrackId,

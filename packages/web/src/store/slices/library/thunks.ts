@@ -22,7 +22,7 @@ export const fetchLibrary = createAsyncThunk<
     ...defaultParams,
   });
 
-  return { tracks, filter };
+  return { tracks, filter, sort, subkeyfilter };
 });
 
 export const fetchFilteredLibrary = createAsyncThunk<

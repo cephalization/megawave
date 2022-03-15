@@ -22,6 +22,7 @@ export const useRegisteredAudioComponent = (
   const duration = useAppSelector(playerSelectors.selectPlayerDuration);
   const setSeekTime = bindActionCreators(playerActions.setSeekTime, dispatch);
   const setDuration = bindActionCreators(playerActions.setDuration, dispatch);
+  const trackLink = track?.link ?? null;
 
   const durationPercentage =
     (seekTime / (audioRef?.current?.duration ?? 0)) * 100;
@@ -66,7 +67,7 @@ export const useRegisteredAudioComponent = (
 
   // register new audio element handlers when track changes
   useEffect(() => {
-    if (track != null) {
+    if (trackLink != null) {
       const handleCurrentTimeChange = () => {
         if (audioRef?.current !== null) {
           const audio = audioRef.current;
@@ -101,10 +102,10 @@ export const useRegisteredAudioComponent = (
         }
       };
 
-      if (audioRef?.current !== null && track?.link) {
+      if (audioRef?.current !== null && trackLink) {
         const audio = audioRef.current;
 
-        audio.setAttribute('src', track.link);
+        audio.setAttribute('src', trackLink);
         const canplayEventArgs: [string, EventListener] = [
           'canplay',
           handleCanPlay,
@@ -134,7 +135,7 @@ export const useRegisteredAudioComponent = (
       audio.setAttribute('src', '');
       audio.load();
     }
-  }, [track]);
+  }, [trackLink]);
 
   return {
     play: handlePlay,

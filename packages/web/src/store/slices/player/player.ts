@@ -1,6 +1,13 @@
-import { createAction, createSlice, EntityId } from '@reduxjs/toolkit';
+import {
+  createAction,
+  createAsyncThunk,
+  createSlice,
+  EntityId,
+} from '@reduxjs/toolkit';
 
 import { RootState } from '~/store/store';
+
+import { librarySelectors } from '../library/selectors';
 
 export const enum PLAYER_STATUS {
   PLAYING,
@@ -20,15 +27,39 @@ const initialState: PlayerState = {
   duration: 0,
 };
 
+type PlayerActionPayload = {
+  // the current track context. required to generate a queue.
+  trackContext: EntityId[];
+  // the track to play. if not provided, the first track in the queue will be chosen
+  trackId?: EntityId | null;
+  // should the queue get rebuilt?
+  requeue?: boolean;
+};
+
 const sharedPlayerActions = {
-  play: createAction<{ trackId?: EntityId | null; requeue?: boolean }>(
-    'player/play',
-  ),
+  play: createAction<PlayerActionPayload>('player/play'),
   nextTrack: createAction('player/nextTrack'),
   prevTrack: createAction('player/prevTrack'),
   pause: createAction('player/pause'),
   stop: createAction('player/stop'),
 };
+
+export const playTrack = createAsyncThunk<
+  EntityId[],
+  Omit<PlayerActionPayload, 'trackContext'>
+>('player/play_thunk', async ({ trackId, requeue }, { dispatch, getState }) => {
+  const state = getState() as RootState;
+
+  // what was the user looking at when they hit play
+  // the next and previous tracks will be determined by this
+  const trackContext =
+    librarySelectors.selectFilteredTrackIds(state) ||
+    librarySelectors.selectTrackIds(state);
+
+  dispatch(sharedPlayerActions.play({ trackId, requeue, trackContext }));
+
+  return trackContext;
+});
 
 export const playerSlice = createSlice({
   name: 'player',
