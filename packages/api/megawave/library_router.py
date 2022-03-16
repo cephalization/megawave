@@ -1,14 +1,28 @@
 from typing import Dict, Optional
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 from starlette.responses import StreamingResponse
 
 from megawave import files
+from megawave.art_cache import ALBUM_ART_CACHE
 from megawave.audio import AudioFile, get_audio_file_sort_value, get_media_type
 from megawave.streaming_audio import get_file_chunk_generator
 from megawave.util import filter_by_field
 
 router = APIRouter(prefix="/library")
+
+
+@router.get("/art/{id}")
+def art(id: str):
+    art_entry = ALBUM_ART_CACHE.get(id, None)
+
+    if art_entry is None:
+        return {"error": {"message": "not found"}}, 404
+
+    return Response(
+        art_entry["art"]["bytes"],
+        headers={"Content-Type": art_entry["art"]["mime"]},
+    )
 
 
 @router.get("/songs")

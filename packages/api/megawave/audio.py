@@ -1,4 +1,3 @@
-import base64
 import os
 from typing import Dict, List, Tuple, Union
 
@@ -10,6 +9,7 @@ from mutagen.mp3 import MP3
 from mutagen.wave import WAVE
 from typing_extensions import TypedDict
 
+from megawave.art_cache import ALBUM_ART_CACHE, add_frame_to_cache
 from megawave.util import getId
 
 VALID_AUDIO_EXTENSIONS = ["wav", "mp3"]
@@ -75,7 +75,7 @@ class AudioFile:
         self.id: str = getId()
         self.meta = None
         self.info = None
-        self.art = None
+        self.art: Union[List[str], None] = None
         self.raw = None
         self.tags = None
 
@@ -100,12 +100,9 @@ class AudioFile:
             self.ok = True
             # we've got all required info, lets try to grab some more complex data
             self.tags = ID3(self.filePath)
-            art = [
-                # generate a base64 data string compatible with HTML rendering
-                f"data:image/png;base64,{base64.b64encode(a.data).decode('ascii')}"
-                for a in self.tags.getall("APIC")
-                if a.data is not None
-            ]
+            art_frames = self.tags.getall("APIC")
+            art = [add_frame_to_cache(frame) for frame in art_frames]
+
             if len(art):
                 self.art = art
 
@@ -155,7 +152,7 @@ class AudioFile:
             "link": f"/api/library/songs/{self.id}",
             "meta": self.meta.pprint(),
             "fileType": self.fileType,
-            "art": self.art,
+            "art": [ALBUM_ART_CACHE[a]["link"] for a in self.art] if self.art else None,
         }
 
     @staticmethod
