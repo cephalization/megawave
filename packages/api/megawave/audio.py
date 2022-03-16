@@ -1,9 +1,11 @@
+import base64
 import os
 from typing import Dict, List, Tuple, Union
 
 import mutagen
 from mutagen import MutagenError
 from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3
 from mutagen.mp3 import MP3
 from mutagen.wave import WAVE
 from typing_extensions import TypedDict
@@ -18,6 +20,7 @@ AudioFile_Serialized = TypedDict(
         "name": str,
         "album": Union[List[str], None],
         "artist": Union[List[str], None],
+        "art": Union[List[str], None],
         "length": Union[int, None],
         "id": str,
         "link": str,
@@ -72,6 +75,9 @@ class AudioFile:
         self.id: str = getId()
         self.meta = None
         self.info = None
+        self.art = None
+        self.raw = None
+        self.tags = None
 
         try:
             # load file info
@@ -84,22 +90,34 @@ class AudioFile:
 
     def initialize_info(self):
         self.ok = False
-        try:
+
+        def load():
             if self.fileType == "mp3":
-                self.info = MP3(self.filePath).info
+                self.raw = MP3(self.filePath)
             elif self.fileType == "wav":
-                self.info = WAVE(self.filePath).info
+                self.raw = WAVE(self.filePath)
+            self.info = self.raw.info
             self.ok = True
+            # we've got all required info, lets try to grab some more complex data
+            self.tags = ID3(self.filePath)
+            art = [
+                # generate a base64 data string compatible with HTML rendering
+                f"data:image/png;base64,{base64.b64encode(a.data).decode('ascii')}"
+                for a in self.tags.getall("APIC")
+                if a.data is not None
+            ]
+            if len(art):
+                self.art = art
+
+        try:
+            load()
 
         except MutagenError:
             song = mutagen.File(self.filePath, easy=True)
             song.add_tags()
             song.save(self.filePath, v1=2)
-            if self.fileType == "mp3":
-                self.info = MP3(self.filePath).info
-            elif self.fileType == "wav":
-                self.info = WAVE(self.filePath).info
-            self.ok = True
+
+            load()
         except ValueError:
             pass
 
@@ -137,6 +155,7 @@ class AudioFile:
             "link": f"/api/library/songs/{self.id}",
             "meta": self.meta.pprint(),
             "fileType": self.fileType,
+            "art": self.art,
         }
 
     @staticmethod
