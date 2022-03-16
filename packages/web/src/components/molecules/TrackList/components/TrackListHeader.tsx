@@ -9,7 +9,7 @@ export const styles = {
 export const sectionWidthRatio = {
   title: 4,
   artist: 3,
-  album: 4,
+  album: 2,
   duration: 1,
 } as const;
 
@@ -25,7 +25,7 @@ export function TrackListHeader() {
         <h2 className="text-sm leading-6 text-gray-500 font-semibold">Title</h2>
       </div>
       <div
-        className="sm:flex-1 sm:flex hidden"
+        className="sm:flex-1 md:flex hidden"
         style={{ flexGrow: sectionWidthRatio.artist }}
       >
         <h2 className={clsx(styles.headerItem)}>Artist</h2>

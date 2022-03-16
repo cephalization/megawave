@@ -6,4 +6,5 @@ export type Track = {
   album: string[] | null;
   lastPlayed?: string;
   length: string;
+  art: string[] | null;
 };

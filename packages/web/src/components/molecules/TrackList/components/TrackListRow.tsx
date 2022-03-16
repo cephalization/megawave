@@ -13,7 +13,7 @@ import { sectionWidthRatio, styles as headerStyles } from './TrackListHeader';
 
 const styles = {
   headerItem:
-    'text-sm leading-6 text-gray-700 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden pr-2',
+    'text-xs md:leading-6 leading-none text-gray-700 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden pr-2',
 } as const;
 
 type TrackListRowProps = {
@@ -58,24 +58,34 @@ export function TrackListRow({
         )}
       >
         <div
-          className="flex-1 min-w-0 flex-col sm:flex-row"
+          className="flex-1 flex min-w-0 items-center"
           style={{ flexGrow: sectionWidthRatio.title }}
         >
-          <h2 className={clsx(styles.headerItem)} title={name}>
-            <a
-              href={`#${link}`}
-              onClick={() => onClickTrack()}
-              className={'hover:text-blue-700 transition-colors duration-300'}
-            >
-              {name}
+          <div className="flex-shrink-0 p-2 md:pl-0">
+            <img
+              className="flex"
+              style={{ height: 32, width: 32 }}
+              src={track.art?.[0]}
+              // alt={`Album art for ${album} by ${artist}`}
+            />
+          </div>
+          <div className="flex-1 min-w-0 flex-wrap justify-start">
+            <h2 className={clsx(styles.headerItem, 'w-full')} title={name}>
+              <a
+                href={`#${link}`}
+                onClick={() => onClickTrack()}
+                className={'hover:text-blue-700 transition-colors duration-300'}
+              >
+                {name}
+              </a>
+            </h2>
+            <a className="leading-none text-xs text-gray-400 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden md:hidden w-full">
+              {artist}
             </a>
-          </h2>
-          <a className="text-sm leading-6 text-gray-400 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden sm:hidden">
-            {artist}
-          </a>
+          </div>
         </div>
         <div
-          className="flex-1 sm:flex hidden min-w-0"
+          className="flex-1 md:flex hidden min-w-0"
           style={{ flexGrow: sectionWidthRatio.artist }}
         >
           <h2
