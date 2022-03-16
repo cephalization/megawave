@@ -1,5 +1,7 @@
 # ~~ MEGAWAVE ~~
 
+![Home screen image as of 3/16/2022](/images/home.png)
+
 ## Development
 
 Development is tested and supported on Linux, Mac OS, and WSL 2
