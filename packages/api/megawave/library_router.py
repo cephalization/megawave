@@ -21,7 +21,10 @@ def art(id: str):
 
     return Response(
         art_entry["art"]["bytes"],
-        headers={"Content-Type": art_entry["art"]["mime"]},
+        headers={
+            "Content-Type": art_entry["art"]["mime"],
+            "Cache-Control": "max-age=31536000",
+        },
     )
 
 
