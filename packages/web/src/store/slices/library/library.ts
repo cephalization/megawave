@@ -4,6 +4,15 @@ import { playerActions } from '../player';
 import { libraryAdapter } from './adapter';
 import { fetchLibrary } from './thunks';
 
+export enum LIBRARY_CONTEXT {
+  FILTER,
+  ALBUM,
+  ARTIST,
+  GENRE,
+  PLAYLIST,
+  NONE,
+}
+
 export type LibraryState = {
   loading: boolean;
   initialized: boolean;
@@ -13,6 +22,8 @@ export type LibraryState = {
   queue: EntityId[];
   history: EntityId[];
   tracksByFilter: Record<string, EntityId[]>;
+  context: LIBRARY_CONTEXT;
+  contextMap: Record<LIBRARY_CONTEXT, Record<string, EntityId[]>>;
 };
 
 const initialState = libraryAdapter.getInitialState<LibraryState>({
@@ -21,6 +32,15 @@ const initialState = libraryAdapter.getInitialState<LibraryState>({
   error: null,
   filter: '',
   tracksByFilter: {},
+  context: LIBRARY_CONTEXT.NONE,
+  contextMap: {
+    [LIBRARY_CONTEXT.NONE]: {},
+    [LIBRARY_CONTEXT.FILTER]: {},
+    [LIBRARY_CONTEXT.ALBUM]: {},
+    [LIBRARY_CONTEXT.ARTIST]: {},
+    [LIBRARY_CONTEXT.GENRE]: {},
+    [LIBRARY_CONTEXT.PLAYLIST]: {},
+  },
   // queue
   activeTrackIndex: null,
   queue: [],
