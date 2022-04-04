@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import 'tailwindcss/tailwind.css';
 
@@ -11,11 +11,13 @@ import store from './store/store';
 
 mobileResizer();
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Provider store={store}>
+const container = document.getElementById('root') as HTMLElement;
+const root = createRoot(container);
+
+root.render(
+  <Provider store={store}>
+    <React.StrictMode>
       <App />
-    </Provider>
-  </React.StrictMode>,
-  document.getElementById('root'),
+    </React.StrictMode>
+  </Provider>,
 );
