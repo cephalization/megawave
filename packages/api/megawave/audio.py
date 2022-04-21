@@ -99,12 +99,15 @@ class AudioFile:
             self.info = self.raw.info
             self.ok = True
             # we've got all required info, lets try to grab some more complex data
-            self.tags = ID3(self.filePath)
-            art_frames = self.tags.getall("APIC")
-            art = [add_frame_to_cache(frame) for frame in art_frames]
+            try:
+                self.tags = ID3(self.filePath)
+                art_frames = self.tags.getall("APIC")
+                art = [add_frame_to_cache(frame) for frame in art_frames]
 
-            if len(art):
-                self.art = art
+                if len(art):
+                    self.art = art
+            except Exception:
+                pass
 
         try:
             load()
