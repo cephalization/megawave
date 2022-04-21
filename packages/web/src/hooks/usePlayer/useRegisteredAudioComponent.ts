@@ -84,6 +84,16 @@ export const useRegisteredAudioComponent = (
         }
       };
 
+      const handlePlay = async () => {
+        if (audioRef?.current !== null) {
+          const audio = audioRef.current;
+
+          if (audio.paused) {
+            audio.play();
+          }
+        }
+      };
+
       const handleTrackEnd = () => {
         if (audioRef?.current !== null) {
           _player.playNext();
@@ -110,6 +120,10 @@ export const useRegisteredAudioComponent = (
           'canplay',
           handleCanPlay,
         ];
+        const playEventArgs: [string, EventListener] = [
+          'play',
+          handlePlay,
+        ];
         const timeupdateEventArgs: [string, EventListener] = [
           'timeupdate',
           handleCurrentTimeChange,
@@ -122,10 +136,16 @@ export const useRegisteredAudioComponent = (
           'durationchange',
           handleDurationChange,
         ];
+        const pauseEventArgs: [string, EventListener] = [
+          'pause',
+          handlePause,
+        ]
         addEventToAudio(canplayEventArgs);
         addEventToAudio(timeupdateEventArgs);
         addEventToAudio(endedEventArgs);
         addEventToAudio(durationChangeEventArgs);
+        addEventToAudio(pauseEventArgs);
+        addEventToAudio(playEventArgs);
         audio.load();
       }
     } else if (audioRef?.current != null) {
