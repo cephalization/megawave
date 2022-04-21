@@ -16,6 +16,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
+  "exclude": ["node_modules", "dist"],
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Recommended"
 }
