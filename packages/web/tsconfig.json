@@ -14,8 +14,7 @@
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "types": ["react/next", "react-dom/next"]
+    "noUnusedParameters": true
   },
   "exclude": ["node_modules", "dist"],
   "$schema": "https://json.schemastore.org/tsconfig",

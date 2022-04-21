@@ -1,5 +1,5 @@
 import throttle from 'lodash.throttle';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // this function assumes parent has full width children
 function getAvailableWidth(parentId: string) {
@@ -37,13 +37,6 @@ export function useAvailableDimensions(parentId: string) {
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
 
-  const refToMeasure = useCallback(
-    (node) => {
-      setRef(node);
-    },
-    [setRef],
-  );
-
   useEffect(() => {
     function resizeOnChange() {
       const newHeight = getAvailableHeight(parentId, ref);
@@ -66,5 +59,5 @@ export function useAvailableDimensions(parentId: string) {
     };
   }, [setHeight, ref, parentId]);
 
-  return { refToMeasure, height, width };
+  return { refToMeasure: setRef, height, width };
 }

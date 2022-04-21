@@ -16,7 +16,7 @@ export function TrackSearch() {
     }, 300),
     [],
   );
-  const onChange = useCallback(
+  const onChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const value = e.target.value;
 
@@ -50,7 +50,7 @@ export function TrackSearch() {
             type="search"
             value={localFilter}
             onChange={onChange}
-          />{' '}
+          />
         </div>
       </form>
     </div>
