@@ -10,7 +10,7 @@ export const PrevButton = ({ onClick }: PrevButtonProps) => {
   return (
     <button
       type="button"
-      className="hidden sm:block mx-1  hover:text-gray-900"
+      className="mx-1 hover:text-gray-900"
       onClick={onClick}
     >
       <svg
