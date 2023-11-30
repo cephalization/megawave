@@ -11,7 +11,7 @@ export type _Player = {
 type RegisteredPlayer = {
   play: (arg0?: EntityId | null) => void;
   pause: () => void;
-  scrub: (arg0: React.MouseEvent) => void;
+  scrub: (percentage: number) => void;
 
   duration: number;
   durationPercentage: number;

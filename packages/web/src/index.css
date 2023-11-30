@@ -8,3 +8,64 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.range-input {
+  --thumb-color: white;
+  --thumb-color-hover: #6B7280;
+}
+
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 1rem;
+  /* Control the height of the thumb */
+  width: 1rem;
+  /* Control the width of the thumb */
+  border: none;
+  border-radius: 50%;
+  background: var(--thumb-color);
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.range-input:hover::-webkit-slider-thumb,
+.range-input:focus::-webkit-slider-thumb {
+  background: var(--thumb-color-hover);
+}
+
+/* Apply transparent backgrounds to both track and focus */
+.range-input::-webkit-slider-runnable-track {
+  background: transparent;
+  border-color: transparent;
+}
+
+.range-input:focus::-webkit-slider-runnable-track {
+  background: transparent;
+}
+
+/* For Firefox */
+.range-input::-moz-range-thumb {
+  height: 1rem;
+  /* Control the height of the thumb */
+  width: 1rem;
+  /* Control the width of the thumb */
+  border-radius: 50%;
+  background: var(--thumb-color);
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.range-input:hover::-moz-range-thumb,
+.range-input:focus::-moz-range-thumb {
+  background: var(--thumb-color-hover);
+}
+
+.range-input::-moz-range-track {
+  background: transparent;
+  border-color: transparent;
+}
+
+.range-input:focus::-moz-range-track {
+  background: transparent;
+}

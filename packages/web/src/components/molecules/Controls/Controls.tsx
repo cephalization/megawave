@@ -16,7 +16,6 @@ import { PlayHistory } from '../PlayHistory';
 // RE-RENDERS ONCE PER TRACK SECOND
 export function Controls() {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const progressBarRef = useRef<HTMLDivElement>(null);
   const {
     track,
     status,
@@ -28,7 +27,7 @@ export function Controls() {
     seekTime: currentTime,
     duration,
     durationPercentage,
-  } = usePlayer(audioRef, progressBarRef);
+  } = usePlayer(audioRef);
   const [open, setOpen] = useState(false);
   const playing = status === PLAYER_STATUS.PLAYING;
 
@@ -60,8 +59,7 @@ export function Controls() {
               {formatTime(currentTime)}
             </div>
             <ProgressBar
-              ref={progressBarRef}
-              onScrub={handleScrub}
+              onChange={handleScrub}
               percentage={durationPercentage}
             />
             <div className="text-sm ml-1 tabular-nums">

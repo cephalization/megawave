@@ -66,10 +66,14 @@ export const playerSlice = createSlice({
   initialState,
   reducers: {
     setSeekTime(state, { payload }) {
+      if (isNaN(payload)) return;
+
       // this action is blacklisted redux devtools and will not appear there
       state.seekTime = payload;
     },
     setDuration(state, { payload }) {
+      if (isNaN(payload)) return;
+      
       state.duration = payload;
     },
   },

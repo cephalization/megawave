@@ -11,7 +11,6 @@ import { useRegisteredAudioComponent } from './useRegisteredAudioComponent';
 
 export const usePlayer = (
   audioRef: React.RefObject<HTMLAudioElement>,
-  progressBarRef: React.RefObject<HTMLDivElement>,
 ) => {
   const dispatch = useDispatch();
   const queue = useAppSelector(librarySelectors.selectLibraryQueue);
@@ -67,7 +66,6 @@ export const usePlayer = (
   // bind redux handlers to audio ref event handlers
   const registeredPlayer = useRegisteredAudioComponent(
     audioRef,
-    progressBarRef,
     _player,
   );
 

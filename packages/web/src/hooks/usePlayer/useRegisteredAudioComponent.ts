@@ -10,7 +10,6 @@ import { RegisteredPlayer, _Player } from './definitions';
 
 export const useRegisteredAudioComponent = (
   audioRef: React.RefObject<HTMLAudioElement>,
-  progressBarRef: React.RefObject<HTMLDivElement>,
   _player: _Player,
 ): RegisteredPlayer => {
   const dispatch = useDispatch();
@@ -25,22 +24,18 @@ export const useRegisteredAudioComponent = (
   const trackLink = track?.link ?? null;
 
   const durationPercentage =
-    (seekTime / (audioRef?.current?.duration ?? 0)) * 100;
+    isNaN(audioRef?.current?.duration ?? 0) ? 0 : Math.floor((seekTime / (audioRef?.current?.duration ?? 1)) * 100);
 
   const handleScrub: RegisteredPlayer['scrub'] = (e) => {
-    if (audioRef?.current !== null && progressBarRef?.current !== null) {
+    if (audioRef?.current !== null) {
       const audio = audioRef?.current;
-      const progressBar = progressBarRef?.current;
-      const sideNavWidth =
-        document.getElementById('side-nav')?.offsetWidth ?? 0;
-
-      const clickPosition =
-        (e.pageX - progressBar.offsetLeft - sideNavWidth) /
-        progressBar.offsetWidth;
-      const clickTime = clickPosition * audio.duration;
-
-      setSeekTime(clickTime);
-      audio.currentTime = clickTime;
+      if (audio.duration) {
+        const progress = e / 100;
+        const clickTime = Math.floor(progress * audio.duration);
+  
+        setSeekTime(clickTime);
+        audio.currentTime = clickTime;
+      }
     }
   };
 
