@@ -51,9 +51,8 @@ export const TrackList = ({
 }: TrackListProps) => {
   // (height of parent container) - (height of all children)
   // this derived height value can be used to perfectly size the library items
-  const { refToMeasure: libraryRef, height } = useAvailableDimensions(
-    'library-container',
-  );
+  const { refToMeasure: libraryRef, height } =
+    useAvailableDimensions('library-container');
 
   return (
     <>

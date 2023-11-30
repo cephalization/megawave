@@ -1,12 +1,12 @@
 import { bindActionCreators } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 
+import { useAppDispatch } from '~/hooks/useAppDispatch';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import { playerActions, playerSelectors } from '~/store/slices/player/player';
 
 import { useAppSelector } from '../useAppSelector';
 import { RegisteredPlayer, _Player } from './definitions';
-import { useAppDispatch } from '~/hooks/useAppDispatch';
 
 export const useRegisteredAudioComponent = (
   audioRef: React.RefObject<HTMLAudioElement>,
@@ -23,8 +23,9 @@ export const useRegisteredAudioComponent = (
   const setDuration = bindActionCreators(playerActions.setDuration, dispatch);
   const trackLink = track?.link ?? null;
 
-  const durationPercentage =
-    isNaN(audioRef?.current?.duration ?? 0) ? 0 : Math.floor((seekTime / (audioRef?.current?.duration ?? 1)) * 100);
+  const durationPercentage = isNaN(audioRef?.current?.duration ?? 0)
+    ? 0
+    : Math.floor((seekTime / (audioRef?.current?.duration ?? 1)) * 100);
 
   const handleScrub: RegisteredPlayer['scrub'] = (e) => {
     if (audioRef?.current !== null) {
@@ -32,7 +33,7 @@ export const useRegisteredAudioComponent = (
       if (audio.duration) {
         const progress = e / 100;
         const clickTime = Math.floor(progress * audio.duration);
-  
+
         setSeekTime(clickTime);
         audio.currentTime = clickTime;
       }
@@ -115,10 +116,7 @@ export const useRegisteredAudioComponent = (
           'canplay',
           handleCanPlay,
         ];
-        const playEventArgs: [string, EventListener] = [
-          'play',
-          handlePlay,
-        ];
+        const playEventArgs: [string, EventListener] = ['play', handlePlay];
         const timeupdateEventArgs: [string, EventListener] = [
           'timeupdate',
           handleCurrentTimeChange,
@@ -131,10 +129,7 @@ export const useRegisteredAudioComponent = (
           'durationchange',
           handleDurationChange,
         ];
-        const pauseEventArgs: [string, EventListener] = [
-          'pause',
-          handlePause,
-        ]
+        const pauseEventArgs: [string, EventListener] = ['pause', handlePause];
         addEventToAudio(canplayEventArgs);
         addEventToAudio(timeupdateEventArgs);
         addEventToAudio(endedEventArgs);

@@ -7,10 +7,8 @@ type ProgressBarProps = {
 
 export const ProgressBar = forwardRef<HTMLInputElement, ProgressBarProps>(
   ({ onChange, percentage = 0 }, ref) => {
-
     return (
       <div className="relative w-full h-2 bg-gray-300 rounded-full">
-        
         <input
           ref={ref}
           type="range"
@@ -30,7 +28,7 @@ export const ProgressBar = forwardRef<HTMLInputElement, ProgressBarProps>(
         ></div>
       </div>
     );
-  }
+  },
 );
 
 ProgressBar.displayName = 'ProgressBar';

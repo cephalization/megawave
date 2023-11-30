@@ -1,5 +1,6 @@
-import type { EntityId } from "@reduxjs/toolkit";
-import type { PlayTrack } from "~/store/slices/player/player";
+import type { EntityId } from '@reduxjs/toolkit';
+
+import type { PlayTrack } from '~/store/slices/player/player';
 
 // functions bound to redux that are used to synchronize redux with the audio player
 export type _Player = {

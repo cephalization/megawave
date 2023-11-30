@@ -14,7 +14,7 @@ export const CurrentTrack = ({ title, artist, art }: CurrentTrackProps) => {
   const formattedArtist = getArrayString(artist);
 
   return (
-    <div className='flex gap-2 items-center max-w-full'>
+    <div className="flex gap-2 items-center max-w-full">
       <div className="flex-shrink-0 md:pl-0">
         <img
           className="object-contain rounded"

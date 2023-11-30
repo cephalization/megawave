@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 
+import { useAppDispatch } from '~/hooks/useAppDispatch';
 import { useAppSelector } from '~/hooks/useAppSelector';
 import { playerActions } from '~/store/slices';
 import { librarySelectors } from '~/store/slices/library/selectors';
@@ -7,11 +8,8 @@ import { playerSelectors, playTrack } from '~/store/slices/player/player';
 
 import { _Player } from './definitions';
 import { useRegisteredAudioComponent } from './useRegisteredAudioComponent';
-import { useAppDispatch } from '~/hooks/useAppDispatch';
 
-export const usePlayer = (
-  audioRef: React.RefObject<HTMLAudioElement>,
-) => {
+export const usePlayer = (audioRef: React.RefObject<HTMLAudioElement>) => {
   const dispatch = useAppDispatch();
   const queue = useAppSelector(librarySelectors.selectLibraryQueue);
   const activeTrackIndex = useAppSelector(
@@ -64,10 +62,7 @@ export const usePlayer = (
   };
 
   // bind redux handlers to audio ref event handlers
-  const registeredPlayer = useRegisteredAudioComponent(
-    audioRef,
-    _player,
-  );
+  const registeredPlayer = useRegisteredAudioComponent(audioRef, _player);
 
   return { ...registeredPlayer, status, playNext, playPrev, track };
 };
