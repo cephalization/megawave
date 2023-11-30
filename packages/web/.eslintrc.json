@@ -4,5 +4,13 @@
     "plugin:react/recommended",
     "prettier",
     "plugin:react-hooks/recommended"
+  ],
+  "overrides": [
+    {
+      "files": ["*.cjs"],
+      "env": {
+        "node": true
+      }
+    }
   ]
 }
