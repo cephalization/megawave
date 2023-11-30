@@ -1,4 +1,4 @@
-import { ViewListIcon } from '@heroicons/react/outline';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 import React, { useRef, useState } from 'react';
 
 import { CurrentTrack } from '~/components/atoms/CurrentTrack/CurrentTrack';
@@ -9,6 +9,7 @@ import { ProgressBar } from '~/components/atoms/ProgressBar';
 import { usePlayer } from '~/hooks/usePlayer';
 import { PLAYER_STATUS } from '~/store/slices/player/player';
 import { formatTime } from '~/utils/formatTime';
+
 import { PlayHistory } from '../PlayHistory';
 
 // VERY EXPENSIVE COMPONENT
@@ -73,7 +74,7 @@ export function Controls() {
             className="sm:block mx-1 hover:text-gray-900"
             onClick={() => setOpen((o) => !o)}
           >
-            <ViewListIcon height={24} />
+            <Bars3Icon height={24} />
           </button>
         </div>
       </div>

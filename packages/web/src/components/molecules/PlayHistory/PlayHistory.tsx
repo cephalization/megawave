@@ -1,8 +1,8 @@
 /* This example requires Tailwind CSS v2.0+ */
+import { Dialog, Transition } from '@headlessui/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XIcon } from '@heroicons/react/outline';
 
 type PlayHistoryProps = {
   open: boolean;
@@ -45,7 +45,7 @@ export function PlayHistory({ open, setOpen }: PlayHistoryProps) {
                           onClick={() => setOpen(false)}
                         >
                           <span className="sr-only">Close panel</span>
-                          <XIcon className="h-6 w-6" aria-hidden="true" />
+                          <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
