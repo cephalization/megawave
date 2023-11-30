@@ -1,18 +1,18 @@
 import { bindActionCreators } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { librarySelectors } from '~/store/slices/library/selectors';
 import { playerActions, playerSelectors } from '~/store/slices/player/player';
 
 import { useAppSelector } from '../useAppSelector';
 import { RegisteredPlayer, _Player } from './definitions';
+import { useAppDispatch } from '~/hooks/useAppDispatch';
 
 export const useRegisteredAudioComponent = (
   audioRef: React.RefObject<HTMLAudioElement>,
   _player: _Player,
 ): RegisteredPlayer => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const activeTrackId = useAppSelector(
     librarySelectors.selectLibraryActiveTrackId,
   );

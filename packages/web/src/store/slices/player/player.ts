@@ -61,6 +61,8 @@ export const playTrack = createAsyncThunk<
   return trackContext;
 });
 
+export type PlayTrack = typeof playTrack;
+
 export const playerSlice = createSlice({
   name: 'player',
   initialState,
@@ -73,7 +75,7 @@ export const playerSlice = createSlice({
     },
     setDuration(state, { payload }) {
       if (isNaN(payload)) return;
-      
+
       state.duration = payload;
     },
   },

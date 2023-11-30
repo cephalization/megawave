@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { useAppSelector } from '~/hooks/useAppSelector';
 import { playerActions } from '~/store/slices';
@@ -8,11 +7,12 @@ import { playerSelectors, playTrack } from '~/store/slices/player/player';
 
 import { _Player } from './definitions';
 import { useRegisteredAudioComponent } from './useRegisteredAudioComponent';
+import { useAppDispatch } from '~/hooks/useAppDispatch';
 
 export const usePlayer = (
   audioRef: React.RefObject<HTMLAudioElement>,
 ) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const queue = useAppSelector(librarySelectors.selectLibraryQueue);
   const activeTrackIndex = useAppSelector(
     librarySelectors.selectLibraryActiveTrackIndex,
@@ -27,8 +27,8 @@ export const usePlayer = (
 
   // Create internal handlers into redux
   const _play = useCallback<_Player['_play']>(
-    (...args) => {
-      dispatch(playTrack(...args));
+    (arg) => {
+      dispatch(playTrack(arg));
     },
     [dispatch],
   );
