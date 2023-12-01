@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useAppDispatch } from '~/hooks/useAppDispatch';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import { playerActions, playerSelectors } from '~/store/slices/player/player';
+import { getArrayString } from '~/utils/trackMeta';
 
 import { useAppSelector } from '../useAppSelector';
 import { RegisteredPlayer, _Player } from './definitions';
@@ -58,6 +59,29 @@ export const useRegisteredAudioComponent = (
       if (audio.paused && activeTrackId != null) {
         audio.play();
       }
+    }
+  };
+
+  const updateMediaSession = () => {
+    if ('mediaSession' in navigator) {
+      const title = track?.name;
+      const artist = track?.artist ? getArrayString(track?.artist) : undefined;
+      const album = track?.album ? getArrayString(track?.album) : undefined;
+      const artwork = track?.art?.[0]
+        ? [
+            {
+              src: track?.art?.[0],
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ]
+        : undefined;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title,
+        artist,
+        album,
+        artwork,
+      });
     }
   };
 
@@ -136,6 +160,7 @@ export const useRegisteredAudioComponent = (
         addEventToAudio(durationChangeEventArgs);
         addEventToAudio(pauseEventArgs);
         addEventToAudio(playEventArgs);
+        updateMediaSession();
         audio.load();
       }
     } else if (audioRef?.current != null) {
