@@ -14,9 +14,13 @@ export type TrackListProps = {
   onPlayTrackId: (arg: {
     trackId?: EntityId | null;
     requeue?: boolean;
+    context?: 'library' | 'history';
+    addHistory?: boolean;
   }) => void;
   onFilterLibrary: (field: keyof Track, trackId: EntityId) => void;
   currentTrack?: Track | null;
+  containerId?: string;
+  context?: 'library' | 'history';
 };
 
 const MOBILE_BREAKPOINT = 640;
@@ -48,11 +52,13 @@ export const TrackList = ({
   onPlayTrackId,
   onFilterLibrary,
   currentTrack,
+  containerId = 'library-container',
+  context = 'library',
 }: TrackListProps) => {
   // (height of parent container) - (height of all children)
   // this derived height value can be used to perfectly size the library items
   const { refToMeasure: libraryRef, height } =
-    useAvailableDimensions('library-container');
+    useAvailableDimensions(containerId);
 
   return (
     <>
@@ -69,6 +75,7 @@ export const TrackList = ({
                 height={innerHeight}
                 width={width}
                 itemCount={trackIDs.length}
+                itemKey={(index) => `${index}-${trackIDs[index]}`}
                 // at available container width 640 or lower, this needs to get bumped up to 55
                 // anything higher and this should be 40
                 itemSize={width >= MOBILE_BREAKPOINT ? 40 : 55}
@@ -85,6 +92,8 @@ export const TrackList = ({
                         onPlayTrackId({
                           trackId,
                           requeue: true,
+                          context,
+                          addHistory: context === 'library',
                         })
                       }
                       onClickField={(field: keyof Track) =>

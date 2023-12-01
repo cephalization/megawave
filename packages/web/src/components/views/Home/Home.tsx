@@ -21,7 +21,7 @@ export function Home() {
         <div className="flex flex-col w-0 flex-1 overflow-hidden">
           <SearchHeader onToggleNavigationOpen={toggleNavOpen} />
           <main
-            className="flex-1 flex-col flex-nowrap relative z-0 overflow-hidden focus:outline-none"
+            className="flex-1 @container flex-col flex-nowrap relative z-0 overflow-hidden focus:outline-none"
             tabIndex={0}
             id="library-container"
           >

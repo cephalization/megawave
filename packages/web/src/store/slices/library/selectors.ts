@@ -21,6 +21,7 @@ const selectLibraryActiveTrackIndex = (state: RootState) =>
   state.library.activeTrackIndex;
 const selectLibraryTracksByFilter = (state: RootState) =>
   state.library.tracksByFilter;
+const selectLibraryHistory = (state: RootState) => state.library.history;
 
 const selectFilteredTrackIds = createSelector(
   selectLibraryFilter,
@@ -71,6 +72,7 @@ export const librarySelectors = {
   selectLibraryQueue,
   selectLibraryActiveTrackIndex,
   selectLibraryTracksByFilter,
+  selectLibraryHistory,
   // memoized selectors
   selectFilteredTrackIds,
   selectLibraryActiveTrackId,

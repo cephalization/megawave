@@ -1,15 +1,27 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { bindActionCreators } from '@reduxjs/toolkit';
 import React from 'react';
 import { Fragment } from 'react';
+
+import { TrackList } from '~/components/molecules/TrackList';
+import { useAppDispatch, useAppSelector } from '~/hooks';
+import { librarySelectors } from '~/store/slices/library/selectors';
+import { playTrack } from '~/store/slices/player/player';
 
 type PlayHistoryProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
 };
 
-export function PlayHistory({ open, setOpen }: PlayHistoryProps) {
+function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
+  const dispatch = useAppDispatch();
+  const play = bindActionCreators(playTrack, dispatch);
+  const trackIds = useAppSelector(librarySelectors.selectLibraryHistory);
+  const currentTrack = useAppSelector(
+    librarySelectors.selectLibraryActiveTrack,
+  );
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -33,7 +45,7 @@ export function PlayHistory({ open, setOpen }: PlayHistoryProps) {
               leaveTo="translate-x-full"
             >
               <div className="w-screen max-w-md">
-                <div className="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
+                <div className="h-full flex flex-col py-6 bg-white @container shadow-xl">
                   <div className="px-4 sm:px-6">
                     <div className="flex items-start justify-between">
                       <Dialog.Title className="text-lg font-medium text-gray-900">
@@ -50,15 +62,18 @@ export function PlayHistory({ open, setOpen }: PlayHistoryProps) {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-6 relative flex-1 px-4 sm:px-6">
-                    {/* Replace with your content */}
-                    <div className="absolute inset-0 px-4 sm:px-6">
-                      <div
-                        className="h-full border-2 border-dashed border-gray-200"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    {/* /End replace */}
+                  <div
+                    id="history-container"
+                    className="mt-6 relative flex-1 max-h-full overflow-y-auto"
+                  >
+                    <TrackList
+                      context="history"
+                      containerId="history-container"
+                      trackIDs={trackIds}
+                      onPlayTrackId={play}
+                      onFilterLibrary={() => undefined}
+                      currentTrack={currentTrack}
+                    />
                   </div>
                 </div>
               </div>
@@ -69,3 +84,5 @@ export function PlayHistory({ open, setOpen }: PlayHistoryProps) {
     </Transition.Root>
   );
 }
+
+export const PlayHistory = React.memo(PlayHistoryComponent);

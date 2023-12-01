@@ -59,7 +59,7 @@ export const librarySlice = createSlice({
     });
     // player reducers
     builder.addCase(playerActions.play, (state, { payload }) => {
-      const { trackId, requeue, trackContext } = payload;
+      const { trackId, requeue, trackContext, addHistory = true } = payload;
 
       // if there does not already exist a queue of tracks, create one
       if (!state.queue.length || requeue) {
@@ -76,7 +76,10 @@ export const librarySlice = createSlice({
 
       // add the track to the history if it is not the active track
       const activeTrackId = state.queue[state.activeTrackIndex];
-      if (state.history[state.history.length - 1] !== activeTrackId) {
+      if (
+        state.history[state.history.length - 1] !== activeTrackId &&
+        addHistory
+      ) {
         state.history.push(activeTrackId);
       }
     });

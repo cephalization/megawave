@@ -34,6 +34,8 @@ type PlayerActionPayload = {
   trackId?: EntityId | null;
   // should the queue get rebuilt?
   requeue?: boolean;
+  // should the current track be added to the history?
+  addHistory?: boolean;
 };
 
 const sharedPlayerActions = {
@@ -46,20 +48,38 @@ const sharedPlayerActions = {
 
 export const playTrack = createAsyncThunk<
   EntityId[],
-  Omit<PlayerActionPayload, 'trackContext'>
->('player/play_thunk', async ({ trackId, requeue }, { dispatch, getState }) => {
-  const state = getState() as RootState;
+  Omit<PlayerActionPayload, 'trackContext'> & {
+    context?: 'library' | 'history';
+  }
+>(
+  'player/play_thunk',
+  async (
+    { trackId, requeue, context = 'library', addHistory },
+    { dispatch, getState },
+  ) => {
+    const state = getState() as RootState;
 
-  // what was the user looking at when they hit play
-  // the next and previous tracks will be determined by this
-  const trackContext =
-    librarySelectors.selectFilteredTrackIds(state) ||
-    librarySelectors.selectTrackIds(state);
+    // what was the user looking at when they hit play
+    // the next and previous tracks will be determined by this
+    let trackContext: EntityId[] = [];
+    switch (context) {
+      case 'library':
+        trackContext =
+          librarySelectors.selectFilteredTrackIds(state) ||
+          librarySelectors.selectTrackIds(state);
+        break;
+      case 'history':
+        trackContext = librarySelectors.selectLibraryHistory(state);
+        break;
+    }
 
-  dispatch(sharedPlayerActions.play({ trackId, requeue, trackContext }));
+    dispatch(
+      sharedPlayerActions.play({ trackId, requeue, trackContext, addHistory }),
+    );
 
-  return trackContext;
-});
+    return trackContext;
+  },
+);
 
 export type PlayTrack = typeof playTrack;
 

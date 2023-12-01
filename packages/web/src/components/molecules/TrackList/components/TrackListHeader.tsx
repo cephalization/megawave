@@ -3,7 +3,7 @@ import React from 'react';
 
 export const styles = {
   headerItem: 'text-sm leading-6 text-gray-500 font-semibold',
-  rowPadding: 'px-5 sm:px-6 lg:px-8 py-1',
+  rowPadding: 'px-5 @sm:px-6 @lg:px-8 py-1',
 } as const;
 
 export const sectionWidthRatio = {
@@ -25,19 +25,19 @@ export function TrackListHeader() {
         <h2 className="text-sm leading-6 text-gray-500 font-semibold">Title</h2>
       </div>
       <div
-        className="sm:flex-1 md:flex hidden"
+        className="@lg:flex-1 @lg:flex hidden"
         style={{ flexGrow: sectionWidthRatio.artist }}
       >
         <h2 className={clsx(styles.headerItem)}>Artist</h2>
       </div>
       <div
-        className="sm:flex-1 sm:flex hidden"
+        className="@lg:flex-1 @lg:flex hidden"
         style={{ flexGrow: sectionWidthRatio.album }}
       >
         <h2 className={clsx(styles.headerItem)}>Album</h2>
       </div>
       <div
-        className="sm:flex-1 sm:flex hidden justify-end"
+        className="@sm:flex-1 @sm:flex hidden justify-end"
         style={{ flexGrow: sectionWidthRatio.duration }}
       >
         <h2 className={clsx(styles.headerItem)}>Duration</h2>
