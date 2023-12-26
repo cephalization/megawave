@@ -202,7 +202,10 @@ class AudioLibrary:
     Access them via ID, or as a List of AudioFile instances.
     """
 
-    def __init__(self):
+    library: List[str]
+    libraryDict: Dict[str, AudioFile]
+
+    def __init__(self) -> None:
         self.library: List[str] = []
         self.libraryDict: Dict[str, AudioFile] = {}
 

@@ -27,7 +27,7 @@ ALBUM_ART_CACHE: Dict[str, Album_Art_Cache] = {}
 
 
 def add_frame_to_cache(frame: id3.APIC) -> str:
-    img_bytes = frame.data
+    img_bytes = frame.data  # type: ignore  # in mutagen, frame properties are not typed >:(
     byte_id = ALBUM_ART_BYTE_ID_CACHE.get(img_bytes, None)
 
     if byte_id is None:
@@ -40,7 +40,7 @@ def add_frame_to_cache(frame: id3.APIC) -> str:
             "art": {
                 "bytes": img_bytes,
                 "data": f"data:image/png;base64,{base64.b64encode(img_bytes).decode('ascii')}",
-                "mime": frame.mime,
+                "mime": frame.mime,  # type: ignore  # in mutagen, frame properties are not typed >:(
             },
         }
 
