@@ -1,4 +1,5 @@
 import random
+from typing import Any
 
 
 def getId() -> str:
@@ -26,7 +27,7 @@ def getId() -> str:
     return str(id, "UTF-8")
 
 
-def filter_by_field(filter: str, target_field: str, target_dict: dict):
+def filter_by_field(filter: str, target_field: str, target_dict: Any):
     target_dict_field = target_dict.get(target_field, None)
     if target_dict_field is None:
         return False

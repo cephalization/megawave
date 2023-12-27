@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -6,12 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRouter
 
 from megawave import health_router, library_router
-from megawave.files import initialize_library
+from megawave.config import fileDirectory
+from megawave.library import audioLibrary
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    initialize_library()
+    asyncio.create_task(audioLibrary.load(fileDirectory))
     yield
 
 

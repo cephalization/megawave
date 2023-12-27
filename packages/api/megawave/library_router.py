@@ -3,13 +3,18 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Request, Response
 from starlette.responses import StreamingResponse
 
-from megawave import files
 from megawave.art_cache import ALBUM_ART_CACHE
 from megawave.audio import AudioFile, get_audio_file_sort_value, get_media_type
+from megawave.library import audioLibrary
 from megawave.streaming_audio import get_file_chunk_generator
 from megawave.util import filter_by_field
 
 router = APIRouter(prefix="/library")
+
+
+@router.get("/status")
+def status():
+    return {"data": audioLibrary.status}
 
 
 @router.get("/art/{id}")
@@ -48,7 +53,7 @@ def songs(
     ex: /songs?subkeyfilter=artist-Daft%20Punk
       returns a list of songs, filtered by the artist key "Daft Punk"
     """
-    songs = files.audioLibrary.serialize()
+    songs = audioLibrary.serialize()
 
     # Handle general song filtering
     if filter is not None:
@@ -92,7 +97,7 @@ def song(id: str, req: Request):
     ex: /songs/1234bcdf
       returns a stream of byte chunks of the song id={id} for the range requested by the Range header
     """
-    song = files.audioLibrary.getById(id)
+    song = audioLibrary.getById(id)
     requested_byte_range = req.headers.get("Range") or None
 
     if song is not None and requested_byte_range is not None:

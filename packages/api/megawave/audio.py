@@ -1,5 +1,6 @@
+import asyncio
 import os
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Literal, Tuple, Union
 
 import mutagen
 from mutagen import MutagenError
@@ -195,6 +196,9 @@ class AudioFile:
         return ""
 
 
+AudioLibraryStatus = Literal["loading", "idle", "error"]
+
+
 class AudioLibrary:
     """
     Collection of AudioFile instances.
@@ -202,12 +206,18 @@ class AudioLibrary:
     Access them via ID, or as a List of AudioFile instances.
     """
 
+    # loading, idle, error enum
+    status: AudioLibraryStatus
     library: List[str]
     libraryDict: Dict[str, AudioFile]
 
     def __init__(self) -> None:
-        self.library: List[str] = []
-        self.libraryDict: Dict[str, AudioFile] = {}
+        self.reset()
+
+    def reset(self) -> None:
+        self.library = []
+        self.libraryDict = {}
+        self.status = "idle"
 
     def getById(self, id: str) -> Union[AudioFile, None]:
         entry = self.libraryDict.get(id, None)
@@ -242,3 +252,33 @@ class AudioLibrary:
                     output.append(serialized)
 
         return output
+
+    async def load(self, paths: List[str]) -> None:
+        """
+        Asynchronously load audio files from a list of paths into this library
+        """
+        self.reset()
+        self.status = "loading"
+        for path in paths:
+            added = 0
+            skipped = 0
+            print(f'- - - Loading music library at "{path}" - - - ')
+            for root, _, files in os.walk(path):
+                for name in files:
+                    hasExt, ext = hasAudioFileExtension(name)
+                    if hasExt:
+                        audio = AudioFile(root, name, ext)
+                        # if mutagen cannot parse the audio file within the AudioFile
+                        # constructor we do not add the file to the library
+                        if audio.ok:
+                            self.append(audio)
+                            added += 1
+                        else:
+                            skipped += 1
+                # this just yields control back to the event loop so that this function doesn't block
+                await asyncio.sleep(0)
+            print(f"- - - - Loaded {added} songs from {path} - - - - ")
+            print(f"- - - - Skipped {skipped} songs from {path} - - - - ")
+        print(f"- - - Loaded {len(self.library)} songs total - - - ")
+        print("- - - Done loading music library - - - ")
+        self.status = "idle"
