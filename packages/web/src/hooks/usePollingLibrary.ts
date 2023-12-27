@@ -18,7 +18,7 @@ export const usePollingLibrary = () => {
             const status = await fetchStatus();
             if (status !== 'idle') {
               dispatch(fetchLibrary());
-              setTimeout(check, 1000);
+              setTimeout(check, 2500);
             } else {
               setLoading(false);
             }

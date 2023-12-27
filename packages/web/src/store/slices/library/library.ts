@@ -35,7 +35,7 @@ export const librarySlice = createSlice({
     setLibraryFilter(state, { payload: { filter } }) {
       if (typeof filter !== 'string') return state;
 
-      state.filter = filter.toLocaleLowerCase();
+      state.filter = filter;
     },
   },
   extraReducers: (builder) => {
