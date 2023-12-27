@@ -34,7 +34,7 @@ export function Library() {
 
   useEffect(() => {
     if (tracksFilter !== lastTracksFilter && !isLoading) {
-      dispatch(fetchLibrary({ filter: tracksFilter, sort: '' }));
+      dispatch(fetchLibrary());
     }
   }, [tracksFilter, lastTracksFilter, isLoading]);
 

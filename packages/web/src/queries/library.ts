@@ -10,6 +10,14 @@ export type getLibraryResponse = {
   };
 };
 
+export async function fetchStatus() {
+  const res = await axios.get<{ data: 'loading' | 'idle' | 'error' }>(
+    '/api/library/status',
+  );
+
+  return res.data.data;
+}
+
 export async function fetch({
   filter,
   sort,

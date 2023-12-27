@@ -11,19 +11,20 @@ import { librarySelectors } from './selectors';
 export const fetchLibrary = createAsyncThunk<
   { tracks: Track[]; filter?: string; sort?: string; subkeyfilter?: string },
   { filter?: string; sort?: string; subkeyfilter?: string } | undefined
->('/library/fetchAll', async ({ filter, sort, subkeyfilter } = {}) => {
-  const defaultParams = {
-    ...(!filter && !sort ? { sort: 'artist' } : {}),
-  };
-  const tracks = await libraryApi.fetch({
-    filter,
-    sort,
-    subkeyfilter,
-    ...defaultParams,
-  });
+>(
+  '/library/fetchAll',
+  async ({ filter, sort, subkeyfilter } = {}, { getState }) => {
+    const state = getState() as RootState;
+    const stateFilter = librarySelectors.selectLibraryFilter(state);
+    const tracks = await libraryApi.fetch({
+      filter: filter || stateFilter,
+      sort: sort || 'artist',
+      subkeyfilter,
+    });
 
-  return { tracks, filter, sort, subkeyfilter };
-});
+    return { tracks, filter, sort, subkeyfilter };
+  },
+);
 
 export const fetchFilteredLibrary = createAsyncThunk<
   void,

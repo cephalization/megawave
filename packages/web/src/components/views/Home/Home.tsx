@@ -8,10 +8,12 @@ import { SearchHeader } from '~/components/molecules/SearchHeader';
 import { TrackCount } from '~/components/molecules/TrackCount';
 import { PageContainer } from '~/components/templates/PageContainer';
 import { PlayerProvider } from '~/context/PlayerContext';
+import { usePollingLibrary } from '~/hooks/usePollingLibrary';
 
 export function Home() {
   const [navOpen, setNavOpen] = useState(false);
   const toggleNavOpen = useCallback(() => setNavOpen((o) => !o), [setNavOpen]);
+  const { loading } = usePollingLibrary();
 
   return (
     <PlayerProvider>
@@ -27,7 +29,7 @@ export function Home() {
           >
             {/* Page title & actions */}
             <DividingHeader>Library</DividingHeader>
-            <TrackCount />
+            <TrackCount loading={loading} />
             {/* Library table */}
             <Library />
             <Controls />
