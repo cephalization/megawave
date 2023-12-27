@@ -1,0 +1,16 @@
+{
+  "python.analysis.extraPaths": ["${workspaceFolder}/packages/api"],
+  "python.defaultInterpreterPath": "${workspaceFolder}/packages/api/.venv",
+  "python.autoComplete.extraPaths": ["${workspaceFolder}/packages/api"],
+  "python.envFile": "${workspaceFolder}/packages/api/.env",
+  "editor.formatOnSave": true,
+  "ruff.lint.run": "onSave",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  }
+}
