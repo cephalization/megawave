@@ -14,7 +14,7 @@
 
 - run `poetry install` to install all python project deps
 
-- run `start.sh` to start api server on http://localhost:5000
+- run `start.sh` to start api server on http://localhost:5001
 
   - See [the docs](https://python-poetry.org/docs/basic-usage/#using-poetry-run) for more details
 
