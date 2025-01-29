@@ -6,12 +6,11 @@ import { NextButton } from '~/components/atoms/NextButton';
 import { PlayPauseButton } from '~/components/atoms/PlayPauseButton/PlayPauseButton';
 import { PrevButton } from '~/components/atoms/PrevButton';
 import { ProgressBar } from '~/components/atoms/ProgressBar';
-import { VolumeSlider } from '~/components/atoms/VolumeSlider';
+import { PlayHistory } from '~/components/molecules/PlayHistory';
+import { VolumeControl } from '~/components/molecules/VolumeControl';
 import { usePlayer } from '~/hooks/usePlayer';
 import { PLAYER_STATUS } from '~/store/slices/player/player';
 import { formatTime } from '~/utils/formatTime';
-
-import { PlayHistory } from '../PlayHistory';
 
 // VERY EXPENSIVE COMPONENT
 // RE-RENDERS ONCE PER TRACK SECOND
@@ -63,7 +62,7 @@ export function Controls() {
             </div>
           </div>
           <div className="flex flex-shrink w-full justify-end items-center gap-4 pr-4">
-            <VolumeSlider volume={volume} onChange={setVolume} />
+            <VolumeControl volume={volume} onChange={setVolume} />
             <button
               className="sm:block mx-1 hover:text-gray-900"
               onClick={() => setOpen((o) => !o)}

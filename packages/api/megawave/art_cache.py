@@ -45,5 +45,3 @@ def add_frame_to_cache(frame: id3.APIC) -> str:
         }
 
     return byte_id
-
-    return byte_id
