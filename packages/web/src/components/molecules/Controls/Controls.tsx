@@ -6,6 +6,7 @@ import { NextButton } from '~/components/atoms/NextButton';
 import { PlayPauseButton } from '~/components/atoms/PlayPauseButton/PlayPauseButton';
 import { PrevButton } from '~/components/atoms/PrevButton';
 import { ProgressBar } from '~/components/atoms/ProgressBar';
+import { VolumeSlider } from '~/components/atoms/VolumeSlider';
 import { usePlayer } from '~/hooks/usePlayer';
 import { PLAYER_STATUS } from '~/store/slices/player/player';
 import { formatTime } from '~/utils/formatTime';
@@ -27,6 +28,8 @@ export function Controls() {
     seekTime: currentTime,
     duration,
     durationPercentage,
+    volume,
+    setVolume,
   } = usePlayer(audioRef);
   const [open, setOpen] = useState(false);
   const playing = status === PLAYER_STATUS.PLAYING;
@@ -59,7 +62,8 @@ export function Controls() {
               <NextButton onClick={handleNext} />
             </div>
           </div>
-          <div className="flex flex-shrink w-full justify-center items-center">
+          <div className="flex flex-shrink w-full justify-end items-center gap-4 pr-4">
+            <VolumeSlider volume={volume} onChange={setVolume} />
             <button
               className="sm:block mx-1 hover:text-gray-900"
               onClick={() => setOpen((o) => !o)}

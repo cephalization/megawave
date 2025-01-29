@@ -20,6 +20,7 @@ export const useRegisteredAudioComponent = (
   const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
   const seekTime = useAppSelector(playerSelectors.selectPlayerSeekTime);
   const duration = useAppSelector(playerSelectors.selectPlayerDuration);
+  const volume = useAppSelector(playerSelectors.selectPlayerVolume);
   const setSeekTime = bindActionCreators(playerActions.setSeekTime, dispatch);
   const setDuration = bindActionCreators(playerActions.setDuration, dispatch);
   const trackLink = track?.link ?? null;
@@ -27,6 +28,13 @@ export const useRegisteredAudioComponent = (
   const durationPercentage = isNaN(audioRef?.current?.duration ?? 0)
     ? 0
     : Math.floor((seekTime / (audioRef?.current?.duration ?? 1)) * 100);
+
+  // Initialize volume when audio element is created
+  useEffect(() => {
+    if (audioRef?.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [audioRef, volume]);
 
   const handleScrub: RegisteredPlayer['scrub'] = (e) => {
     if (audioRef?.current !== null) {

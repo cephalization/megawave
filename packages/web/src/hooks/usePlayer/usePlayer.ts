@@ -17,6 +17,7 @@ export const usePlayer = (audioRef: React.RefObject<HTMLAudioElement>) => {
   );
   const status = useAppSelector(playerSelectors.selectPlayerStatus);
   const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
+  const volume = useAppSelector(playerSelectors.selectPlayerVolume);
 
   const prevTrackId =
     activeTrackIndex !== null ? queue[activeTrackIndex - 1] : null;
@@ -36,6 +37,17 @@ export const usePlayer = (audioRef: React.RefObject<HTMLAudioElement>) => {
   const _stop = useCallback<_Player['_stop']>(() => {
     dispatch(playerActions.stop());
   }, [dispatch]);
+
+  const setVolume = useCallback(
+    (newVolume: number) => {
+      if (audioRef.current) {
+        audioRef.current.volume = newVolume;
+      }
+      dispatch(playerActions.setVolume(newVolume));
+    },
+    [dispatch, audioRef],
+  );
+
   // create external handlers into redux
   const playNext = useCallback<_Player['playNext']>(() => {
     if (nextTrackId) {
@@ -64,5 +76,13 @@ export const usePlayer = (audioRef: React.RefObject<HTMLAudioElement>) => {
   // bind redux handlers to audio ref event handlers
   const registeredPlayer = useRegisteredAudioComponent(audioRef, _player);
 
-  return { ...registeredPlayer, status, playNext, playPrev, track };
+  return {
+    ...registeredPlayer,
+    status,
+    playNext,
+    playPrev,
+    track,
+    volume,
+    setVolume,
+  };
 };

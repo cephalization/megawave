@@ -19,12 +19,14 @@ type PlayerState = {
   status: PLAYER_STATUS;
   seekTime: number;
   duration: number;
+  volume: number;
 };
 
 const initialState: PlayerState = {
   status: PLAYER_STATUS.STOPPED,
   seekTime: 0,
   duration: 0,
+  volume: 1,
 };
 
 type PlayerActionPayload = {
@@ -98,6 +100,10 @@ export const playerSlice = createSlice({
 
       state.duration = payload;
     },
+    setVolume(state, { payload }) {
+      if (isNaN(payload)) return;
+      state.volume = Math.max(0, Math.min(1, payload));
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -124,9 +130,11 @@ export const playerActions = {
 const selectPlayerStatus = (state: RootState) => state.player.status;
 const selectPlayerSeekTime = (state: RootState) => state.player.seekTime;
 const selectPlayerDuration = (state: RootState) => state.player.duration;
+const selectPlayerVolume = (state: RootState) => state.player.volume;
 
 export const playerSelectors = {
   selectPlayerStatus,
   selectPlayerSeekTime,
   selectPlayerDuration,
+  selectPlayerVolume,
 };
