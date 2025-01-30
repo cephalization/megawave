@@ -1,57 +1,66 @@
-# ~~ MEGAWAVE backend ~~
+# MEGAWAVE Backend
 
 ## Requirements
 
-- python 3.7.7
-
-- [poetry](https://python-poetry.org/docs/#installation)
-
-  - python package and environment manager
-
-- git
+- Python 3.12+
+- [UV](https://github.com/astral-sh/uv) - An extremely fast Python package installer and resolver
+- Git
 
 ## Setup
 
-- run `poetry install` to install all python project deps
+1. Install UV:
 
-- run `start.sh` to start api server on http://localhost:5001
+    ```bash
+    # On macOS/Linux
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 
-  - See [the docs](https://python-poetry.org/docs/basic-usage/#using-poetry-run) for more details
+    # On Windows
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
 
-  - If the server complains of an in use port and you are running Mac OS Monterey, follow [these instructions](https://developer.apple.com/forums/thread/682332)
+2. Create virtual environment and install dependencies:
 
-## Environment
+    ```bash
+    uv venv
+    source .venv/bin/activate  # On Unix/macOS
+    # or
+    .venv\Scripts\activate     # On Windows
 
-[Built with this guide](https://sourcery.ai/blog/python-best-practices/)
+    uv pip install -e ".[dev]"  # Install with dev dependencies
+    ```
 
-- mypy
+3. Start the API server:
 
-  - allow devs to add compile-time type checking to python code
+    ```bash
+    ./start.sh  # Starts server on http://localhost:5001
+    ```
 
-  - https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html
+Note: If the server complains of an in-use port and you are running Mac OS Monterey, follow [these instructions](https://developer.apple.com/forums/thread/682332).
 
-- pytest
+## Development Tools
 
-  - test python files, check test coverage
+The project uses modern Python development tools, all configured in `pyproject.toml`:
 
-- isort
+- [Ruff](https://github.com/astral-sh/ruff)
+  - Lightning-fast Python linter and formatter
+  - Replaces isort, black, and flake8 with a single tool
 
-  - sort/organization imports automatically
+- [mypy](https://mypy.readthedocs.io/)
+  - Static type checking
+  - Run with `./typecheck.sh`
+  - [Type hints cheat sheet](https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html)
 
-- black
+- [pytest](https://docs.pytest.org/)
+  - Testing framework with coverage reporting
+  - Run with `uv run pytest`
 
-  - automatically format code
+## Key Libraries
 
-- flake8
+- [FastAPI](https://fastapi.tiangolo.com/)
+  - Modern, fast web framework for building APIs
+  - Automatic OpenAPI documentation
+  - Type checking and validation
 
-  - enforce code formatting
-
-## Libraries (for now)
-
-- mutagen
-
-  - parse music files and their metadata
-
-- fastAPI
-
-  - super fast and simple API library
+- [mutagen](https://mutagen.readthedocs.io/)
+  - Parse music files and their metadata
+  - Supports multiple audio formats

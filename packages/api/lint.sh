@@ -1,2 +1,2 @@
 #!/bin/bash
-poetry run ruff format .
+uv run ruff format .

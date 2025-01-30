@@ -2,6 +2,5 @@
 
 set -e
 
-. /venv/bin/activate
-
-exec python main.py
+# Run the Python application using uv run
+exec uv run main.py

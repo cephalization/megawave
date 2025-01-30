@@ -1,28 +1,47 @@
-[tool.poetry]
+[project]
 name = "megawave"
 version = "0.0.1"
 description = "Self hosted music streaming api"
-authors = ["Your Name <you@example.com>"]
+authors = [{ name = "Anthony Powell", email = "powell.anthonyd@proton.me" }]
 license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+  "mutagen>=1.47.0",
+  "fastapi>=0.115.8",
+  "uvicorn>=0.34.0",
+  "aiofiles>=24.1.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-mutagen = "^1.47.0"
-fastapi = "^0.107.0"
-uvicorn = "^0.25.0"
-aiofiles = "^23.2.1"
-
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.8.0"
-pytest = "^6.1.2"
-pytest-cov = "^2.10.1"
-ruff = "^0.1.9"
+[project.optional-dependencies]
+dev = ["mypy>=1.8.0", "pytest>=7.4.4", "pytest-cov>=4.1.0", "ruff>=0.2.1"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 fix = true
 
 [tool.ruff.lint.isort]
+known-first-party = ["megawave"]
+
+[tool.mypy]
+files = ["megawave", "test"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+
+[tool.coverage.run]
+source = ["megawave"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "def __repr__",
+  "if self\\.debug",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "if 0:",
+  "if __name__ == .__main__.:",
+]

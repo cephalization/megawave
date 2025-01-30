@@ -1,2 +1,2 @@
 #!/bin/bash
-poetry run mypy ./**/*.py
+uvx mypy ./**/*.py
