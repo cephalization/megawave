@@ -13,6 +13,7 @@ export type LibraryState = {
   queue: EntityId[];
   history: EntityId[];
   tracksByFilter: Record<string, EntityId[]>;
+  scrollPositions: Record<string, number>; // Store scroll positions by filter key
 };
 
 const initialState = libraryAdapter.getInitialState<LibraryState>({
@@ -21,6 +22,7 @@ const initialState = libraryAdapter.getInitialState<LibraryState>({
   error: null,
   filter: '',
   tracksByFilter: {},
+  scrollPositions: {},
   // queue
   activeTrackIndex: null,
   queue: [],
@@ -36,6 +38,20 @@ export const librarySlice = createSlice({
       if (typeof filter !== 'string') return state;
 
       state.filter = filter;
+      // Clear tracksByFilter when clearing the filter
+      if (filter === '') {
+        state.tracksByFilter = {};
+      }
+    },
+    setScrollPosition(
+      state,
+      {
+        payload: { filter, position },
+      }: { payload: { filter: string; position: number } },
+    ) {
+      // Use empty string as key for unfiltered state
+      const key = filter || '';
+      state.scrollPositions[key] = position;
     },
   },
   extraReducers: (builder) => {
@@ -45,8 +61,10 @@ export const librarySlice = createSlice({
       state.initialized = true;
       libraryAdapter.upsertMany(state, payload.tracks);
 
-      if (payload.filter) {
-        state.tracksByFilter[payload.filter] = payload.tracks.map((t) => t.id);
+      // Store filtered tracks in tracksByFilter using either filter or subkeyfilter as the key
+      const filterKey = payload.subkeyfilter || payload.filter;
+      if (filterKey) {
+        state.tracksByFilter[filterKey] = payload.tracks.map((t) => t.id);
       }
     });
     builder.addCase(fetchLibrary.pending, (state) => {

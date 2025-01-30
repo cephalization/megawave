@@ -22,17 +22,34 @@ const selectLibraryActiveTrackIndex = (state: RootState) =>
 const selectLibraryTracksByFilter = (state: RootState) =>
   state.library.tracksByFilter;
 const selectLibraryHistory = (state: RootState) => state.library.history;
+const selectLibraryScrollPositions = (state: RootState) =>
+  state.library.scrollPositions;
 
 const selectFilteredTrackIds = createSelector(
   selectLibraryFilter,
   selectLibraryTracksByFilter,
   selectTrackIds,
   (filter, trackIDsByFilter, trackIDs) => {
-    if (filter) {
-      return trackIDsByFilter[filter] || [];
+    // Check for subkeyfilter first
+    const subkeyfilterKey = Object.keys(trackIDsByFilter).find(
+      (key) => key.startsWith('artist-') || key.startsWith('album-'),
+    );
+    if (subkeyfilterKey) {
+      return trackIDsByFilter[subkeyfilterKey];
     }
 
-    return trackIDs;
+    // Then check for regular filter
+    if (filter && trackIDsByFilter[filter]) {
+      return trackIDsByFilter[filter];
+    }
+
+    // If no filter active, return all tracks
+    if (!filter) {
+      return trackIDs;
+    }
+
+    // If filter is active but no matches found, return empty array
+    return [];
   },
 );
 const selectFilteredTrackIdCount = createSelector(
@@ -58,6 +75,21 @@ const selectLibraryActiveTrack = createSelector(
   },
 );
 
+const selectCurrentScrollPosition = createSelector(
+  selectLibraryFilter,
+  selectLibraryTracksByFilter,
+  selectLibraryScrollPositions,
+  (filter, tracksByFilter, scrollPositions) => {
+    // Check for subkeyfilter first
+    const subkeyfilterKey = Object.keys(tracksByFilter).find(
+      (key) => key.startsWith('artist-') || key.startsWith('album-'),
+    );
+    // Use the appropriate key to get the scroll position
+    const key = subkeyfilterKey || filter || '';
+    return scrollPositions[key] || 0;
+  },
+);
+
 export const librarySelectors = {
   // entity selectors
   selectTrackById,
@@ -73,9 +105,11 @@ export const librarySelectors = {
   selectLibraryActiveTrackIndex,
   selectLibraryTracksByFilter,
   selectLibraryHistory,
+  selectLibraryScrollPositions,
   // memoized selectors
   selectFilteredTrackIds,
   selectLibraryActiveTrackId,
   selectLibraryActiveTrack,
   selectFilteredTrackIdCount,
+  selectCurrentScrollPosition,
 };

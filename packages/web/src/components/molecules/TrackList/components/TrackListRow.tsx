@@ -94,7 +94,9 @@ export function TrackListRow({
             title={getArrayString(artist)}
           >
             <a
-              href={`#${link}/subkeyfilter=${artist}`}
+              href={`#?subkeyfilter=artist-${encodeURIComponent(
+                getArrayString(artist),
+              )}`}
               onClick={() => onClickField('artist')}
               className="hover:text-blue-700 transition-colors duration-300"
             >
@@ -108,7 +110,9 @@ export function TrackListRow({
         >
           <h2 className={clsx(styles.headerItem)} title={getArrayString(album)}>
             <a
-              href={`#${link}/subkeyfilter=${album}`}
+              href={`#?subkeyfilter=album-${encodeURIComponent(
+                getArrayString(album),
+              )}`}
               onClick={() => onClickField('album')}
               className="hover:text-blue-700 transition-colors duration-300"
             >

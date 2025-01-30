@@ -3,7 +3,6 @@ import { createAsyncThunk, EntityId } from '@reduxjs/toolkit';
 import { libraryApi } from '~/queries/library';
 import { RootState } from '~/store';
 import { Track } from '~/types/library';
-import { getArrayString } from '~/utils/trackMeta';
 
 import { libraryActions } from './library';
 import { librarySelectors } from './selectors';
@@ -36,15 +35,24 @@ export const fetchFilteredLibrary = createAsyncThunk<
   async ({ field, trackId }, { getState, dispatch }) => {
     const state = getState() as RootState;
     const track = librarySelectors.selectTrackById(state, trackId);
-    const trackField = getArrayString(track?.[field]);
+    const trackField = track?.[field];
 
     if (trackField) {
+      const filterValue = Array.isArray(trackField)
+        ? trackField[0]
+        : trackField;
+
+      // Clear the main filter
       dispatch(libraryActions.setLibraryFilter({ filter: '' }));
+
+      // Use the subkeyfilter format that matches the URL
+      const subkeyfilter = `${field}-${filterValue}`;
+
       dispatch(
         fetchLibrary({
           filter: '',
           sort: field,
-          subkeyfilter: `${field}-${encodeURIComponent(trackField)}`,
+          subkeyfilter,
         }),
       );
     }
