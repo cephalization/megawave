@@ -1,5 +1,6 @@
 import { ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
 import { libraryActions } from '~/store/slices/library/library';
@@ -7,31 +8,39 @@ import { librarySelectors } from '~/store/slices/library/selectors';
 
 export const TrackCount = ({ loading }: { loading?: boolean }) => {
   const dispatch = useAppDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
   const trackCount = useAppSelector(
     librarySelectors.selectFilteredTrackIdCount,
   );
   const trackFilter = useAppSelector(librarySelectors.selectLibraryFilter);
-  const tracksByFilter = useAppSelector(
-    librarySelectors.selectLibraryTracksByFilter,
-  );
 
-  // Check for active subkeyfilter
-  const activeSubkeyfilter = Object.keys(tracksByFilter).find(
-    (key) => key.startsWith('artist-') || key.startsWith('album-'),
-  );
+  // Check for active filter
+  const activeFilter = searchParams.get('filter');
+  const searchQuery = searchParams.get('q');
+
+  useEffect(() => {
+    // Sync URL filter with Redux state
+    if (activeFilter) {
+      dispatch(libraryActions.setLibraryFilter({ filter: activeFilter }));
+    } else if (searchQuery) {
+      dispatch(libraryActions.setLibraryFilter({ filter: searchQuery }));
+    }
+  }, [activeFilter, searchQuery, dispatch]);
 
   const clearFilter = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Clear the URL hash
-    window.history.pushState(null, '', '#');
+    setSearchParams({});
     dispatch(libraryActions.setLibraryFilter({ filter: '' }));
   };
 
   const getFilterDisplay = () => {
-    if (activeSubkeyfilter) {
-      const [field, ...value] = activeSubkeyfilter.split('-');
+    if (activeFilter) {
+      const [field, ...value] = activeFilter.split('-');
       return `${field}: ${decodeURIComponent(value.join('-'))}`;
+    }
+    if (searchQuery) {
+      return `search: ${searchQuery}`;
     }
     if (trackFilter) {
       return `search: ${trackFilter}`;

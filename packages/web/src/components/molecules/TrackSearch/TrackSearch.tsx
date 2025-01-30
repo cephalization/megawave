@@ -1,36 +1,35 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import debounce from 'lodash.debounce';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 
-import { useAppDispatch, useAppSelector } from '~/hooks';
+import { useAppDispatch } from '~/hooks';
 import { libraryActions } from '~/store/slices/library/library';
-import { librarySelectors } from '~/store/slices/library/selectors';
 
 export function TrackSearch() {
   const dispatch = useAppDispatch();
-  const libraryFilter = useAppSelector(librarySelectors.selectLibraryFilter);
-  const [localFilter, setLocalFilter] = useState(libraryFilter);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = searchParams.get('q') || '';
+
   const dSetFilter = useCallback(
     debounce((filter: string) => {
       dispatch(libraryActions.setLibraryFilter({ filter }));
     }, 300),
     [],
   );
+
   const onChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const value = e.target.value;
-
-      setLocalFilter(value);
+      setSearchParams(value ? { q: value } : {});
       dSetFilter(value);
     },
-    [dSetFilter, setLocalFilter],
+    [dSetFilter, setSearchParams],
   );
 
   useEffect(() => {
-    if (localFilter !== libraryFilter) {
-      setLocalFilter(libraryFilter);
-    }
-  }, [libraryFilter]);
+    dispatch(libraryActions.setLibraryFilter({ filter }));
+  }, [filter, dispatch]);
 
   return (
     <div className="flex-1 flex">
@@ -48,7 +47,7 @@ export function TrackSearch() {
             className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-transparent focus:placeholder-gray-400 sm:text-sm"
             placeholder="Search your library"
             type="search"
-            value={localFilter}
+            value={filter}
             onChange={onChange}
           />
         </div>

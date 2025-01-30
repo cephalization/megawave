@@ -1,22 +1,31 @@
 import React from 'react';
-import { Route, BrowserRouter, Routes } from 'react-router';
+import { RouterProvider, createBrowserRouter } from 'react-router';
 
 import { Home } from '~/components/views/Home';
 
 import { Login } from './components/views/Login';
 
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Home />,
+  },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    path: '/playlists',
+    element: <Home />, // TODO: Create Playlists component
+  },
+  {
+    path: '/recent',
+    element: <Home />, // TODO: Create Recent component
+  },
+]);
+
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" Component={Home} />
-        <Route path="/login" Component={Login} />
-        {/* <PrivateRoute path="/library">
-          <ProtectedPage />
-        </PrivateRoute> */}
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

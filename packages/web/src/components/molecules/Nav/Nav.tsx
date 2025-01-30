@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router';
 
 import logo from '~/assets/logo.svg';
 
@@ -10,6 +11,8 @@ export type NavProps = {
 };
 
 export function Nav({ open = false, toggleNav }: NavProps) {
+  const location = useLocation();
+
   return (
     <>
       <MobileNav open={open} toggleNav={toggleNav} />
@@ -27,13 +30,14 @@ export function Nav({ open = false, toggleNav }: NavProps) {
             {/* Navigation */}
             <nav className="px-3 mt-6">
               <div className="space-y-1">
-                {/* Current: "bg-gray-200 text-gray-900", Default: "text-gray-700 hover:text-gray-900 hover:bg-gray-50" */}
-                <a
-                  href="#"
-                  className="bg-gray-200 text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                <Link
+                  to="/"
+                  className={`${
+                    location.pathname === '/'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
                 >
-                  {/* Current: "text-gray-500", Default: "text-gray-400 group-hover:text-gray-500" */}
-                  {/* Heroicon name: home */}
                   <svg
                     className="text-gray-500 mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
@@ -50,12 +54,15 @@ export function Nav({ open = false, toggleNav }: NavProps) {
                     />
                   </svg>
                   Library
-                </a>
-                <a
-                  href="#"
-                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                </Link>
+                <Link
+                  to="/playlists"
+                  className={`${
+                    location.pathname === '/playlists'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
                 >
-                  {/* Heroicon name: view-list */}
                   <svg
                     className="text-gray-400 group-hover:text-gray-500 mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
@@ -72,12 +79,15 @@ export function Nav({ open = false, toggleNav }: NavProps) {
                     />
                   </svg>
                   Playlists
-                </a>
-                <a
-                  href="#"
-                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                </Link>
+                <Link
+                  to="/recent"
+                  className={`${
+                    location.pathname === '/recent'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
                 >
-                  {/* Heroicon name: clock */}
                   <svg
                     className="text-gray-400 group-hover:text-gray-500 mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
@@ -94,7 +104,7 @@ export function Nav({ open = false, toggleNav }: NavProps) {
                     />
                   </svg>
                   Recent
-                </a>
+                </Link>
               </div>
             </nav>
           </div>

@@ -1,6 +1,7 @@
 import { EntityId } from '@reduxjs/toolkit';
 import clsx from 'clsx';
 import React from 'react';
+import { useSearchParams } from 'react-router';
 
 import { useAppSelector } from '~/hooks';
 import { librarySelectors } from '~/store/slices/library/selectors';
@@ -34,12 +35,30 @@ export function TrackListRow({
   const track = useAppSelector((s) =>
     librarySelectors.selectTrackById(s, trackId),
   );
+  const [, setSearchParams] = useSearchParams();
 
   if (track === undefined) return null;
 
-  const { name, artist, album, link } = track;
-
+  const { name, artist, album } = track;
   const duration = formatTime(parseInt(track.length, 10));
+
+  const handleTrackClick = (e: React.MouseEvent) => {
+    onClickTrack();
+  };
+
+  const handleArtistClick = (e: React.MouseEvent) => {
+    setSearchParams({
+      filter: `artist-${encodeURIComponent(getArrayString(artist))}`,
+    });
+    onClickField('artist');
+  };
+
+  const handleAlbumClick = (e: React.MouseEvent) => {
+    setSearchParams({
+      filter: `album-${encodeURIComponent(getArrayString(album))}`,
+    });
+    onClickField('album');
+  };
 
   return (
     <div
@@ -72,13 +91,12 @@ export function TrackListRow({
           </div>
           <div className="flex-1 min-w-0 flex-wrap justify-start @lg:justify-center @lg:items-center">
             <h2 className={clsx(styles.headerItem, 'w-full')} title={name}>
-              <a
-                href={`#${link}`}
-                onClick={() => onClickTrack()}
+              <button
+                onClick={handleTrackClick}
                 className={'hover:text-blue-700 transition-colors duration-300'}
               >
                 {name}
-              </a>
+              </button>
             </h2>
             <a className="leading-none text-xs text-gray-400 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden @lg:hidden w-full">
               {artist}
@@ -93,15 +111,12 @@ export function TrackListRow({
             className={clsx(styles.headerItem)}
             title={getArrayString(artist)}
           >
-            <a
-              href={`#?subkeyfilter=artist-${encodeURIComponent(
-                getArrayString(artist),
-              )}`}
-              onClick={() => onClickField('artist')}
+            <button
+              onClick={handleArtistClick}
               className="hover:text-blue-700 transition-colors duration-300"
             >
               {artist}
-            </a>
+            </button>
           </h2>
         </div>
         <div
@@ -109,15 +124,12 @@ export function TrackListRow({
           style={{ flexGrow: sectionWidthRatio.album }}
         >
           <h2 className={clsx(styles.headerItem)} title={getArrayString(album)}>
-            <a
-              href={`#?subkeyfilter=album-${encodeURIComponent(
-                getArrayString(album),
-              )}`}
-              onClick={() => onClickField('album')}
+            <button
+              onClick={handleAlbumClick}
               className="hover:text-blue-700 transition-colors duration-300"
             >
               {album}
-            </a>
+            </button>
           </h2>
         </div>
         <div
