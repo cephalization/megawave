@@ -59,7 +59,9 @@ export const librarySlice = createSlice({
     builder.addCase(fetchLibrary.fulfilled, (state, { payload }) => {
       state.loading = false;
       state.initialized = true;
-      libraryAdapter.upsertMany(state, payload.tracks);
+
+      // Clear existing entities and replace with new sorted/filtered results
+      libraryAdapter.setAll(state, payload.tracks);
 
       // Store filtered tracks in tracksByFilter using either filter or subkeyfilter as the key
       const filterKey = payload.subkeyfilter || payload.filter;

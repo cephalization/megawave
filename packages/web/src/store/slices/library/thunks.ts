@@ -16,14 +16,13 @@ export const fetchLibrary = createAsyncThunk<
     const state = getState() as RootState;
     const stateFilter = librarySelectors.selectLibraryFilter(state);
     const newFilter = filter || stateFilter;
-    const newSort = sort || 'artist';
     const tracks = await libraryApi.fetch({
       filter: newFilter,
-      sort: newSort,
+      sort,
       subkeyfilter,
     });
 
-    return { tracks, filter: newFilter, sort: newSort, subkeyfilter };
+    return { tracks, filter: newFilter, sort, subkeyfilter };
   },
 );
 

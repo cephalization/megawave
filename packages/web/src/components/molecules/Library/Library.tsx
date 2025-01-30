@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
+import { useSearchParams } from 'react-router';
 import { bindActionCreators } from 'redux';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
@@ -17,6 +18,7 @@ import { WaveLoader } from '../WaveLoader';
 
 export function Library() {
   const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
 
   const tracksFilter = useAppSelector(librarySelectors.selectLibraryFilter);
   const trackIDs = useAppSelector(librarySelectors.selectFilteredTrackIds);
@@ -31,12 +33,17 @@ export function Library() {
   const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
 
   const lastTracksFilter = usePrevious(tracksFilter);
+  const currentSort = searchParams.get('sort');
+  const lastSort = usePrevious(currentSort);
 
   useEffect(() => {
-    if (tracksFilter !== lastTracksFilter && !isLoading) {
-      dispatch(fetchLibrary());
+    if (
+      (tracksFilter !== lastTracksFilter || currentSort !== lastSort) &&
+      !isLoading
+    ) {
+      dispatch(fetchLibrary({ sort: currentSort || undefined }));
     }
-  }, [tracksFilter, lastTracksFilter, isLoading]);
+  }, [tracksFilter, lastTracksFilter, currentSort, lastSort, isLoading]);
 
   if (!isInitialized) return <WaveLoader />;
 

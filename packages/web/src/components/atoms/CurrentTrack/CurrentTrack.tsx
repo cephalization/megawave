@@ -14,7 +14,7 @@ export function CurrentTrack({ title, artist, art }: CurrentTrackProps) {
   return (
     <div className="flex items-center gap-2 flex-shrink w-full">
       <AlbumArt
-        className="h-12 w-12 flex-shrink-0 hidden sm:block"
+        className="h-12 w-12 flex-shrink-0 hidden sm:flex"
         src={art}
         alt={`Album art for ${title} by ${artist}`}
       />

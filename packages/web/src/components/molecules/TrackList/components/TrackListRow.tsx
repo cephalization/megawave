@@ -100,9 +100,11 @@ export function TrackListRow({
                 {name}
               </button>
             </h2>
-            <a className="leading-none text-xs text-gray-400 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden @lg:hidden w-full">
-              {artist}
-            </a>
+            <div className={clsx(styles.headerItem, 'w-full')}>
+              <div className="leading-none text-xs text-gray-400 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden @lg:hidden w-full">
+                {artist}
+              </div>
+            </div>
           </div>
         </div>
         <div

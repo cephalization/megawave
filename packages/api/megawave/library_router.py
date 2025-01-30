@@ -43,7 +43,7 @@ def songs(
     /songs?[sort]=[-]sortKeyStr&[filter]=filterStr&[subkeyfilter]=filterKeyStr-filterValueStr
 
     ex: /songs
-      returns an unsorted/unfiltered list of songs
+      returns a list of songs, sorted by album name and track number by default
     ex: /songs?sort=artist
       returns a list of songs, sorted by artist alphabetically ascending
     ex: /songs?sort=-album
@@ -81,10 +81,45 @@ def songs(
         assert isinstance(sort, str)
         reverse = sort.startswith("-")
         sortKey = sort.replace("-", "")
-        songs.sort(
-            key=lambda k: get_audio_file_sort_value(k, sortKey) or "",
-            reverse=reverse,
-        )
+
+        # For descending sort, we want missing values at the top instead of bottom
+        # So we temporarily flip "zzzzz" to "" for the sort
+        if reverse:
+            songs.sort(
+                key=lambda k: str(get_audio_file_sort_value(k, sortKey)).replace(
+                    "zzzzz", ""
+                ),
+                reverse=True,
+            )
+        else:
+            songs.sort(
+                key=lambda k: get_audio_file_sort_value(k, sortKey) or "",
+                reverse=False,
+            )
+    else:
+        # Default sorting: by album name, then track number, with non-album tracks at the end
+        def sort_key(song):
+            # Get album name, defaulting to None if not present
+            album = song.get("album", None)
+            # Handle both None and empty list cases
+            album_name = album[0].lower() if album and len(album) > 0 else None
+
+            # Get track number, defaulting to infinity if not present
+            track = song.get("track", None)
+            track_num = (
+                track["no"]
+                if track and isinstance(track, dict) and "no" in track
+                else float("inf")
+            )
+
+            # Songs without albums go to the end
+            if album_name is None:
+                return ("zzzzz", float("inf"))
+
+            return (album_name, track_num)
+
+        # Sort
+        songs.sort(key=sort_key)
 
     return {"data": {"songs": songs}}
 

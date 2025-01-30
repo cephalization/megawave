@@ -27,6 +27,7 @@ AudioFile_Serialized = TypedDict(
         "link": str,
         "meta": str,
         "fileType": str,
+        "track": Union[Dict[str, int], None],
     },
 )
 
@@ -35,7 +36,14 @@ def get_audio_file_sort_value(
     audio: AudioFile_Serialized, sort: str
 ) -> Union[str, int]:
     if sort == "artist":
-        return AudioFile.getSafeArtist(audio).lower()
+        artist = audio.get("artist")
+        return AudioFile.getSafeArtist(audio).lower() if artist else "zzzzz"
+    elif sort == "album":
+        album = audio.get("album")
+        return album[0].lower() if album else "zzzzz"
+    elif sort == "name":
+        name = audio.get("name")
+        return name.lower() if name else "zzzzz"
 
     return ""
 
@@ -147,9 +155,27 @@ class AudioFile:
         if not self.ok or self.meta is None:
             return None
 
+        # Get track number from metadata
+        track_raw = self.meta.get("tracknumber", [None])[0]
+        track_info = None
+        if track_raw:
+            try:
+                # Handle both "X" and "X/Y" formats
+                track_str = track_raw.split("/")[0].strip()
+                if track_str.isdigit():
+                    track_info = {"no": int(track_str)}
+            except (ValueError, IndexError, AttributeError):
+                print(f"Failed to parse track number: {track_raw}")
+                pass
+
+        # Get album info, ensuring we don't return empty lists
+        album = self.meta.get("album", None)
+        if album is not None and not album:  # Convert empty list to None
+            album = None
+
         return {
             "name": self.meta.get("title", [self.fileName])[0],
-            "album": self.meta.get("album", None),
+            "album": album,
             "artist": self.meta.get("artist", None),
             "length": self.info.length if self.info is not None else None,
             "id": self.id,
@@ -157,6 +183,7 @@ class AudioFile:
             "meta": self.meta.pprint(),
             "fileType": self.fileType,
             "art": [ALBUM_ART_CACHE[a]["link"] for a in self.art] if self.art else None,
+            "track": track_info,
         }
 
     @staticmethod
