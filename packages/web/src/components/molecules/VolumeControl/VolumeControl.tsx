@@ -19,7 +19,7 @@ export const VolumeControl = ({ volume, onChange }: VolumeControlProps) => {
 
       {/* Show button and popover on small screens */}
       <div className="md:hidden flex items-center">
-        <Popover className="relative">
+        <Popover className="relative flex items-center">
           <Popover.Button className="hover:text-gray-900 focus:outline-none">
             <SpeakerWaveIcon height={20} />
           </Popover.Button>

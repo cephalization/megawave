@@ -26,7 +26,7 @@ const initialState: PlayerState = {
   status: PLAYER_STATUS.STOPPED,
   seekTime: 0,
   duration: 0,
-  volume: 1,
+  volume: 0.1,
 };
 
 type PlayerActionPayload = {

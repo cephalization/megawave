@@ -2,41 +2,30 @@ import React from 'react';
 
 import { getArrayString } from '~/utils/trackMeta';
 
+import { AlbumArt } from '../AlbumArt/AlbumArt';
+
 type CurrentTrackProps = {
   title?: string;
   artist?: string | string[] | null;
   art?: string;
 };
 
-export const CurrentTrack = ({ title, artist, art }: CurrentTrackProps) => {
-  if (!title) return null;
-
-  const formattedArtist = getArrayString(artist);
-
+export function CurrentTrack({ title, artist, art }: CurrentTrackProps) {
   return (
-    <div className="flex gap-2 items-center max-w-full">
-      <div className="flex-shrink-0 md:pl-0">
-        <img
-          className="object-contain rounded"
-          style={{ height: 32, width: 32 }}
-          src={art}
-          alt={`Album art for ${title} by ${artist}`}
-        />
-      </div>
-      <div className="grid grid-rows-2 text-sm max-w-full">
-        <label
-          title={title}
-          className="font-bold truncate w-full max-w-full whitespace-nowrap"
-        >
-          {title}
-        </label>
-        <label
-          title={formattedArtist}
-          className="text-gray-600 hover:text-gray-800 truncate w-full max-w-full whitespace-nowrap"
-        >
-          {formattedArtist}
-        </label>
+    <div className="flex items-center gap-2 flex-shrink w-full">
+      <AlbumArt
+        className="h-12 w-12 flex-shrink-0 hidden sm:block"
+        src={art}
+        alt={`Album art for ${title} by ${artist}`}
+      />
+      <div className="flex flex-col min-w-0 w-full">
+        <div className="text-sm font-bold truncate max-w-full">
+          {title || 'No track playing'}
+        </div>
+        <div className="text-xs text-gray-500 truncate max-w-full">
+          {getArrayString(artist)}
+        </div>
       </div>
     </div>
   );
-};
+}

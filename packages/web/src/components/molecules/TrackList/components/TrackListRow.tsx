@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import React from 'react';
 import { useSearchParams } from 'react-router';
 
+import { AlbumArt } from '~/components/atoms/AlbumArt/AlbumArt';
 import { useAppSelector } from '~/hooks';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import { Track } from '~/types/library';
@@ -14,7 +15,7 @@ import { sectionWidthRatio, styles as headerStyles } from './TrackListHeader';
 
 const styles = {
   headerItem:
-    'text-xs @md:leading-6 leading-none text-gray-700 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden pr-2',
+    'text-xs @md:leading-6 leading-none text-gray-700 font-bold *:overflow-ellipsis *:whitespace-nowrap *:overflow-hidden *:max-w-full *:text-start pr-2',
 } as const;
 
 type TrackListRowProps = {
@@ -83,15 +84,16 @@ export function TrackListRow({
           style={{ flexGrow: sectionWidthRatio.title }}
         >
           <div className="flex-shrink-0 p-2 @md:pl-0">
-            <img
+            <AlbumArt
               className="flex h-8 w-8 @lg:h-10 @lg:w-10"
               src={track.art?.[0]}
-              // alt={`Album art for ${album} by ${artist}`}
+              alt={`Album art for ${album} by ${artist}`}
             />
           </div>
           <div className="flex-1 min-w-0 flex-wrap justify-start @lg:justify-center @lg:items-center">
             <h2 className={clsx(styles.headerItem, 'w-full')} title={name}>
               <button
+                type="button"
                 onClick={handleTrackClick}
                 className={'hover:text-blue-700 transition-colors duration-300'}
               >
@@ -108,7 +110,7 @@ export function TrackListRow({
           style={{ flexGrow: sectionWidthRatio.artist }}
         >
           <h2
-            className={clsx(styles.headerItem)}
+            className={clsx(styles.headerItem, 'w-full')}
             title={getArrayString(artist)}
           >
             <button
@@ -123,7 +125,10 @@ export function TrackListRow({
           className="@lg:flex-1 @lg:flex hidden min-w-0"
           style={{ flexGrow: sectionWidthRatio.album }}
         >
-          <h2 className={clsx(styles.headerItem)} title={getArrayString(album)}>
+          <h2
+            className={clsx(styles.headerItem, 'w-full')}
+            title={getArrayString(album)}
+          >
             <button
               onClick={handleAlbumClick}
               className="hover:text-blue-700 transition-colors duration-300"
