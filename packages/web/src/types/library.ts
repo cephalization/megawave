@@ -1,5 +1,5 @@
 export type Track = {
-  id: string;
+  id: string | number;
   name: string;
   link: string;
   artist: string[] | null;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import { Route, BrowserRouter, Routes } from 'react-router';
 
 import { Home } from '~/components/views/Home';
 
@@ -7,19 +7,15 @@ import { Login } from './components/views/Login';
 
 function App() {
   return (
-    <Router>
-      <Switch>
-        <Route exact path="/">
-          <Home />
-        </Route>
-        <Route path="/login">
-          <Login />
-        </Route>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" Component={Home} />
+        <Route path="/login" Component={Login} />
         {/* <PrivateRoute path="/library">
           <ProtectedPage />
         </PrivateRoute> */}
-      </Switch>
-    </Router>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

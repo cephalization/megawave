@@ -1,4 +1,4 @@
-import { Transition } from '@headlessui/react';
+import { Transition, TransitionChild } from '@headlessui/react';
 import React from 'react';
 
 import logo from '~/assets/logo.svg';
@@ -9,10 +9,11 @@ type MobileNavProps = NavProps & {};
 
 export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
   return (
-    <Transition className="lg:hidden" show={open}>
+    <Transition as="div" className="lg:hidden" show={open}>
       <div className="fixed inset-0 flex z-40">
         {/* overlay */}
-        <Transition.Child
+        <TransitionChild
+          as="div"
           enter="transition-opacity ease-linear duration-300"
           enterFrom="opacity-0"
           enterTo="opacity-100"
@@ -26,9 +27,10 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
             onClick={toggleNav}
             className="absolute inset-0 bg-gray-600 opacity-75"
           />
-        </Transition.Child>
+        </TransitionChild>
         {/* mobile nav */}
-        <Transition.Child
+        <TransitionChild
+          as="div"
           enter="transition ease-in-out duration-300 transform"
           enterFrom="-translate-x-full"
           enterTo="translate-x-0"
@@ -142,7 +144,7 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
               </div>
             </nav>
           </div>
-        </Transition.Child>
+        </TransitionChild>
         <div className="flex-shrink-0 w-14" aria-hidden="true">
           {/* Dummy element to force sidebar to shrink to fit close icon */}
         </div>

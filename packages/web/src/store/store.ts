@@ -10,7 +10,7 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ immutableCheck: false }),
   devTools: {
-    actionsBlacklist: [playerActions.setSeekTime.toString()],
+    actionsDenylist: [playerActions.setSeekTime.toString()],
   },
 });
 

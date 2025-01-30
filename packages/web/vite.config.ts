@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   server: {
+    cors: true,
     port: 5174,
     proxy: {
       '/api': {

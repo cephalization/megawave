@@ -1,9 +1,14 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Dialog, Transition } from '@headlessui/react';
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { bindActionCreators } from '@reduxjs/toolkit';
 import React from 'react';
-import { Fragment } from 'react';
 
 import { TrackList } from '~/components/molecules/TrackList';
 import { useAppDispatch, useAppSelector } from '~/hooks';
@@ -23,7 +28,7 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
     librarySelectors.selectLibraryActiveTrack,
   );
   return (
-    <Transition.Root show={open} as={Fragment}>
+    <Transition show={open}>
       <Dialog
         as="div"
         static
@@ -32,11 +37,10 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
         onClose={setOpen}
       >
         <div className="absolute inset-0 overflow-hidden">
-          <Dialog.Overlay className="absolute inset-0" />
+          <DialogBackdrop className="absolute inset-0" />
 
           <div className="fixed inset-y-0 right-0 pl-10 max-w-full flex">
-            <Transition.Child
-              as={Fragment}
+            <TransitionChild
               enter="transform transition ease-in-out duration-500 sm:duration-700"
               enterFrom="translate-x-full"
               enterTo="translate-x-0"
@@ -48,9 +52,9 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                 <div className="h-full flex flex-col py-6 bg-white @container shadow-xl">
                   <div className="px-4 sm:px-6">
                     <div className="flex items-start justify-between">
-                      <Dialog.Title className="text-lg font-medium text-gray-900">
+                      <DialogTitle className="text-lg font-medium text-gray-900">
                         Play History
-                      </Dialog.Title>
+                      </DialogTitle>
                       <div className="ml-3 h-7 flex items-center">
                         <button
                           className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -77,11 +81,11 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                   </div>
                 </div>
               </div>
-            </Transition.Child>
+            </TransitionChild>
           </div>
         </div>
       </Dialog>
-    </Transition.Root>
+    </Transition>
   );
 }
 

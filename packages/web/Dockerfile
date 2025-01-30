@@ -1,5 +1,5 @@
 # build environment
-FROM node:18.19.0-alpine as build
+FROM node:22.11.0-alpine as build
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
