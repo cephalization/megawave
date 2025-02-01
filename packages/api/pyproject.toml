@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["mypy>=1.8.0", "pytest>=7.4.4", "pytest-cov>=4.1.0", "ruff>=0.2.1"]
+dev = ["mypy>=1.8.0", "ruff>=0.2.1"]
 
 [build-system]
 requires = ["hatchling"]
@@ -26,22 +26,5 @@ fix = true
 known-first-party = ["megawave"]
 
 [tool.mypy]
-files = ["megawave", "test"]
+files = ["megawave"]
 ignore_missing_imports = true
-
-[tool.pytest.ini_options]
-testpaths = ["test"]
-
-[tool.coverage.run]
-source = ["megawave"]
-
-[tool.coverage.report]
-exclude_lines = [
-  "pragma: no cover",
-  "def __repr__",
-  "if self\\.debug",
-  "raise AssertionError",
-  "raise NotImplementedError",
-  "if 0:",
-  "if __name__ == .__main__.:",
-]
