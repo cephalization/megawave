@@ -101,6 +101,15 @@ export const useRegisteredAudioComponent = (
           const audio = audioRef.current;
 
           setSeekTime(audio.currentTime);
+          if ('mediaSession' in navigator) {
+            if (!isNaN(audio.currentTime) && !isNaN(audio.duration)) {
+              navigator.mediaSession.setPositionState({
+                position: audio.currentTime,
+                duration: audio.duration,
+                playbackRate: audio.playbackRate,
+              });
+            }
+          }
         }
       };
 
@@ -137,6 +146,10 @@ export const useRegisteredAudioComponent = (
       const addEventToAudio = (eventTuple: [string, EventListener]) => {
         if (audioRef?.current !== null) {
           audioRef.current.addEventListener(...eventTuple);
+          return () => {
+            console.log('removing event', eventTuple[0]);
+            audioRef.current?.removeEventListener(...eventTuple);
+          };
         }
       };
 
@@ -162,17 +175,20 @@ export const useRegisteredAudioComponent = (
           handleDurationChange,
         ];
         const pauseEventArgs: [string, EventListener] = ['pause', handlePause];
-        addEventToAudio(canplayEventArgs);
-        addEventToAudio(timeupdateEventArgs);
-        addEventToAudio(endedEventArgs);
-        addEventToAudio(durationChangeEventArgs);
-        addEventToAudio(pauseEventArgs);
-        addEventToAudio(playEventArgs);
+        const unsubscribers: ((() => void) | undefined)[] = [];
+        unsubscribers.push(addEventToAudio(durationChangeEventArgs));
+        unsubscribers.push(addEventToAudio(timeupdateEventArgs));
+        unsubscribers.push(addEventToAudio(canplayEventArgs));
+        unsubscribers.push(addEventToAudio(endedEventArgs));
+        unsubscribers.push(addEventToAudio(pauseEventArgs));
+        unsubscribers.push(addEventToAudio(playEventArgs));
         updateMediaSession();
         audio.load();
+        return () => {
+          unsubscribers.forEach((unsubscriber) => unsubscriber?.());
+        };
       }
     } else if (audioRef?.current != null) {
-      console.log('no track');
       const audio = audioRef.current;
 
       audio.setAttribute('src', '');
