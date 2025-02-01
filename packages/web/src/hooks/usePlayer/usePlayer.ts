@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { Ref, RefObject, useCallback } from 'react';
 
 import { useAppDispatch } from '~/hooks/useAppDispatch';
 import { useAppSelector } from '~/hooks/useAppSelector';
@@ -9,7 +9,7 @@ import { playerSelectors, playTrack } from '~/store/slices/player/player';
 import { _Player } from './definitions';
 import { useRegisteredAudioComponent } from './useRegisteredAudioComponent';
 
-export const usePlayer = (audioRef: React.RefObject<HTMLAudioElement>) => {
+export const usePlayer = (audioRef: RefObject<HTMLAudioElement | null>) => {
   const dispatch = useAppDispatch();
   const queue = useAppSelector(librarySelectors.selectLibraryQueue);
   const activeTrackIndex = useAppSelector(

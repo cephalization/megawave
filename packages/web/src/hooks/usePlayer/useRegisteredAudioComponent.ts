@@ -1,5 +1,5 @@
 import { bindActionCreators } from '@reduxjs/toolkit';
-import { useEffect } from 'react';
+import { RefObject, useEffect } from 'react';
 
 import { useAppDispatch } from '~/hooks/useAppDispatch';
 import { librarySelectors } from '~/store/slices/library/selectors';
@@ -10,7 +10,7 @@ import { useAppSelector } from '../useAppSelector';
 import { RegisteredPlayer, _Player } from './definitions';
 
 export const useRegisteredAudioComponent = (
-  audioRef: React.RefObject<HTMLAudioElement>,
+  audioRef: RefObject<HTMLAudioElement | null>,
   _player: _Player,
 ): RegisteredPlayer => {
   const dispatch = useAppDispatch();
@@ -18,16 +18,11 @@ export const useRegisteredAudioComponent = (
     librarySelectors.selectLibraryActiveTrackId,
   );
   const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
-  const seekTime = useAppSelector(playerSelectors.selectPlayerSeekTime);
   const duration = useAppSelector(playerSelectors.selectPlayerDuration);
   const volume = useAppSelector(playerSelectors.selectPlayerVolume);
   const setSeekTime = bindActionCreators(playerActions.setSeekTime, dispatch);
   const setDuration = bindActionCreators(playerActions.setDuration, dispatch);
   const trackLink = track?.link ?? null;
-
-  const durationPercentage = isNaN(audioRef?.current?.duration ?? 0)
-    ? 0
-    : Math.floor((seekTime / (audioRef?.current?.duration ?? 1)) * 100);
 
   // Initialize volume when audio element is created
   useEffect(() => {
@@ -201,7 +196,5 @@ export const useRegisteredAudioComponent = (
     pause: handlePause,
     scrub: handleScrub,
     duration,
-    durationPercentage,
-    seekTime,
   };
 };

@@ -18,7 +18,5 @@ type RegisteredPlayer = {
   scrub: (percentage: number) => void;
 
   duration: number;
-  durationPercentage: number;
-  seekTime: number;
   track?: Track | null;
 };

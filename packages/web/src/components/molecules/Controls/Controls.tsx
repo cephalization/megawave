@@ -5,15 +5,12 @@ import { CurrentTrack } from '~/components/atoms/CurrentTrack/CurrentTrack';
 import { NextButton } from '~/components/atoms/NextButton';
 import { PlayPauseButton } from '~/components/atoms/PlayPauseButton/PlayPauseButton';
 import { PrevButton } from '~/components/atoms/PrevButton';
-import { ProgressBar } from '~/components/atoms/ProgressBar';
+import { Seeker } from '~/components/molecules/Controls/Seeker';
 import { PlayHistory } from '~/components/molecules/PlayHistory';
 import { VolumeControl } from '~/components/molecules/VolumeControl';
 import { usePlayer } from '~/hooks/usePlayer';
 import { PLAYER_STATUS } from '~/store/slices/player/player';
-import { formatTime } from '~/utils/formatTime';
 
-// VERY EXPENSIVE COMPONENT
-// RE-RENDERS ONCE PER TRACK SECOND
 export function Controls() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const {
@@ -24,9 +21,6 @@ export function Controls() {
     scrub: handleScrub,
     playNext: handleNext,
     playPrev: handlePrev,
-    seekTime: currentTime,
-    duration,
-    durationPercentage,
     volume,
     setVolume,
   } = usePlayer(audioRef);
@@ -73,16 +67,7 @@ export function Controls() {
         </div>
         <PlayHistory open={open} setOpen={setOpen} />
         <div className="flex w-full basis-1/4 items-center justify-center px-4">
-          <div className="flex w-full items-center justify-center max-w-2xl gap-1">
-            <div className="text-sm tabular-nums">
-              {formatTime(currentTime)}
-            </div>
-            <ProgressBar
-              onChange={handleScrub}
-              percentage={durationPercentage}
-            />
-            <div className="text-sm tabular-nums">{formatTime(duration)}</div>
-          </div>
+          <Seeker audioRef={audioRef} handleScrub={handleScrub} />
         </div>
       </div>
     </>

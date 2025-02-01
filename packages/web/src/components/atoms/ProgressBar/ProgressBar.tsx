@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 type ProgressBarProps = {
   onChange?: (value: number) => void;
@@ -18,7 +18,7 @@ export const ProgressBar = forwardRef<HTMLInputElement, ProgressBarProps>(
           min={0}
           max={100}
           aria-valuenow={percentage}
-          step="1"
+          step="0.01"
         />
         <div
           className="bg-gray-600 h-full rounded-l-full rounded-r-full"
