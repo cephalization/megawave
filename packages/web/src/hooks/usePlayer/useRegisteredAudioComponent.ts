@@ -9,6 +9,20 @@ import { getArrayString } from '~/utils/trackMeta';
 import { useAppSelector } from '../useAppSelector';
 import { RegisteredPlayer, _Player } from './definitions';
 
+const updateVolume = (
+  audioRef: RefObject<HTMLAudioElement | null>,
+  volume: number,
+) => {
+  if (audioRef?.current) {
+    audioRef.current.volume = volume;
+  }
+};
+
+const scrub = (audioRef: RefObject<HTMLAudioElement | null>, e: number) => {
+  if (audioRef?.current) {
+    audioRef.current.currentTime = e;
+  }
+};
 export const useRegisteredAudioComponent = (
   audioRef: RefObject<HTMLAudioElement | null>,
   _player: _Player,
@@ -26,9 +40,7 @@ export const useRegisteredAudioComponent = (
 
   // Initialize volume when audio element is created
   useEffect(() => {
-    if (audioRef?.current) {
-      audioRef.current.volume = volume;
-    }
+    updateVolume(audioRef, volume);
   }, [audioRef, volume]);
 
   const handleScrub: RegisteredPlayer['scrub'] = (e) => {
@@ -39,7 +51,7 @@ export const useRegisteredAudioComponent = (
         const clickTime = Math.floor(progress * audio.duration);
 
         setSeekTime(clickTime);
-        audio.currentTime = clickTime;
+        scrub(audioRef, clickTime);
       }
     }
   };

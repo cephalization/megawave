@@ -33,7 +33,7 @@ export const usePollingLibrary = () => {
       }
     }
     init();
-  }, []);
+  }, [dispatch]);
 
   return { loading };
 };

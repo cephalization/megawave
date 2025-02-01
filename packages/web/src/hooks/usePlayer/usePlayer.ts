@@ -9,6 +9,15 @@ import { playerSelectors, playTrack } from '~/store/slices/player/player';
 import { _Player } from './definitions';
 import { useRegisteredAudioComponent } from './useRegisteredAudioComponent';
 
+const handleVolume = (
+  audioRef: RefObject<HTMLAudioElement | null>,
+  newVolume: number,
+) => {
+  if (audioRef.current) {
+    audioRef.current.volume = newVolume;
+  }
+};
+
 export const usePlayer = (audioRef: RefObject<HTMLAudioElement | null>) => {
   const dispatch = useAppDispatch();
   const queue = useAppSelector(librarySelectors.selectLibraryQueue);
@@ -41,7 +50,7 @@ export const usePlayer = (audioRef: RefObject<HTMLAudioElement | null>) => {
   const setVolume = useCallback(
     (newVolume: number) => {
       if (audioRef.current) {
-        audioRef.current.volume = newVolume;
+        handleVolume(audioRef, newVolume);
       }
       dispatch(playerActions.setVolume(newVolume));
     },

@@ -1,6 +1,7 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import debounce from 'lodash.debounce';
 import React, { useCallback, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { useAppDispatch } from '~/hooks';
@@ -11,11 +12,12 @@ export function TrackSearch() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filter = searchParams.get('q') || '';
 
-  const dSetFilter = useCallback(
-    debounce((filter: string) => {
-      dispatch(libraryActions.setLibraryFilter({ filter }));
-    }, 300),
-    [],
+  const dSetFilter = useMemo(
+    () =>
+      debounce((filter: string) => {
+        dispatch(libraryActions.setLibraryFilter({ filter }));
+      }, 300),
+    [dispatch],
   );
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(

@@ -1,5 +1,8 @@
 import { EntityId } from '@reduxjs/toolkit';
+import debounce from 'lodash.debounce';
 import React, { forwardRef, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
+import { useMemo } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 
@@ -75,23 +78,28 @@ export const TrackList = ({
   );
 
   // Get the current active filter key
-  const getCurrentFilterKey = () => {
+  const getCurrentFilterKey = useCallback(() => {
     const subkeyfilterKey = Object.keys(tracksByFilter).find(
       (key) => key.startsWith('artist-') || key.startsWith('album-'),
     );
     return subkeyfilterKey || trackFilter || '';
-  };
+  }, [tracksByFilter, trackFilter]);
 
   // Save scroll position when scrolling
-  const handleScroll = ({ scrollOffset }: { scrollOffset: number }) => {
-    const currentFilterKey = getCurrentFilterKey();
-    dispatch(
-      libraryActions.setScrollPosition({
-        filter: currentFilterKey,
-        position: scrollOffset,
-      }),
-    );
-  };
+  const handleScroll = useMemo(
+    () =>
+      // debounce to prevent excessive dispatching
+      debounce(({ scrollOffset }: { scrollOffset: number }) => {
+        const currentFilterKey = getCurrentFilterKey();
+        dispatch(
+          libraryActions.setScrollPosition({
+            filter: currentFilterKey,
+            position: scrollOffset,
+          }),
+        );
+      }, 200),
+    [getCurrentFilterKey, dispatch],
+  );
 
   // Handle filter changes and scroll position restoration
   useEffect(() => {
@@ -113,7 +121,7 @@ export const TrackList = ({
     }
 
     previousFilterRef.current = currentFilterKey;
-  }, [savedScrollPosition, trackFilter, tracksByFilter]);
+  }, [getCurrentFilterKey, savedScrollPosition, trackFilter, tracksByFilter]);
 
   return (
     <>

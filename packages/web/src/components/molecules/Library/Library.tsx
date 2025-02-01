@@ -32,18 +32,26 @@ export function Library() {
   const play = bindActionCreators(playTrack, dispatch);
   const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
 
-  const lastTracksFilter = usePrevious(tracksFilter);
+  const lastTracksFilterRef = usePrevious(tracksFilter);
   const currentSort = searchParams.get('sort');
-  const lastSort = usePrevious(currentSort);
+  const lastSortRef = usePrevious(currentSort);
 
   useEffect(() => {
     if (
-      (tracksFilter !== lastTracksFilter || currentSort !== lastSort) &&
+      (tracksFilter !== lastTracksFilterRef.current ||
+        currentSort !== lastSortRef.current) &&
       !isLoading
     ) {
       dispatch(fetchLibrary({ sort: currentSort || undefined }));
     }
-  }, [tracksFilter, lastTracksFilter, currentSort, lastSort, isLoading]);
+  }, [
+    tracksFilter,
+    lastTracksFilterRef,
+    currentSort,
+    lastSortRef,
+    isLoading,
+    dispatch,
+  ]);
 
   if (!isInitialized) return <WaveLoader />;
 
