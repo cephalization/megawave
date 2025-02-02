@@ -3,12 +3,17 @@ import {
   Dialog,
   DialogBackdrop,
   DialogTitle,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
   Transition,
   TransitionChild,
 } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { bindActionCreators } from '@reduxjs/toolkit';
-import React from 'react';
+import { bindActionCreators, EntityId } from '@reduxjs/toolkit';
+import React, { useState } from 'react';
 
 import { TrackList } from '~/components/molecules/TrackList';
 import { useAppDispatch, useAppSelector } from '~/hooks';
@@ -24,8 +29,19 @@ type PlayHistoryProps = {
 function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
   const dispatch = useAppDispatch();
   const play = bindActionCreators(playTrack, dispatch);
-  const trackIds = useAppSelector(librarySelectors.selectLibraryHistory);
+  const historyTrackIds = useAppSelector(librarySelectors.selectLibraryHistory);
+  const queueTrackIds = useAppSelector(librarySelectors.selectLibraryQueue);
   const currentTrack = useCurrentTrack();
+  const [selectedTab, setSelectedTab] = useState(0);
+
+  const handlePlayTrackFromQueue = ({ trackId }: { trackId: EntityId }) => {
+    play({ trackId, requeue: true, context: 'queue' });
+  };
+
+  const handlePlayTrackFromHistory = ({ trackId }: { trackId: EntityId }) => {
+    play({ trackId, requeue: true, context: 'history', addHistory: false });
+  };
+
   return (
     <Transition show={open}>
       <Dialog
@@ -53,7 +69,7 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                 <div className="px-4 sm:px-6">
                   <div className="flex items-start justify-between">
                     <DialogTitle className="text-lg font-medium text-gray-900">
-                      Play History
+                      Play Queue & History
                     </DialogTitle>
                     <div className="ml-3 h-7 flex items-center">
                       <button
@@ -66,18 +82,78 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                     </div>
                   </div>
                 </div>
-                <div
-                  id="history-container"
-                  className="mt-6 relative flex-1 max-h-full overflow-y-auto"
-                >
-                  <TrackList
-                    context="history"
-                    containerId="history-container"
-                    trackIDs={trackIds}
-                    onPlayTrackId={play}
-                    onFilterLibrary={() => undefined}
-                    currentTrack={currentTrack}
-                  />
+
+                <div className="mt-4 h-full">
+                  <TabGroup
+                    selectedIndex={selectedTab}
+                    onChange={setSelectedTab}
+                    className="h-full"
+                  >
+                    <TabList className="flex space-x-1 rounded-xl bg-gray-100 p-1 mx-4">
+                      <Tab
+                        className={({ selected }) =>
+                          `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+                          ${
+                            selected
+                              ? 'bg-white text-indigo-600 shadow'
+                              : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'
+                          }`
+                        }
+                      >
+                        Queue
+                      </Tab>
+                      <Tab
+                        className={({ selected }) =>
+                          `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+                          ${
+                            selected
+                              ? 'bg-white text-indigo-600 shadow'
+                              : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'
+                          }`
+                        }
+                      >
+                        History
+                      </Tab>
+                    </TabList>
+                    <TabPanels className="mt-2 h-full">
+                      <TabPanel className="h-full">
+                        <div
+                          id="queue-container"
+                          className="relative flex-1 max-h-[calc(100vh-120px)] overflow-y-auto h-full"
+                        >
+                          <TrackList
+                            context="library"
+                            containerId="queue-container"
+                            trackIDs={queueTrackIds}
+                            onPlayTrackId={({ trackId }) =>
+                              trackId != null &&
+                              handlePlayTrackFromQueue({ trackId })
+                            }
+                            onFilterLibrary={() => undefined}
+                            currentTrack={currentTrack}
+                          />
+                        </div>
+                      </TabPanel>
+                      <TabPanel className="h-full">
+                        <div
+                          id="history-container"
+                          className="relative flex-1 max-h-[calc(100vh-120px)] overflow-y-auto h-full"
+                        >
+                          <TrackList
+                            context="history"
+                            containerId="history-container"
+                            trackIDs={historyTrackIds}
+                            onPlayTrackId={({ trackId }) =>
+                              trackId != null &&
+                              handlePlayTrackFromHistory({ trackId })
+                            }
+                            onFilterLibrary={() => undefined}
+                            currentTrack={currentTrack}
+                          />
+                        </div>
+                      </TabPanel>
+                    </TabPanels>
+                  </TabGroup>
                 </div>
               </div>
             </div>

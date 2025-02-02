@@ -133,9 +133,8 @@ export const useRegisteredAudioComponent = (
         if (audioRef?.current !== null) {
           const audio = audioRef.current;
 
-          _player._play({ trackId: activeTrackId });
-
           if (audio.paused) {
+            _player._play({ trackId: activeTrackId });
             audio.play();
           }
         }

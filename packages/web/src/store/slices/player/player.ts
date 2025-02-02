@@ -51,7 +51,7 @@ const sharedPlayerActions = {
 export const playTrack = createAsyncThunk<
   EntityId[],
   Omit<PlayerActionPayload, 'trackContext'> & {
-    context?: 'library' | 'history';
+    context?: 'library' | 'history' | 'queue';
   }
 >(
   'player/play_thunk',
@@ -73,6 +73,14 @@ export const playTrack = createAsyncThunk<
       case 'history':
         trackContext = librarySelectors.selectLibraryHistory(state);
         break;
+      case 'queue': {
+        if (!trackId) {
+          break;
+        }
+        const queue = librarySelectors.selectLibraryQueue(state);
+        trackContext = queue.slice(queue.indexOf(trackId));
+        break;
+      }
     }
 
     dispatch(
