@@ -22,16 +22,20 @@ type TrackListRowProps = {
   trackId: EntityId;
   style: React.CSSProperties;
   isActive?: boolean;
+  isSelected?: boolean;
   onClickTrack: () => void;
   onClickField: (arg0: keyof Track) => void;
+  onSelect?: (trackId: EntityId, multiSelect: boolean) => void;
 };
 
 export function TrackListRow({
   trackId,
   style,
   isActive,
+  isSelected,
   onClickTrack,
   onClickField,
+  onSelect,
 }: TrackListRowProps) {
   const track = useAppSelector((s) =>
     librarySelectors.selectTrackById(s, trackId),
@@ -44,7 +48,18 @@ export function TrackListRow({
   const duration = formatTime(parseInt(track.length, 10));
 
   const handleTrackClick = (e: React.MouseEvent) => {
-    onClickTrack();
+    if (e.shiftKey || e.metaKey) {
+      onSelect?.(trackId, true);
+    } else {
+      onClickTrack();
+    }
+  };
+
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Only handle row clicks if they're not on a button
+    if (!(e.target as HTMLElement).closest('button')) {
+      onSelect?.(trackId, e.shiftKey || e.metaKey);
+    }
   };
 
   const handleArtistClick = (e: React.MouseEvent) => {
@@ -63,6 +78,7 @@ export function TrackListRow({
 
   return (
     <div
+      className="select-none"
       style={{
         ...style,
         top: `${
@@ -73,10 +89,12 @@ export function TrackListRow({
       }}
     >
       <div
+        onClick={handleRowClick}
         className={clsx(
-          'flex h-full w-full items-center',
+          'flex h-full w-full items-center cursor-pointer',
           headerStyles.rowPadding,
-          isActive && 'text-blue-700 bg-blue-50',
+          isActive && 'text-blue-700 bg-blue-100',
+          isSelected && 'bg-blue-200',
         )}
       >
         <div

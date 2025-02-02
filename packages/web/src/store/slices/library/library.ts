@@ -18,6 +18,7 @@ export type LibraryState = {
   history: EntityId[];
   tracksByFilter: Record<string, EntityId[]>;
   scrollPositions: Record<string, number>; // Store scroll positions by filter key
+  selectedTracks: EntityId[]; // Track selection state
 };
 
 const initialState = libraryAdapter.getInitialState<LibraryState>({
@@ -34,6 +35,7 @@ const initialState = libraryAdapter.getInitialState<LibraryState>({
   queue: [],
   // history
   history: [],
+  selectedTracks: [], // Initialize empty selection
 });
 
 export const librarySlice = createSlice({
@@ -61,6 +63,26 @@ export const librarySlice = createSlice({
         state.sort,
       );
       state.scrollPositions[filterKey] = position;
+    },
+    setSelectedTracks(
+      state,
+      { payload: { trackIds } }: { payload: { trackIds: EntityId[] } },
+    ) {
+      state.selectedTracks = trackIds;
+    },
+    toggleTrackSelection(
+      state,
+      { payload: { trackId } }: { payload: { trackId: EntityId } },
+    ) {
+      const index = state.selectedTracks.indexOf(trackId);
+      if (index === -1) {
+        state.selectedTracks.push(trackId);
+      } else {
+        state.selectedTracks.splice(index, 1);
+      }
+    },
+    clearTrackSelection(state) {
+      state.selectedTracks = [];
     },
   },
   extraReducers: (builder) => {

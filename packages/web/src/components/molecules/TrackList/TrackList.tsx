@@ -9,10 +9,18 @@ import React, {
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 
-import { useAvailableDimensions } from '~/hooks';
+import {
+  useAppDispatch,
+  useAppSelector,
+  useAvailableDimensions,
+} from '~/hooks';
+import { useTrackSelection } from '~/hooks/useTrackSelection';
+import { libraryActions } from '~/store/slices/library/library';
+import { librarySelectors } from '~/store/slices/library/selectors';
 import { Track } from '~/types/library';
 
 import { ScrollIndicator } from './components/ScrollIndicator';
+import { SelectionToolbar } from './components/SelectionToolbar';
 import { TrackListHeader } from './components/TrackListHeader';
 import { TrackListRow } from './components/TrackListRow';
 
@@ -65,9 +73,9 @@ export const TrackList = ({
   context = 'library',
   scrollToTrack,
 }: TrackListProps) => {
+  const { selectedTracks, handleTrackSelection, clearSelection } =
+    useTrackSelection(trackIDs);
   const listRef = useRef<FixedSizeList>(null);
-  // (height of parent container) - (height of all children)
-  // this derived height value can be used to perfectly size the library items
   const { refToMeasure: libraryRef, height } =
     useAvailableDimensions(containerId);
 
@@ -80,6 +88,16 @@ export const TrackList = ({
       }
     }
   }, [scrollToTrack, trackIDs]);
+
+  const handleAddToPlaylist = (trackIds: EntityId[]) => {
+    // TODO: Implement playlist addition functionality
+    clearSelection();
+  };
+
+  const handleQueueSelected = (trackIds: EntityId[]) => {
+    // TODO: Implement queue addition functionality
+    clearSelection();
+  };
 
   return (
     <>
@@ -126,6 +144,8 @@ export const TrackList = ({
                         onFilterLibrary(field, trackId)
                       }
                       isActive={trackId === currentTrack?.id}
+                      isSelected={selectedTracks.includes(trackId)}
+                      onSelect={handleTrackSelection}
                     />
                   );
                 }}
@@ -134,6 +154,11 @@ export const TrackList = ({
           </AutoSizer>
         </div>
       </div>
+      <SelectionToolbar
+        selectedTracks={selectedTracks}
+        onAddToPlaylist={handleAddToPlaylist}
+        onQueueTracks={handleQueueSelected}
+      />
     </>
   );
 };

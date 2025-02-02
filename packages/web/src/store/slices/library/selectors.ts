@@ -1,7 +1,8 @@
 import { createSelector, EntityId } from '@reduxjs/toolkit';
 
-import { RootState } from '~/store';
 import { makeFilterKey } from '~/store/slices/library/utils';
+import { RootState } from '~/store/store';
+import { Track } from '~/types/library';
 
 import { libraryAdapter } from './adapter';
 
@@ -97,4 +98,13 @@ export const librarySelectors = {
   selectFilteredTrackIdCount,
   selectCurrentScrollPosition,
   selectLibraryFilterKey,
+  selectTracksByIds: (state: RootState, ids: EntityId[]) => {
+    const entities = libraryAdapter
+      .getSelectors()
+      .selectEntities(state.library);
+    return ids
+      .map((id) => entities[id])
+      .filter((track): track is Track => track != null);
+  },
+  selectSelectedTracks: (state: RootState) => state.library.selectedTracks,
 };
