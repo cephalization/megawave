@@ -60,7 +60,6 @@ export const usePlayer = (audioRef: RefObject<HTMLAudioElement | null>) => {
 
   // create external handlers into redux
   const playNext = useCallback<_Player['playNext']>(() => {
-    console.log('playNext');
     if (nextTrackId) {
       dispatch(playTrack({ trackId: nextTrackId }));
     } else {
@@ -68,7 +67,6 @@ export const usePlayer = (audioRef: RefObject<HTMLAudioElement | null>) => {
     }
   }, [dispatch, nextTrackId]);
   const playPrev = useCallback<_Player['playPrev']>(() => {
-    console.log('playPrev');
     if (prevTrackId) {
       dispatch(playTrack({ trackId: prevTrackId }));
     } else {

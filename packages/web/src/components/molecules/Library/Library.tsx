@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useSearchParams } from 'react-router';
 import { bindActionCreators } from 'redux';
@@ -18,6 +18,9 @@ import { WaveLoader } from '../WaveLoader';
 
 export function Library() {
   const dispatch = useAppDispatch();
+  const [scrollToTrack, setScrollToTrack] = useState<string | number | null>(
+    null,
+  );
 
   const filterKey = useAppSelector(librarySelectors.selectLibraryFilterKey);
   const trackIDs = useAppSelector(librarySelectors.selectFilteredTrackIds);
@@ -30,7 +33,24 @@ export function Library() {
   const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
   const isLoadingRef = useRef(isLoading);
 
-  console.log({ filterKey, currentTrack });
+  useEffect(() => {
+    const handleScrollToTrack = (e: CustomEvent<string | number>) => {
+      setScrollToTrack(e.detail);
+      // Reset the scroll target after a short delay
+      setTimeout(() => setScrollToTrack(null), 100);
+    };
+
+    window.addEventListener(
+      'scrollToTrack',
+      handleScrollToTrack as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        'scrollToTrack',
+        handleScrollToTrack as EventListener,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (!isLoadingRef.current) {
@@ -60,6 +80,7 @@ export function Library() {
           filterByField({ field, trackId, resetFilter: true });
         }}
         currentTrack={currentTrack}
+        scrollToTrack={scrollToTrack}
       />
     </>
   );

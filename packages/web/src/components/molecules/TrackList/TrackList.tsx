@@ -1,13 +1,20 @@
 import { EntityId } from '@reduxjs/toolkit';
-import React, { forwardRef, useRef } from 'react';
+import React, {
+  forwardRef,
+  useRef,
+  useEffect,
+  useMemo,
+  CSSProperties,
+} from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 
 import { useAvailableDimensions } from '~/hooks';
 import { Track } from '~/types/library';
 
-import { TrackListHeader } from '../TrackList/components/TrackListHeader';
-import { TrackListRow } from '../TrackList/components/TrackListRow';
+import { ScrollIndicator } from './components/ScrollIndicator';
+import { TrackListHeader } from './components/TrackListHeader';
+import { TrackListRow } from './components/TrackListRow';
 
 export type TrackListProps = {
   trackIDs: EntityId[];
@@ -21,10 +28,12 @@ export type TrackListProps = {
   currentTrack?: Track | null;
   containerId?: string;
   context?: 'library' | 'history';
+  scrollToTrack?: EntityId | null;
 };
 
 const MOBILE_BREAKPOINT = 640;
 export const LIST_PADDING = 16;
+const SCROLLBAR_WIDTH = 12;
 
 // react-window construct
 // used to add padding to virtualized list contents
@@ -54,6 +63,7 @@ export const TrackList = ({
   currentTrack,
   containerId = 'library-container',
   context = 'library',
+  scrollToTrack,
 }: TrackListProps) => {
   const listRef = useRef<FixedSizeList>(null);
   // (height of parent container) - (height of all children)
@@ -61,15 +71,30 @@ export const TrackList = ({
   const { refToMeasure: libraryRef, height } =
     useAvailableDimensions(containerId);
 
+  // Add effect to scroll to track when scrollToTrack changes
+  useEffect(() => {
+    if (scrollToTrack && listRef.current) {
+      const trackIndex = trackIDs.findIndex((id) => id === scrollToTrack);
+      if (trackIndex !== -1) {
+        listRef.current.scrollToItem(trackIndex, 'center');
+      }
+    }
+  }, [scrollToTrack, trackIDs]);
+
   return (
     <>
       <TrackListHeader />
       <div
-        className="border-t border-gray-200"
+        className="border-t border-gray-200 relative"
         style={{ height }}
         ref={libraryRef}
       >
         <div className="h-full">
+          <ScrollIndicator
+            currentTrack={currentTrack ?? null}
+            trackIDs={trackIDs}
+            height={height ?? 0}
+          />
           <AutoSizer>
             {({ width, height: innerHeight }) => (
               <FixedSizeList
@@ -78,8 +103,6 @@ export const TrackList = ({
                 width={width}
                 itemCount={trackIDs.length}
                 itemKey={(index) => `${index}-${trackIDs[index]}`}
-                // at available container width 640 or lower, this needs to get bumped up to 55
-                // anything higher and this should be 40
                 itemSize={width >= MOBILE_BREAKPOINT ? 40 : 55}
                 innerElementType={innerElementType}
                 overscanCount={20}

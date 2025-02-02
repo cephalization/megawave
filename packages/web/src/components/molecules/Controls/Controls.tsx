@@ -36,6 +36,14 @@ export function Controls() {
               title={track?.name}
               art={track?.art?.[0]}
               artist={track?.artist}
+              onScrollToTrack={
+                track
+                  ? () =>
+                      window.dispatchEvent(
+                        new CustomEvent('scrollToTrack', { detail: track.id }),
+                      )
+                  : undefined
+              }
             />
           </div>
           <div className="flex w-full justify-center">
