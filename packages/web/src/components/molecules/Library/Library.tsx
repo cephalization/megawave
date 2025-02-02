@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { useSearchParams } from 'react-router';
 import { bindActionCreators } from 'redux';
@@ -31,27 +31,17 @@ export function Library() {
   );
   const play = bindActionCreators(playTrack, dispatch);
   const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
+  const isLoadingRef = useRef(isLoading);
 
-  const lastTracksFilterRef = usePrevious(tracksFilter);
   const currentSort = searchParams.get('sort');
-  const lastSortRef = usePrevious(currentSort);
 
   useEffect(() => {
-    if (
-      (tracksFilter !== lastTracksFilterRef.current ||
-        currentSort !== lastSortRef.current) &&
-      !isLoading
-    ) {
-      dispatch(fetchLibrary({ sort: currentSort || undefined }));
+    if (!isLoadingRef.current) {
+      dispatch(
+        fetchLibrary({ sort: currentSort || undefined, filter: tracksFilter }),
+      );
     }
-  }, [
-    tracksFilter,
-    lastTracksFilterRef,
-    currentSort,
-    lastSortRef,
-    isLoading,
-    dispatch,
-  ]);
+  }, [currentSort, dispatch, tracksFilter]);
 
   if (!isInitialized) return <WaveLoader />;
 

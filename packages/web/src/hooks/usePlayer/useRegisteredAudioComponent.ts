@@ -150,6 +150,26 @@ export const useRegisteredAudioComponent = (
         }
       };
 
+      const updateMediaHandlers = () => {
+        if (audioRef?.current !== null) {
+          const audio = audioRef.current;
+
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.setActionHandler('play', handlePlay);
+            navigator.mediaSession.setActionHandler('pause', handlePause);
+            navigator.mediaSession.setActionHandler('stop', handlePause);
+            navigator.mediaSession.setActionHandler(
+              'nexttrack',
+              _player.playNext,
+            );
+            navigator.mediaSession.setActionHandler(
+              'previoustrack',
+              _player.playPrev,
+            );
+          }
+        }
+      };
+
       const addEventToAudio = (eventTuple: [string, EventListener]) => {
         if (audioRef?.current !== null) {
           audioRef.current.addEventListener(...eventTuple);

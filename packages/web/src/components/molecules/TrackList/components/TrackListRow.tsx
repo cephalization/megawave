@@ -49,14 +49,14 @@ export function TrackListRow({
 
   const handleArtistClick = (e: React.MouseEvent) => {
     setSearchParams({
-      filter: `artist-${encodeURIComponent(getArrayString(artist))}`,
+      subkeyfilter: `artist-${encodeURIComponent(getArrayString(artist))}`,
     });
     onClickField('artist');
   };
 
   const handleAlbumClick = (e: React.MouseEvent) => {
     setSearchParams({
-      filter: `album-${encodeURIComponent(getArrayString(album))}`,
+      subkeyfilter: `album-${encodeURIComponent(getArrayString(album))}`,
     });
     onClickField('album');
   };

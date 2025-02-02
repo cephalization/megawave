@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict
 
 from fastapi import APIRouter, Request, Response
 from starlette.responses import StreamingResponse
@@ -35,9 +35,9 @@ def art(id: str):
 
 @router.get("/songs")
 def songs(
-    sort: Optional[str] = None,
-    filter: Optional[str] = None,
-    subkeyfilter: Optional[str] = None,
+    sort: str | None = None,
+    filter: str | None = None,
+    subkeyfilter: str | None = None,
 ):
     """
     /songs?[sort]=[-]sortKeyStr&[filter]=filterStr&[subkeyfilter]=filterKeyStr-filterValueStr
@@ -54,6 +54,8 @@ def songs(
       returns a list of songs, filtered by the artist key "Daft Punk"
     """
     songs = audioLibrary.serialize()
+
+    print(f"filter: {filter}, subkeyfilter: {subkeyfilter}")
 
     # Handle general song filtering
     if filter is not None:

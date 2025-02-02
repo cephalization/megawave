@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useAppDispatch } from '~/hooks/useAppDispatch';
-import { fetchStatus } from '~/queries/library';
+import { getStatus } from '~/queries/library';
 import { fetchLibrary } from '~/store/slices/library/thunks';
 
 export const usePollingLibrary = () => {
@@ -11,12 +11,12 @@ export const usePollingLibrary = () => {
   useEffect(() => {
     async function init() {
       try {
-        const status = await fetchStatus();
-        if (status === 'loading') {
+        const status = await getStatus();
+        if (status.data === 'loading') {
           // fetch status and library on 1 second timer until status is "idle"
           async function check() {
-            const status = await fetchStatus();
-            if (status !== 'idle') {
+            const status = await getStatus();
+            if (status.data !== 'idle') {
               dispatch(fetchLibrary());
               setTimeout(check, 2500);
             } else {

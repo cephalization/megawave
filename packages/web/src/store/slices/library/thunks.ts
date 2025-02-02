@@ -13,10 +13,11 @@ export const fetchLibrary = createAsyncThunk<
 >(
   '/library/fetchAll',
   async ({ filter, sort, subkeyfilter } = {}, { getState }) => {
+    console.log('fetching library', filter, sort, subkeyfilter);
     const state = getState() as RootState;
     const stateFilter = librarySelectors.selectLibraryFilter(state);
-    const newFilter = filter || stateFilter;
-    const tracks = await libraryApi.fetch({
+    const newFilter = filter;
+    const tracks = await libraryApi.get({
       filter: newFilter,
       sort,
       subkeyfilter,
@@ -32,6 +33,7 @@ export const fetchFilteredLibrary = createAsyncThunk<
 >(
   '/library/fetchFilteredLibrary',
   async ({ field, trackId }, { getState, dispatch }) => {
+    console.log('fetching filtered library', field, trackId);
     const state = getState() as RootState;
     const track = librarySelectors.selectTrackById(state, trackId);
     const trackField = track?.[field];

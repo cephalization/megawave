@@ -39,6 +39,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app/megawave ./megawave
 COPY --from=builder /app/main.py .
 COPY docker-entrypoint.sh ./
+COPY start.sh ./
 ARG MUSIC_LIBRARY_PATH
 ENV MUSIC_LIBRARY_PATH=${MUSIC_LIBRARY_PATH}
 

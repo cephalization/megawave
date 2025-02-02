@@ -35,7 +35,13 @@ export function TrackSearch() {
 
   return (
     <div className="flex-1 flex">
-      <form className="w-full flex md:ml-0" action="#" method="GET">
+      <form
+        className="w-full flex md:ml-0"
+        onSubmit={(e) => {
+          e.preventDefault();
+          dispatch(libraryActions.setLibraryFilter({ filter }));
+        }}
+      >
         <label htmlFor="search_field" className="sr-only">
           Search library
         </label>

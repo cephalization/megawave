@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 import { useAppDispatch, useAppSelector } from '~/hooks';
 import { libraryActions } from '~/store/slices/library/library';
 import { librarySelectors } from '~/store/slices/library/selectors';
+import { fetchLibrary } from '~/store/slices/library/thunks';
 
 export const TrackCount = ({ loading }: { loading?: boolean }) => {
   const dispatch = useAppDispatch();
@@ -14,29 +15,30 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
   );
   const trackFilter = useAppSelector(librarySelectors.selectLibraryFilter);
 
+  // This whole setup is so trash, gotta refactor this whole mess
+
   // Check for active filter
-  const activeFilter = searchParams.get('filter');
+  const subkeyfilter = searchParams.get('subkeyfilter');
   const searchQuery = searchParams.get('q');
 
   useEffect(() => {
     // Sync URL filter with Redux state
-    if (activeFilter) {
-      dispatch(libraryActions.setLibraryFilter({ filter: activeFilter }));
-    } else if (searchQuery) {
+    if (searchQuery) {
       dispatch(libraryActions.setLibraryFilter({ filter: searchQuery }));
     }
-  }, [activeFilter, searchQuery, dispatch]);
+  }, [subkeyfilter, searchQuery, dispatch]);
 
   const clearFilter = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setSearchParams({});
     dispatch(libraryActions.setLibraryFilter({ filter: '' }));
+    dispatch(fetchLibrary());
   };
 
   const getFilterDisplay = () => {
-    if (activeFilter) {
-      const [field, ...value] = activeFilter.split('-');
+    if (subkeyfilter) {
+      const [field, ...value] = subkeyfilter.split('-');
       return `${field}: ${decodeURIComponent(value.join('-'))}`;
     }
     if (searchQuery) {
