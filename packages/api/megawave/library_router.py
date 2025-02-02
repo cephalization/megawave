@@ -47,15 +47,15 @@ def songs(
     ex: /songs?sort=artist
       returns a list of songs, sorted by artist alphabetically ascending
     ex: /songs?sort=-album
-      returns a list of songs, sorted by album alphabetically descending
+      returns a list of songs, sorted by album alphabetically descending, with songs in album sorted by track number, with non-album tracks at the end
     ex: /songs?filter=Daft%20Punk
-      returns a list of songs, filtered by any whose keys contain the string "Daft Punk"
+      returns a list of songs, filtered by any whose keys contain the string "daft punk" (case insensitive)
     ex: /songs?subkeyfilter=artist-Daft%20Punk
-      returns a list of songs, filtered by the artist key "Daft Punk"
+      returns a list of songs, filtered by the artist key "daft punk" (case insensitive)
+    ex: /songs?filter=never&subkeyfilter=album-nevermind
+      returns a list of songs, filtered by the album key "nevermind" and the filter "never" (case insensitive), with songs in album sorted by track number
     """
     songs = audioLibrary.serialize()
-
-    print(f"filter: {filter}, subkeyfilter: {subkeyfilter}")
 
     # Handle general song filtering
     if filter is not None:
@@ -70,58 +70,63 @@ def songs(
             *grouped_by_key["name"],
             *grouped_by_key["album"],
         ]
+
     # Handle song subkey filtering
     if subkeyfilter is not None:
         assert isinstance(subkeyfilter, str)
-        field = subkeyfilter.split("-")[0]
-        if field is not None:
+        if "-" in subkeyfilter:
+            field = subkeyfilter.split("-")[0]
             term = "".join(subkeyfilter.split(f"{field}-")[1:])
             songs = [song for song in songs if filter_by_field(term, field, song)]
-        # TODO: return a warning about incorrect filter format if subkeyfilter does not contain "-"
-    # Handle song subkey sorting
+
+    def get_track_number(song):
+        track = song.get("track", None)
+        return (
+            track["no"]
+            if track and isinstance(track, dict) and "no" in track
+            else float("inf")
+        )
+
+    # Handle song sorting
     if sort is not None:
         assert isinstance(sort, str)
         reverse = sort.startswith("-")
-        sortKey = sort.replace("-", "")
+        sort_key = sort.replace("-", "")
 
-        # For descending sort, we want missing values at the top instead of bottom
-        # So we temporarily flip "zzzzz" to "" for the sort
-        if reverse:
-            songs.sort(
-                key=lambda k: str(get_audio_file_sort_value(k, sortKey)).replace(
-                    "zzzzz", ""
-                ),
-                reverse=True,
-            )
-        else:
-            songs.sort(
-                key=lambda k: get_audio_file_sort_value(k, sortKey) or "",
-                reverse=False,
-            )
+        def custom_sort_key(song):
+            # Get the primary sort value
+            primary_value = get_audio_file_sort_value(song, sort_key)
+            if reverse:
+                # For descending sort, we want missing values at the top instead of bottom
+                primary_value = "" if primary_value == "zzzzz" else primary_value
+
+            # If sorting by album, add track number as secondary sort
+            if sort_key == "album":
+                track_num = get_track_number(song)
+                # Only reverse track numbers if we're sorting by album in descending order
+                # AND we have an album-specific subkey filter
+                should_reverse_tracks = (
+                    reverse
+                    and subkeyfilter is not None
+                    and subkeyfilter.startswith("album-")
+                )
+                track_num = -track_num if should_reverse_tracks else track_num
+                return (primary_value or "", track_num)
+
+            # For all other sorts, add track number as ascending secondary sort
+            track_num = get_track_number(song)
+            return (primary_value or "", track_num)
+
+        songs.sort(key=custom_sort_key, reverse=reverse)
     else:
         # Default sorting: by album name, then track number, with non-album tracks at the end
-        def sort_key(song):
-            # Get album name, defaulting to None if not present
+        def default_sort_key(song):
             album = song.get("album", None)
-            # Handle both None and empty list cases
-            album_name = album[0].lower() if album and len(album) > 0 else None
-
-            # Get track number, defaulting to infinity if not present
-            track = song.get("track", None)
-            track_num = (
-                track["no"]
-                if track and isinstance(track, dict) and "no" in track
-                else float("inf")
-            )
-
-            # Songs without albums go to the end
-            if album_name is None:
-                return ("zzzzz", float("inf"))
-
+            album_name = album[0].lower() if album and len(album) > 0 else "zzzzz"
+            track_num = get_track_number(song)
             return (album_name, track_num)
 
-        # Sort
-        songs.sort(key=sort_key)
+        songs.sort(key=default_sort_key)
 
     return {"data": {"songs": songs}}
 

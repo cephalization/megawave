@@ -17,7 +17,11 @@ export function TrackSearch() {
       const value = e.target.value;
       setSearchParams(
         (p) => {
-          p.set('q', value);
+          if (value.length > 0) {
+            p.set('q', value);
+          } else {
+            p.delete('q');
+          }
           return p;
         },
         { replace: true },

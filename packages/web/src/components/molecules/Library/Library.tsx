@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router';
 import { bindActionCreators } from 'redux';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
+import { useCurrentTrack } from '~/hooks/useCurrentTrack';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import {
   fetchFilteredLibrary,
@@ -24,14 +25,12 @@ export function Library() {
     librarySelectors.selectLibraryInitialized,
   );
   const isLoading = useAppSelector(librarySelectors.selectLibraryLoading);
-  const currentTrack = useAppSelector(
-    librarySelectors.selectLibraryActiveTrack,
-  );
+  const currentTrack = useCurrentTrack();
   const play = bindActionCreators(playTrack, dispatch);
   const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
   const isLoadingRef = useRef(isLoading);
 
-  console.log({ filterKey });
+  console.log({ filterKey, currentTrack });
 
   useEffect(() => {
     if (!isLoadingRef.current) {

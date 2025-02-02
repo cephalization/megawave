@@ -5,6 +5,8 @@ import { makeFilterKey } from '~/store/slices/library/utils';
 
 import { libraryAdapter } from './adapter';
 
+const EMPTY_ARRAY: EntityId[] = [];
+
 const {
   selectById: selectTrackById,
   selectIds: selectTrackIds,
@@ -38,7 +40,7 @@ const selectFilteredTrackIds = createSelector(
   (search, subkeyfilter, sort, trackIDsByFilter, trackIDs) => {
     const filterKey = makeFilterKey(search, subkeyfilter, sort);
 
-    return trackIDsByFilter[filterKey] || [];
+    return trackIDsByFilter[filterKey] || EMPTY_ARRAY;
   },
 );
 const selectFilteredTrackIdCount = createSelector(
@@ -48,20 +50,8 @@ const selectFilteredTrackIdCount = createSelector(
 const selectLibraryActiveTrackId = createSelector(
   selectLibraryActiveTrackIndex,
   selectLibraryQueue,
-  (index, queue) => (index !== null ? queue[index] : null),
-);
-const selectLibraryActiveTrack = createSelector(
-  selectLibraryActiveTrackId,
-  (state: RootState) => (id: EntityId) => selectTrackById(state, id),
-  (trackId, tracksById) => {
-    if (trackId === null) return null;
-
-    const track = tracksById(trackId);
-
-    if (!track) return null;
-
-    return track;
-  },
+  (index, queue) =>
+    index !== null ? (queue[index] as EntityId | undefined) : null,
 );
 
 const selectCurrentScrollPosition = createSelector(
@@ -104,7 +94,6 @@ export const librarySelectors = {
   // memoized selectors
   selectFilteredTrackIds,
   selectLibraryActiveTrackId,
-  selectLibraryActiveTrack,
   selectFilteredTrackIdCount,
   selectCurrentScrollPosition,
   selectLibraryFilterKey,

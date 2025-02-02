@@ -2,6 +2,7 @@ import React, { Ref, RefObject, useCallback } from 'react';
 
 import { useAppDispatch } from '~/hooks/useAppDispatch';
 import { useAppSelector } from '~/hooks/useAppSelector';
+import { useCurrentTrack } from '~/hooks/useCurrentTrack';
 import { playerActions } from '~/store/slices';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import { playerSelectors, playTrack } from '~/store/slices/player/player';
@@ -25,7 +26,7 @@ export const usePlayer = (audioRef: RefObject<HTMLAudioElement | null>) => {
     librarySelectors.selectLibraryActiveTrackIndex,
   );
   const status = useAppSelector(playerSelectors.selectPlayerStatus);
-  const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
+  const track = useCurrentTrack();
   const volume = useAppSelector(playerSelectors.selectPlayerVolume);
 
   const prevTrackId =

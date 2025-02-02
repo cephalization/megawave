@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router';
 
 export const styles = {
   headerItem: 'text-sm leading-6 text-gray-500 font-semibold',
-  rowPadding: 'px-5 @sm:px-6 @lg:px-8 py-1',
+  rowPadding: 'px-2 @sm:px-4 @lg:px-6 py-1',
 } as const;
 
 export const sectionWidthRatio = {

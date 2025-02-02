@@ -2,6 +2,7 @@ import { bindActionCreators } from '@reduxjs/toolkit';
 import { RefObject, useEffect } from 'react';
 
 import { useAppDispatch } from '~/hooks/useAppDispatch';
+import { useCurrentTrack } from '~/hooks/useCurrentTrack';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import { playerActions, playerSelectors } from '~/store/slices/player/player';
 import { getArrayString } from '~/utils/trackMeta';
@@ -31,7 +32,7 @@ export const useRegisteredAudioComponent = (
   const activeTrackId = useAppSelector(
     librarySelectors.selectLibraryActiveTrackId,
   );
-  const track = useAppSelector(librarySelectors.selectLibraryActiveTrack);
+  const track = useCurrentTrack();
   const duration = useAppSelector(playerSelectors.selectPlayerDuration);
   const volume = useAppSelector(playerSelectors.selectPlayerVolume);
   const setSeekTime = bindActionCreators(playerActions.setSeekTime, dispatch);

@@ -77,14 +77,17 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
   const filterDisplay: Filter[] = getFilterDisplay();
 
   return (
-    <div className="flex-1 flex-grow-0 pl-5 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full hidden sm:flex gap-2">
+    <div className="flex-1 flex-grow-0 pl-5 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full flex gap-2">
       {loading && (
         <ArrowPathIcon className="animate-spin h-5 w-5 text-gray-400" />
       )}
       <h2 className="text-sm leading-6 text-gray-500 font-semibold flex items-center gap-2">
         {filterDisplay.length > 0 &&
           filterDisplay.map((f) => (
-            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md flex items-center gap-1">
+            <span
+              key={f.field}
+              className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md flex items-center gap-1"
+            >
               {f.field}: {f.value}
               <button
                 onClick={(e) => clearFilter(e, f)}
