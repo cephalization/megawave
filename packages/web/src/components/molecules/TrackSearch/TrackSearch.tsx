@@ -12,26 +12,19 @@ export function TrackSearch() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filter = searchParams.get('q') || '';
 
-  const dSetFilter = useMemo(
-    () =>
-      debounce((filter: string) => {
-        dispatch(libraryActions.setLibraryFilter({ filter }));
-      }, 300),
-    [dispatch],
-  );
-
   const onChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const value = e.target.value;
-      setSearchParams(value ? { q: value } : {});
-      dSetFilter(value);
+      setSearchParams(
+        (p) => {
+          p.set('q', value);
+          return p;
+        },
+        { replace: true },
+      );
     },
-    [dSetFilter, setSearchParams],
+    [setSearchParams],
   );
-
-  useEffect(() => {
-    dispatch(libraryActions.setLibraryFilter({ filter }));
-  }, [filter, dispatch]);
 
   return (
     <div className="flex-1 flex">
@@ -39,7 +32,7 @@ export function TrackSearch() {
         className="w-full flex md:ml-0"
         onSubmit={(e) => {
           e.preventDefault();
-          dispatch(libraryActions.setLibraryFilter({ filter }));
+          dispatch(libraryActions.setLibraryFilter({ search: filter }));
         }}
       >
         <label htmlFor="search_field" className="sr-only">

@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router';
 import { bindActionCreators } from 'redux';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
-import { usePrevious } from '~/hooks/usePrevious';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import {
   fetchFilteredLibrary,
@@ -18,9 +17,8 @@ import { WaveLoader } from '../WaveLoader';
 
 export function Library() {
   const dispatch = useAppDispatch();
-  const [searchParams] = useSearchParams();
 
-  const tracksFilter = useAppSelector(librarySelectors.selectLibraryFilter);
+  const filterKey = useAppSelector(librarySelectors.selectLibraryFilterKey);
   const trackIDs = useAppSelector(librarySelectors.selectFilteredTrackIds);
   const isInitialized = useAppSelector(
     librarySelectors.selectLibraryInitialized,
@@ -33,15 +31,13 @@ export function Library() {
   const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
   const isLoadingRef = useRef(isLoading);
 
-  const currentSort = searchParams.get('sort');
+  console.log({ filterKey });
 
   useEffect(() => {
     if (!isLoadingRef.current) {
-      dispatch(
-        fetchLibrary({ sort: currentSort || undefined, filter: tracksFilter }),
-      );
+      dispatch(fetchLibrary({ fallback: true }));
     }
-  }, [currentSort, dispatch, tracksFilter]);
+  }, [dispatch, filterKey]);
 
   if (!isInitialized) return <WaveLoader />;
 

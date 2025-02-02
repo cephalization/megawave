@@ -7,7 +7,7 @@ import { getArrayString } from '~/utils/trackMeta';
 import { LibraryState } from './library';
 
 export function filterTracksByValue(
-  filter: LibraryState['filter'],
+  filter: LibraryState['search'],
   tracks: Track[],
   trackIDs: EntityId[],
 ) {
@@ -24,3 +24,17 @@ export function filterTracksByValue(
     )
     .map((t) => t.id);
 }
+
+/**
+ * A filter key is a string that uniquely identifies a filter based on all
+ * the filters currently applied.
+ *
+ * Combine all defined filters into a single string.
+ */
+export const makeFilterKey = (
+  search: string,
+  subkeyfilter: string,
+  sort: string,
+) => {
+  return [search, subkeyfilter, sort].filter(Boolean).join('|');
+};

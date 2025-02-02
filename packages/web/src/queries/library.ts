@@ -18,11 +18,11 @@ export async function getStatus() {
 }
 
 export async function get({
-  filter,
+  search,
   sort,
   subkeyfilter,
-}: { filter?: string; sort?: string; subkeyfilter?: string } = {}) {
-  const filterString = filter ? `filter=${filter}` : '';
+}: { search?: string; sort?: string; subkeyfilter?: string } = {}) {
+  const filterString = search ? `filter=${search}` : '';
   const sortString = sort ? `sort=${sort}` : '';
   const subkeyfilterString = subkeyfilter ? `subkeyfilter=${subkeyfilter}` : '';
   const params = [filterString, sortString, subkeyfilterString].filter(

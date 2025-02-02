@@ -30,7 +30,7 @@ export function Controls() {
   return (
     <>
       <div className="grid grid-rows-2 w-full bg-gray-100 dark:bg-gray-900 h-20  border-t border-gray-200 relative bottom-0 z-50 py-1">
-        <div className="flex basis-3/4 w-full justify-between gap-2 px-2">
+        <div className="flex basis-3/4 w-full justify-between gap-2 px-2 max-w-full overflow-hidden">
           <div className="flex w-full justify-start flex-shrink min-w-0">
             <CurrentTrack
               title={track?.name}
@@ -40,6 +40,7 @@ export function Controls() {
           </div>
           <div className="flex w-full justify-center">
             <audio
+              className="hidden"
               ref={audioRef}
               title={`${track?.name} ${
                 track?.artist ? `- ${track?.artist}` : ''

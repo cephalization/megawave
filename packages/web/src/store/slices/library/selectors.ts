@@ -1,6 +1,7 @@
 import { createSelector, EntityId } from '@reduxjs/toolkit';
 
 import { RootState } from '~/store';
+import { makeFilterKey } from '~/store/slices/library/utils';
 
 import { libraryAdapter } from './adapter';
 
@@ -15,7 +16,10 @@ const {
 const selectLibraryInitialized = (state: RootState) =>
   state.library.initialized;
 const selectLibraryLoading = (state: RootState) => state.library.loading;
-const selectLibraryFilter = (state: RootState) => state.library.filter;
+const selectLibrarySearch = (state: RootState) => state.library.search;
+const selectLibrarySubkeyfilter = (state: RootState) =>
+  state.library.subkeyfilter;
+const selectLibrarySort = (state: RootState) => state.library.sort;
 const selectLibraryQueue = (state: RootState) => state.library.queue;
 const selectLibraryActiveTrackIndex = (state: RootState) =>
   state.library.activeTrackIndex;
@@ -26,30 +30,15 @@ const selectLibraryScrollPositions = (state: RootState) =>
   state.library.scrollPositions;
 
 const selectFilteredTrackIds = createSelector(
-  selectLibraryFilter,
+  selectLibrarySearch,
+  selectLibrarySubkeyfilter,
+  selectLibrarySort,
   selectLibraryTracksByFilter,
   selectTrackIds,
-  (filter, trackIDsByFilter, trackIDs) => {
-    // Check for subkeyfilter first
-    const subkeyfilterKey = Object.keys(trackIDsByFilter).find(
-      (key) => key.startsWith('artist-') || key.startsWith('album-'),
-    );
-    if (subkeyfilterKey) {
-      return trackIDsByFilter[subkeyfilterKey];
-    }
+  (search, subkeyfilter, sort, trackIDsByFilter, trackIDs) => {
+    const filterKey = makeFilterKey(search, subkeyfilter, sort);
 
-    // Then check for regular filter
-    if (filter && trackIDsByFilter[filter]) {
-      return trackIDsByFilter[filter];
-    }
-
-    // If no filter active, return all tracks
-    if (!filter) {
-      return trackIDs;
-    }
-
-    // If filter is active but no matches found, return empty array
-    return [];
+    return trackIDsByFilter[filterKey] || [];
   },
 );
 const selectFilteredTrackIdCount = createSelector(
@@ -76,18 +65,22 @@ const selectLibraryActiveTrack = createSelector(
 );
 
 const selectCurrentScrollPosition = createSelector(
-  selectLibraryFilter,
-  selectLibraryTracksByFilter,
+  selectLibrarySearch,
+  selectLibrarySubkeyfilter,
+  selectLibrarySort,
   selectLibraryScrollPositions,
-  (filter, tracksByFilter, scrollPositions) => {
-    // Check for subkeyfilter first
-    const subkeyfilterKey = Object.keys(tracksByFilter).find(
-      (key) => key.startsWith('artist-') || key.startsWith('album-'),
-    );
-    // Use the appropriate key to get the scroll position
-    const key = subkeyfilterKey || filter || '';
-    return scrollPositions[key] || 0;
+  (search, subkeyfilter, sort, scrollPositions) => {
+    const filterKey = makeFilterKey(search, subkeyfilter, sort);
+
+    return scrollPositions[filterKey] || 0;
   },
+);
+
+const selectLibraryFilterKey = createSelector(
+  selectLibrarySearch,
+  selectLibrarySubkeyfilter,
+  selectLibrarySort,
+  (search, subkeyfilter, sort) => makeFilterKey(search, subkeyfilter, sort),
 );
 
 export const librarySelectors = {
@@ -100,7 +93,9 @@ export const librarySelectors = {
   // normal selectors
   selectLibraryInitialized,
   selectLibraryLoading,
-  selectLibraryFilter,
+  selectLibrarySearch,
+  selectLibrarySubkeyfilter,
+  selectLibrarySort,
   selectLibraryQueue,
   selectLibraryActiveTrackIndex,
   selectLibraryTracksByFilter,
@@ -112,4 +107,5 @@ export const librarySelectors = {
   selectLibraryActiveTrack,
   selectFilteredTrackIdCount,
   selectCurrentScrollPosition,
+  selectLibraryFilterKey,
 };

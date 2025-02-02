@@ -8,21 +8,43 @@ import { libraryActions } from './library';
 import { librarySelectors } from './selectors';
 
 export const fetchLibrary = createAsyncThunk<
-  { tracks: Track[]; filter?: string; sort?: string; subkeyfilter?: string },
-  { filter?: string; sort?: string; subkeyfilter?: string } | undefined
+  { tracks: Track[]; search?: string; sort?: string; subkeyfilter?: string },
+  | {
+      search?: string;
+      sort?: string;
+      subkeyfilter?: string;
+      fallback?: boolean;
+    }
+  | undefined
 >(
   '/library/fetchAll',
-  async ({ filter, sort, subkeyfilter } = {}, { getState }) => {
+  async (
+    { search, sort, subkeyfilter, fallback = false } = {},
+    { getState },
+  ) => {
     const state = getState() as RootState;
-    const stateFilter = librarySelectors.selectLibraryFilter(state);
-    const newFilter = filter;
+    let searchParam = search;
+    let sortParam = sort;
+    let subkeyfilterParam = subkeyfilter;
+
+    if (fallback) {
+      searchParam = librarySelectors.selectLibrarySearch(state);
+      sortParam = librarySelectors.selectLibrarySort(state);
+      subkeyfilterParam = librarySelectors.selectLibrarySubkeyfilter(state);
+    }
+
     const tracks = await libraryApi.get({
-      filter: newFilter,
-      sort,
-      subkeyfilter,
+      search: searchParam,
+      sort: sortParam,
+      subkeyfilter: subkeyfilterParam,
     });
 
-    return { tracks, filter: newFilter, sort, subkeyfilter };
+    return {
+      tracks,
+      search: searchParam,
+      sort: sortParam,
+      subkeyfilter: subkeyfilterParam,
+    };
   },
 );
 
@@ -42,16 +64,17 @@ export const fetchFilteredLibrary = createAsyncThunk<
         : trackField;
 
       // Clear the main filter
-      dispatch(libraryActions.setLibraryFilter({ filter: '' }));
-
-      // Use the subkeyfilter format that matches the URL
-      const subkeyfilter = `${field}-${filterValue}`;
+      dispatch(
+        libraryActions.setLibraryFilter({
+          search: '',
+          subkeyfilter: `${field}-${filterValue}`,
+          sort: '',
+        }),
+      );
 
       dispatch(
         fetchLibrary({
-          filter: '',
-          sort: field,
-          subkeyfilter,
+          fallback: true,
         }),
       );
     }

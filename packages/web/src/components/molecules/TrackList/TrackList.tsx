@@ -1,15 +1,9 @@
 import { EntityId } from '@reduxjs/toolkit';
-import debounce from 'lodash.debounce';
-import React, { forwardRef, useEffect, useRef } from 'react';
-import { useCallback } from 'react';
-import { useMemo } from 'react';
+import React, { forwardRef, useRef } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 
-import { useAppDispatch, useAppSelector } from '~/hooks';
 import { useAvailableDimensions } from '~/hooks';
-import { libraryActions } from '~/store/slices/library/library';
-import { librarySelectors } from '~/store/slices/library/selectors';
 import { Track } from '~/types/library';
 
 import { TrackListHeader } from '../TrackList/components/TrackListHeader';
@@ -61,67 +55,11 @@ export const TrackList = ({
   containerId = 'library-container',
   context = 'library',
 }: TrackListProps) => {
-  const dispatch = useAppDispatch();
   const listRef = useRef<FixedSizeList>(null);
-  const previousFilterRef = useRef<string>('');
   // (height of parent container) - (height of all children)
   // this derived height value can be used to perfectly size the library items
   const { refToMeasure: libraryRef, height } =
     useAvailableDimensions(containerId);
-
-  const trackFilter = useAppSelector(librarySelectors.selectLibraryFilter);
-  const tracksByFilter = useAppSelector(
-    librarySelectors.selectLibraryTracksByFilter,
-  );
-  const savedScrollPosition = useAppSelector(
-    librarySelectors.selectCurrentScrollPosition,
-  );
-
-  // Get the current active filter key
-  const getCurrentFilterKey = useCallback(() => {
-    const subkeyfilterKey = Object.keys(tracksByFilter).find(
-      (key) => key.startsWith('artist-') || key.startsWith('album-'),
-    );
-    return subkeyfilterKey || trackFilter || '';
-  }, [tracksByFilter, trackFilter]);
-
-  // Save scroll position when scrolling
-  const handleScroll = useMemo(
-    () =>
-      // debounce to prevent excessive dispatching
-      debounce(({ scrollOffset }: { scrollOffset: number }) => {
-        const currentFilterKey = getCurrentFilterKey();
-        dispatch(
-          libraryActions.setScrollPosition({
-            filter: currentFilterKey,
-            position: scrollOffset,
-          }),
-        );
-      }, 200),
-    [getCurrentFilterKey, dispatch],
-  );
-
-  // Handle filter changes and scroll position restoration
-  useEffect(() => {
-    const currentFilterKey = getCurrentFilterKey();
-
-    // Only restore scroll position if we're removing a filter
-    // (going from filtered -> unfiltered state)
-    if (currentFilterKey === '' && previousFilterRef.current !== '') {
-      if (listRef.current && savedScrollPosition > 0) {
-        listRef.current.scrollTo(savedScrollPosition);
-      }
-    }
-
-    // When applying a filter, always start at the top
-    if (currentFilterKey !== '' && previousFilterRef.current === '') {
-      if (listRef.current) {
-        listRef.current.scrollTo(0);
-      }
-    }
-
-    previousFilterRef.current = currentFilterKey;
-  }, [getCurrentFilterKey, savedScrollPosition, trackFilter, tracksByFilter]);
 
   return (
     <>
@@ -144,7 +82,7 @@ export const TrackList = ({
                 // anything higher and this should be 40
                 itemSize={width >= MOBILE_BREAKPOINT ? 40 : 55}
                 innerElementType={innerElementType}
-                onScroll={handleScroll}
+                overscanCount={20}
               >
                 {({ index, style }) => {
                   const trackId = trackIDs[index];
