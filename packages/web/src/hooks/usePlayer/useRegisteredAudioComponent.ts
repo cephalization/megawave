@@ -132,6 +132,8 @@ export const useRegisteredAudioComponent = (
         if (audioRef?.current !== null) {
           const audio = audioRef.current;
 
+          _player._play({ trackId: activeTrackId });
+
           if (audio.paused) {
             audio.play();
           }
@@ -174,7 +176,6 @@ export const useRegisteredAudioComponent = (
         if (audioRef?.current !== null) {
           audioRef.current.addEventListener(...eventTuple);
           return () => {
-            console.log('removing event', eventTuple[0]);
             audioRef.current?.removeEventListener(...eventTuple);
           };
         }
@@ -210,6 +211,7 @@ export const useRegisteredAudioComponent = (
         unsubscribers.push(addEventToAudio(pauseEventArgs));
         unsubscribers.push(addEventToAudio(playEventArgs));
         updateMediaSession();
+        updateMediaHandlers();
         audio.load();
         return () => {
           unsubscribers.forEach((unsubscriber) => unsubscriber?.());
