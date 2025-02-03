@@ -3,7 +3,6 @@
     "start": "NODE_ENV=development vite --host",
     "dev": "wait-on http-get://0.0.0.0:5001/api/health && npm start",
     "build": "NODE_ENV=production npm run check && vite build",
-    "deploy": "git pull && docker compose up -d --build",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{ts,tsx}\"",
     "eslint": "eslint \"src/**/*.{ts,tsx}\"",
