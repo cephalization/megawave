@@ -10,23 +10,49 @@ export function useTrackSelection(trackIDs: EntityId[]) {
   const selectedTracks = useAppSelector(librarySelectors.selectSelectedTracks);
   const lastSelectedRef = useRef<EntityId | null>(null);
 
-  const handleTrackSelection = (trackId: EntityId, multiSelect: boolean) => {
+  const handleTrackSelection = (
+    trackId: EntityId,
+    multiSelect: boolean,
+    cmdSelect: boolean,
+  ) => {
     if (multiSelect) {
       if (
         lastSelectedRef.current &&
         trackIDs.includes(lastSelectedRef.current)
       ) {
         // Handle shift+click range selection
-        const lastIndex = trackIDs.indexOf(lastSelectedRef.current);
+        const lastSelectedIndex = trackIDs.indexOf(lastSelectedRef.current);
         const currentIndex = trackIDs.indexOf(trackId);
-        const start = Math.min(lastIndex, currentIndex);
-        const end = Math.max(lastIndex, currentIndex);
-        const newSelection = trackIDs.slice(start, end + 1);
+        const start = Math.min(lastSelectedIndex, currentIndex);
+        const end = Math.max(lastSelectedIndex, currentIndex) + 1;
+
+        // Get all tracks in the range
+        const rangeSelection = trackIDs.slice(start, end);
+
+        // Combine existing selection with new range
+        const newSelection = Array.from(
+          new Set([...selectedTracks, ...rangeSelection]),
+        );
 
         dispatch(libraryActions.setSelectedTracks({ trackIds: newSelection }));
       } else {
-        // Handle cmd/ctrl+click for individual selection
-        dispatch(libraryActions.toggleTrackSelection({ trackId }));
+        // If no previous selection, treat as single selection
+        dispatch(libraryActions.setSelectedTracks({ trackIds: [trackId] }));
+      }
+    } else if (cmdSelect) {
+      // Handle cmd/ctrl+click to toggle individual tracks while maintaining existing selection
+      if (selectedTracks.includes(trackId)) {
+        dispatch(
+          libraryActions.setSelectedTracks({
+            trackIds: selectedTracks.filter((id) => id !== trackId),
+          }),
+        );
+      } else {
+        dispatch(
+          libraryActions.setSelectedTracks({
+            trackIds: [...selectedTracks, trackId],
+          }),
+        );
       }
     } else {
       // Single click selection
@@ -36,7 +62,13 @@ export function useTrackSelection(trackIDs: EntityId[]) {
         }),
       );
     }
-    lastSelectedRef.current = trackId;
+
+    // Update last selected track reference
+    if (lastSelectedRef.current !== trackId) {
+      lastSelectedRef.current = trackId;
+    } else if (!multiSelect && !cmdSelect) {
+      lastSelectedRef.current = null;
+    }
   };
 
   const clearSelection = () => {

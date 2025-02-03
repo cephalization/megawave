@@ -3,13 +3,9 @@
   "python.linting.flake8Enabled": true,
   "python.linting.mypyEnabled": true,
   "python.linting.enabled": true,
-  "python.analysis.extraPaths": [
-    "${workspaceFolder}/packages/api"
-  ],
+  "python.analysis.extraPaths": ["${workspaceFolder}/packages/api"],
   "python.defaultInterpreterPath": "${workspaceFolder}/packages/api/.venv",
-  "python.autoComplete.extraPaths": [
-  "${workspaceFolder}/packages/api"
-  ],
+  "python.autoComplete.extraPaths": ["${workspaceFolder}/packages/api"],
   "python.envFile": "${workspaceFolder}/packages/api/.env",
   "python.linting.flake8Args": [
     "--config=${workspaceFolder}/packages/api/setup.cfg"
@@ -19,9 +15,10 @@
   ],
   "[python]": {
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true
+      "source.organizeImports": true
     }
-},
-"editor.formatOnSave": true,
-"prettier.prettierPath": "./packages/web/node_modules/prettier"
+  },
+  "editor.formatOnSave": true,
+  "prettier.prettierPath": "./packages/web/node_modules/prettier",
+  "tailwindCSS.experimental.configFile": "./packages/web/src/global.css"
 }

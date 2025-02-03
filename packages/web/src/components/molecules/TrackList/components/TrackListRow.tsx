@@ -25,7 +25,11 @@ type TrackListRowProps = {
   isSelected?: boolean;
   onClickTrack: () => void;
   onClickField: (arg0: keyof Track) => void;
-  onSelect?: (trackId: EntityId, multiSelect: boolean) => void;
+  onSelect?: (
+    trackId: EntityId,
+    multiSelect: boolean,
+    cmdSelect: boolean,
+  ) => void;
 };
 
 export function TrackListRow({
@@ -49,16 +53,24 @@ export function TrackListRow({
 
   const handleTrackClick = (e: React.MouseEvent) => {
     if (e.shiftKey || e.metaKey) {
-      onSelect?.(trackId, true);
+      onSelect?.(trackId, e.shiftKey, e.metaKey);
     } else {
       onClickTrack();
     }
   };
 
+  const handleRowTouch = (e: React.TouchEvent) => {
+    if (e.target instanceof HTMLElement && e.target.closest('button')) {
+      return;
+    }
+
+    e.preventDefault();
+  };
+
   const handleRowClick = (e: React.MouseEvent) => {
     // Only handle row clicks if they're not on a button
     if (!(e.target as HTMLElement).closest('button')) {
-      onSelect?.(trackId, e.shiftKey || e.metaKey);
+      onSelect?.(trackId, e.shiftKey, e.metaKey);
     }
   };
 
@@ -89,6 +101,9 @@ export function TrackListRow({
       }}
     >
       <div
+        onTouchStart={handleRowTouch}
+        onTouchMove={handleRowTouch}
+        onTouchEnd={handleRowTouch}
         onClick={handleRowClick}
         className={clsx(
           'flex h-full w-full items-center cursor-pointer',
