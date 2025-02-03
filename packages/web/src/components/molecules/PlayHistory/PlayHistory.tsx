@@ -73,7 +73,7 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                     </DialogTitle>
                     <div className="ml-3 h-7 flex items-center">
                       <button
-                        className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         onClick={() => setOpen(false)}
                       >
                         <span className="sr-only">Close panel</span>
@@ -95,7 +95,7 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                           `w-full rounded-lg py-2.5 text-sm font-medium leading-5
                           ${
                             selected
-                              ? 'bg-white text-indigo-600 shadow'
+                              ? 'bg-white text-indigo-600 shadow-sm'
                               : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'
                           }`
                         }
@@ -107,7 +107,7 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                           `w-full rounded-lg py-2.5 text-sm font-medium leading-5
                           ${
                             selected
-                              ? 'bg-white text-indigo-600 shadow'
+                              ? 'bg-white text-indigo-600 shadow-sm'
                               : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'
                           }`
                         }

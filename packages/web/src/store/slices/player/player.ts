@@ -73,14 +73,13 @@ export const playTrack = createAsyncThunk<
       case 'history':
         trackContext = librarySelectors.selectLibraryHistory(state);
         break;
-      case 'queue': {
-        if (!trackId) {
-          break;
-        }
-        const queue = librarySelectors.selectLibraryQueue(state);
-        trackContext = queue.slice(queue.indexOf(trackId));
+      case 'queue':
+        trackContext = librarySelectors.selectLibraryQueue(state);
         break;
-      }
+    }
+
+    if (trackId) {
+      trackContext = trackContext.slice(trackContext.indexOf(trackId));
     }
 
     dispatch(

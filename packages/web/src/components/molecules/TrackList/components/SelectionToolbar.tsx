@@ -34,8 +34,7 @@ export function SelectionToolbar({
         as="div"
         transition
         className={clsx(
-          'fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white rounded-lg shadow-lg px-4 py-2 flex items-center gap-4',
-          'transition duration-200 ease-in-out data-[open]:scale-100 ',
+          'fixed bottom-24 left-1/2 -translate-x-1/2 lg:ml-64 lg:left-1/2 lg:-translate-x-full bg-gray-800 text-white rounded-lg shadow-lg px-4 py-2 flex items-center gap-4',
         )}
       >
         <div className="text-sm font-medium">

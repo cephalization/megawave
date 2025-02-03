@@ -77,7 +77,7 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
   const filterDisplay: Filter[] = getFilterDisplay();
 
   return (
-    <div className="flex-1 flex-grow-0 pl-5 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full flex gap-2">
+    <div className="flex-1 grow-0 pl-5 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full flex gap-2">
       {loading && (
         <ArrowPathIcon className="animate-spin h-5 w-5 text-gray-400" />
       )}
@@ -91,7 +91,7 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
               {f.field}: {f.value}
               <button
                 onClick={(e) => clearFilter(e, f)}
-                className="hover:bg-blue-100 rounded p-0.5"
+                className="hover:bg-blue-100 rounded-sm p-0.5"
                 title="Clear filter"
                 type="button"
               >

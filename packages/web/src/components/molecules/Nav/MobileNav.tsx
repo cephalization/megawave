@@ -45,7 +45,7 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               onClick={toggleNav}
-              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-white"
             >
               <span className="sr-only">Close sidebar</span>
               {/* Heroicon name: x */}
@@ -66,7 +66,7 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
               </svg>
             </button>
           </div>
-          <div className="flex-shrink-0 flex items-center px-4">
+          <div className="shrink-0 flex items-center px-4">
             <img className="h-8 w-auto" src={logo} alt="Megawave" />
             <h2 className="text-xl pl-2 ">
               <b className="font-extrabold">Megawave</b>
@@ -160,7 +160,7 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
             </nav>
           </div>
         </TransitionChild>
-        <div className="flex-shrink-0 w-14" aria-hidden="true">
+        <div className="shrink-0 w-14" aria-hidden="true">
           {/* Dummy element to force sidebar to shrink to fit close icon */}
         </div>
       </div>

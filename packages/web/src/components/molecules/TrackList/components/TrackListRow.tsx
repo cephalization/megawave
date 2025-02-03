@@ -15,7 +15,7 @@ import { sectionWidthRatio, styles as headerStyles } from './TrackListHeader';
 
 const styles = {
   headerItem:
-    'text-xs @md:leading-6 leading-none text-gray-700 font-bold *:overflow-ellipsis *:whitespace-nowrap *:overflow-hidden *:max-w-full *:text-start pr-2',
+    'text-xs @md:leading-6 leading-none text-gray-700 font-bold *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:max-w-full *:text-start pr-2',
 } as const;
 
 type TrackListRowProps = {
@@ -101,7 +101,7 @@ export function TrackListRow({
           className="flex-1 flex min-w-0 items-center"
           style={{ flexGrow: sectionWidthRatio.title }}
         >
-          <div className="flex-shrink-0 p-2 @md:pl-0">
+          <div className="shrink-0 p-2 @md:pl-0">
             <AlbumArt
               className="flex h-8 w-8 @lg:h-10 @lg:w-10"
               src={track.art?.[0]}
@@ -119,7 +119,7 @@ export function TrackListRow({
               </button>
             </h2>
             <div className={clsx(styles.headerItem, 'w-full')}>
-              <div className="leading-none text-xs text-gray-400 font-bold overflow-ellipsis whitespace-nowrap overflow-hidden @lg:hidden w-full">
+              <div className="leading-none text-xs text-gray-400 font-bold text-ellipsis whitespace-nowrap overflow-hidden @lg:hidden w-full">
                 {artist}
               </div>
             </div>

@@ -68,7 +68,7 @@ export function CurrentTrack({
       onTouchEnd={handleMouseUp}
     >
       <AlbumArt
-        className="h-12 w-12 flex-shrink-0 hidden sm:flex"
+        className="h-12 w-12 shrink-0 hidden sm:flex"
         src={art}
         alt={`Album art for ${title} by ${artist}`}
       />

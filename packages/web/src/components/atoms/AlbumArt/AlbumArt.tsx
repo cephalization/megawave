@@ -23,7 +23,7 @@ export function AlbumArt({ src, alt, className }: AlbumArtProps) {
       <div
         className={clsx(
           className,
-          'bg-gray-200 flex items-center justify-center flex-shrink-0',
+          'bg-gray-200 flex items-center justify-center shrink-0',
         )}
       >
         <MusicalNoteIcon className="w-1/2 h-1/2 text-gray-400" />
@@ -33,14 +33,16 @@ export function AlbumArt({ src, alt, className }: AlbumArtProps) {
 
   return (
     <>
-      <img
-        className={clsx(className, 'cursor-pointer flex-shrink-0')}
-        src={src}
-        alt={alt}
+      <button
+        className={clsx(className, 'cursor-pointer shrink-0')}
         onClick={() => setIsDialogOpen(true)}
-      />
+        type="button"
+      >
+        <img src={src} alt={alt} />
+      </button>
       <Transition show={isDialogOpen} as={React.Fragment}>
         <Dialog
+          static
           open={isDialogOpen}
           onClose={() => setIsDialogOpen(false)}
           className="fixed inset-0 z-50 overflow-y-auto"
@@ -74,7 +76,7 @@ export function AlbumArt({ src, alt, className }: AlbumArtProps) {
                   className="w-full h-auto rounded-lg shadow-xl"
                 />
                 <button
-                  className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75"
+                  className="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-black/75"
                   onClick={() => setIsDialogOpen(false)}
                 >
                   <svg

@@ -10,7 +10,7 @@ export const SidebarButton = ({
   return (
     <button
       onClick={onToggleNavigationOpen}
-      className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 lg:hidden z-30"
+      className="px-4 border-r border-gray-200 text-gray-500 focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-purple-500 lg:hidden z-30"
     >
       <span className="sr-only">Open sidebar</span>
       {/* Heroicon name: menu-alt-1 */}

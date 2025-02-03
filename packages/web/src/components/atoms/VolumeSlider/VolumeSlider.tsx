@@ -31,7 +31,7 @@ export const VolumeSlider = ({ volume, onChange }: VolumeSliderProps) => {
         step="0.01"
         value={volume}
         onChange={handleVolumeChange}
-        className="w-24 h-1 bg-gray-300 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer range-input"
+        className="w-24 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer range-input"
       />
     </div>
   );
