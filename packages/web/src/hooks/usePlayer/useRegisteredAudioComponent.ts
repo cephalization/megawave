@@ -24,6 +24,7 @@ const scrub = (audioRef: RefObject<HTMLAudioElement | null>, e: number) => {
     audioRef.current.currentTime = e;
   }
 };
+
 export const useRegisteredAudioComponent = (
   audioRef: RefObject<HTMLAudioElement | null>,
   _player: _Player,
@@ -39,7 +40,7 @@ export const useRegisteredAudioComponent = (
   const setDuration = bindActionCreators(playerActions.setDuration, dispatch);
   const trackLink = track?.link ?? null;
 
-  // Initialize volume when audio element is created
+  // sync volume with audio element
   useEffect(() => {
     updateVolume(audioRef, volume);
   }, [audioRef, volume]);

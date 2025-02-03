@@ -1,3 +1,4 @@
+import { Popover, PopoverPanel } from '@headlessui/react';
 import {
   Bars4Icon,
   PlayIcon,
@@ -5,6 +6,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { EntityId } from '@reduxjs/toolkit';
+import clsx from 'clsx';
 import React from 'react';
 
 import { useAppDispatch } from '~/hooks';
@@ -26,34 +28,44 @@ export function SelectionToolbar({
   if (selectedTracks.length === 0) return null;
 
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white rounded-lg shadow-lg px-4 py-2 flex items-center gap-4">
-      <div className="text-sm font-medium">
-        {selectedTracks.length} track{selectedTracks.length !== 1 ? 's' : ''}{' '}
-        selected
-      </div>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => onAddToPlaylist(selectedTracks)}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-          title="Add to playlist"
-        >
-          <Bars4Icon className="h-5 w-5" />
-        </button>
-        <button
-          onClick={() => onQueueTracks(selectedTracks)}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-          title="Add to queue"
-        >
-          <QueueListIcon className="h-5 w-5" />
-        </button>
-        <button
-          onClick={() => dispatch(libraryActions.clearTrackSelection())}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-          title="Clear selection"
-        >
-          <XMarkIcon className="h-5 w-5" />
-        </button>
-      </div>
-    </div>
+    <Popover className="relative">
+      <PopoverPanel
+        static
+        as="div"
+        transition
+        className={clsx(
+          'fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white rounded-lg shadow-lg px-4 py-2 flex items-center gap-4',
+          'transition duration-200 ease-in-out data-[open]:scale-100 ',
+        )}
+      >
+        <div className="text-sm font-medium">
+          {selectedTracks.length} track{selectedTracks.length !== 1 ? 's' : ''}{' '}
+          selected
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onAddToPlaylist(selectedTracks)}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            title="Add to playlist"
+          >
+            <Bars4Icon className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => onQueueTracks(selectedTracks)}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            title="Add to queue"
+          >
+            <QueueListIcon className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => dispatch(libraryActions.clearTrackSelection())}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            title="Clear selection"
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </PopoverPanel>
+    </Popover>
   );
 }

@@ -23,7 +23,6 @@
     "lodash.throttle": "^4.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-helmet": "^6.1.0",
     "react-redux": "^9.2.0",
     "react-router": "^7.1.5",
     "react-virtualized-auto-sizer": "^1.0.25",

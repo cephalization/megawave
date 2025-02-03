@@ -60,19 +60,13 @@ export function Library() {
 
   if (!isInitialized) return <WaveLoader />;
 
+  const title = currentTrack
+    ? `${currentTrack.name} - ${getArrayString(currentTrack.artist)} | Megawave`
+    : 'Megawave';
+
   return (
     <>
-      {currentTrack && (
-        <Helmet defer={false}>
-          <title>
-            {currentTrack.name}
-            {getArrayString(currentTrack.artist)
-              ? ` - ${getArrayString(currentTrack.artist)}`
-              : ''}
-            &nbsp;| Megawave
-          </title>
-        </Helmet>
-      )}
+      {currentTrack ? <title>{title}</title> : null}
       <TrackList
         trackIDs={trackIDs}
         onPlayTrackId={play}
