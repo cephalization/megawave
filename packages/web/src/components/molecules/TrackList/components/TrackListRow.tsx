@@ -116,9 +116,9 @@ export function TrackListRow({
           className="flex-1 flex min-w-0 items-center"
           style={{ flexGrow: sectionWidthRatio.title }}
         >
-          <div className="shrink-0 p-2 @md:pl-0">
+          <div className="shrink-0 pr-2">
             <AlbumArt
-              className="flex h-8 w-8 @lg:h-10 @lg:w-10"
+              className="flex h-10 w-10"
               src={track.art?.[0]}
               alt={`Album art for ${album} by ${artist}`}
             />
