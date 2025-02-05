@@ -6,9 +6,9 @@ type DividingHeaderProps = {
 
 export const DividingHeader = ({ children }: DividingHeaderProps) => {
   return (
-    <div className="border-b border-gray-200 pl-5 px-4 py-4 sm:flex sm:grow-0 sm:items-center sm:justify-between sm:px-6 lg:px-8">
+    <div className="bg-card transition-colors border-b border-border px-4 py-4 sm:flex sm:grow-0 sm:items-center sm:justify-between">
       <div className="flex-1 min-w-0">
-        <h1 className="text-lg font-medium leading-6 text-gray-900 sm:truncate">
+        <h1 className="text-lg font-medium leading-6 sm:truncate">
           {children}
         </h1>
       </div>

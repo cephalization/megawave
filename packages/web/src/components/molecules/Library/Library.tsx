@@ -1,6 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Helmet } from 'react-helmet';
-import { useSearchParams } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
 import { bindActionCreators } from 'redux';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
@@ -61,7 +59,9 @@ export function Library() {
   if (!isInitialized) return <WaveLoader />;
 
   const title = currentTrack
-    ? `${currentTrack.name} - ${getArrayString(currentTrack.artist)} | Megawave`
+    ? `${[currentTrack.name, getArrayString(currentTrack.artist)].join(
+        ' - ',
+      )} | Megawave`
     : 'Megawave';
 
   return (

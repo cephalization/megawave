@@ -1,5 +1,4 @@
 import { Transition, TransitionChild } from '@headlessui/react';
-import React from 'react';
 import { Link, useLocation } from 'react-router';
 
 import logo from '~/assets/logo.svg';
@@ -28,7 +27,7 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
         >
           <div
             onClick={toggleNav}
-            className="absolute inset-0 bg-gray-600 opacity-75"
+            className="absolute inset-0 bg-muted opacity-75"
           />
         </TransitionChild>
         {/* mobile nav */}
@@ -40,7 +39,7 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
           leave="transition ease-in-out duration-300 transform"
           leaveFrom="translate-x-0"
           leaveTo="-translate-x-full"
-          className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white"
+          className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-card transition-colors"
         >
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
@@ -50,7 +49,7 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
               <span className="sr-only">Close sidebar</span>
               {/* Heroicon name: x */}
               <svg
-                className="h-6 w-6 text-white"
+                className="h-6 w-6 text-muted-foreground"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -75,20 +74,18 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
           <div className="mt-5 flex-1 h-0 overflow-y-auto">
             <nav className="px-2">
               <div className="space-y-1">
-                {/* Current: "bg-gray-100 text-gray-900", Default: "text-gray-600 hover:text-gray-900 hover:bg-gray-50" */}
                 <Link
                   to="/"
                   className={`${
                     location.pathname === '/'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-card text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/[0.12]'
                   } group flex items-center px-2 py-2 text-base leading-5 font-medium rounded-md`}
                   aria-current={location.pathname === '/' ? 'page' : undefined}
                 >
-                  {/* Current: "text-gray-500", Default: "text-gray-400 group-hover:text-gray-500" */}
                   {/* Heroicon name: home */}
                   <svg
-                    className="text-gray-500 mr-3 h-6 w-6"
+                    className="text-muted-foreground mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -108,13 +105,13 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
                   to="/playlists"
                   className={`${
                     location.pathname === '/playlists'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-card text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/[0.12]'
                   } group flex items-center px-2 py-2 text-base leading-5 font-medium rounded-md`}
                 >
                   {/* Heroicon name: view-list */}
                   <svg
-                    className="text-gray-400 group-hover:text-gray-500 mr-3 h-6 w-6"
+                    className="text-muted-foreground mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -134,13 +131,13 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
                   to="/recent"
                   className={`${
                     location.pathname === '/recent'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-card text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/[0.12]'
                   } group flex items-center px-2 py-2 text-base leading-5 font-medium rounded-md`}
                 >
                   {/* Heroicon name: clock */}
                   <svg
-                    className="text-gray-400 group-hover:text-gray-500 mr-3 h-6 w-6"
+                    className="text-muted-foreground mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"

@@ -34,7 +34,7 @@ export function SelectionToolbar({
         as="div"
         transition
         className={clsx(
-          'fixed bottom-24 left-1/2 -translate-x-1/2 lg:ml-64 lg:left-1/2 lg:-translate-x-full bg-gray-800 text-white rounded-lg shadow-lg px-4 py-2 flex items-center gap-4',
+          'fixed bottom-24 left-1/2 -translate-x-1/2 lg:ml-64 lg:left-1/2 lg:-translate-x-full bg-accent text-accent-foreground rounded-lg shadow-lg px-4 py-2 flex items-center gap-4',
         )}
       >
         <div className="text-sm font-medium">
@@ -44,21 +44,21 @@ export function SelectionToolbar({
         <div className="flex items-center gap-2">
           <button
             onClick={() => onAddToPlaylist(selectedTracks)}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            className="p-2 hover:bg-accent-foreground hover:text-accent rounded-full transition-colors"
             title="Add to playlist"
           >
             <Bars4Icon className="h-5 w-5" />
           </button>
           <button
             onClick={() => onQueueTracks(selectedTracks)}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            className="p-2 hover:bg-accent-foreground hover:text-accent rounded-full transition-colors"
             title="Add to queue"
           >
             <QueueListIcon className="h-5 w-5" />
           </button>
           <button
             onClick={() => dispatch(libraryActions.clearTrackSelection())}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            className="p-2 hover:bg-accent-foreground hover:text-accent rounded-full transition-colors"
             title="Clear selection"
           >
             <XMarkIcon className="h-5 w-5" />

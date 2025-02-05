@@ -103,7 +103,7 @@ export const TrackList = ({
     <>
       <TrackListHeader />
       <div
-        className="border-t border-gray-200 relative"
+        className="border-t border-border relative bg-card transition-colors"
         style={{ height }}
         ref={libraryRef}
       >

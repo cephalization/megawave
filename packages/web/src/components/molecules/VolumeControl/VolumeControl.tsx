@@ -42,12 +42,12 @@ export const VolumeControl = ({ volume, onChange }: VolumeControlProps) => {
       {/* Show button and popover on small screens */}
       <div className="md:hidden flex items-center">
         <Popover className="relative z-10 flex items-center">
-          <PopoverButton className="hover:text-gray-900 focus:outline-hidden">
+          <PopoverButton className="text-muted-foreground hover:text-foreground focus:outline-hidden">
             <SpeakerWaveIcon height={20} />
           </PopoverButton>
 
           <PopoverPanel anchor="bottom end" className="shadow-sm">
-            <div className="bg-white p-4 rounded-lg shadow-lg">
+            <div className="bg-card p-4 rounded-lg shadow-lg">
               <VolumeSlider volume={volume} onChange={onChange} />
             </div>
           </PopoverPanel>

@@ -15,7 +15,7 @@ import { sectionWidthRatio, styles as headerStyles } from './TrackListHeader';
 
 const styles = {
   headerItem:
-    'text-xs @md:leading-6 leading-none text-gray-700 font-bold *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:max-w-full *:text-start pr-2',
+    'text-sm @md:leading-6 leading-none font-bold *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:max-w-full *:text-start pr-2',
 } as const;
 
 type TrackListRowProps = {
@@ -108,10 +108,13 @@ export function TrackListRow({
         className={clsx(
           'flex h-full w-full items-center cursor-pointer',
           headerStyles.rowPadding,
-          isActive && 'text-blue-700 bg-blue-100',
-          isSelected && 'bg-blue-200',
+          isActive && 'text-primary bg-primary/[0.05]',
+          isSelected && 'bg-primary/30! **:italic',
         )}
       >
+        {isActive && (
+          <div className="absolute left-0 top-0 h-full w-1 bg-primary" />
+        )}
         <div
           className="flex-1 flex min-w-0 items-center"
           style={{ flexGrow: sectionWidthRatio.title }}
@@ -128,13 +131,13 @@ export function TrackListRow({
               <button
                 type="button"
                 onClick={handleTrackClick}
-                className={'hover:text-blue-700 transition-colors duration-300'}
+                className={'hover:text-primary transition-colors duration-300'}
               >
                 {name}
               </button>
             </h2>
             <div className={clsx(styles.headerItem, 'w-full')}>
-              <div className="leading-none text-xs text-gray-400 font-bold text-ellipsis whitespace-nowrap overflow-hidden @lg:hidden w-full">
+              <div className="leading-none text-xs text-muted-foreground font-bold text-ellipsis whitespace-nowrap overflow-hidden @lg:hidden w-full">
                 {artist}
               </div>
             </div>
@@ -150,7 +153,7 @@ export function TrackListRow({
           >
             <button
               onClick={handleArtistClick}
-              className="hover:text-blue-700 transition-colors duration-300"
+              className="hover:text-primary transition-colors duration-300"
             >
               {artist}
             </button>
@@ -166,7 +169,7 @@ export function TrackListRow({
           >
             <button
               onClick={handleAlbumClick}
-              className="hover:text-blue-700 transition-colors duration-300"
+              className="hover:text-primary transition-colors duration-300"
             >
               {album}
             </button>

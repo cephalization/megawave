@@ -1,5 +1,5 @@
 import { Bars3Icon } from '@heroicons/react/24/outline';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { CurrentTrack } from '~/components/atoms/CurrentTrack/CurrentTrack';
 import { NextButton } from '~/components/atoms/NextButton';
@@ -29,7 +29,7 @@ export function Controls() {
 
   return (
     <>
-      <div className="grid grid-rows-2 w-full bg-gray-100 h-20  border-t border-gray-200 relative bottom-0 z-50 py-1">
+      <div className="grid grid-rows-2 w-full bg-card transition-colors text-card-foreground h-20 border-t border-border relative bottom-0 z-50 py-1 sm:px-2">
         <div className="flex basis-3/4 w-full justify-between gap-2 px-2 max-w-full overflow-hidden">
           <div className="flex w-full justify-start flex-shrink min-w-0">
             <CurrentTrack
@@ -54,7 +54,7 @@ export function Controls() {
                 track?.artist ? `- ${track?.artist}` : ''
               }`}
             ></audio>
-            <div className="text-gray-600 basis-2/3 lg:rounded-b-xl px-1 sm:px-3 lg:px-1 xl:px-3 flex w-full justify-center items-center">
+            <div className="text-muted-foreground basis-2/3 lg:rounded-b-xl px-1 sm:px-3 lg:px-1 xl:px-3 flex w-full justify-center items-center">
               <PrevButton onClick={handlePrev} />
               <PlayPauseButton
                 playing={playing}
@@ -67,7 +67,7 @@ export function Controls() {
           <div className="flex flex-shrink w-full justify-end items-center gap-4">
             <VolumeControl volume={volume} onChange={setVolume} />
             <button
-              className="sm:block hover:text-gray-900"
+              className="sm:block text-muted-foreground hover:text-foreground"
               onClick={() => setOpen((o) => !o)}
             >
               <Bars3Icon height={24} />

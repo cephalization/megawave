@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { SidebarButton } from '~/components/atoms/SidebarButton';
 
 import { ProfileMenu } from '../ProfileMenu';
@@ -13,10 +11,10 @@ export const SearchHeader = ({
   onToggleNavigationOpen = () => {},
 }: SearchHeaderProps) => {
   return (
-    <div className="relative z-8 shrink-0 flex h-16 bg-white border-b border-gray-200">
+    <div className="relative z-8 shrink-0 flex h-16 bg-card transition-colors border-b border-border sm:px-4">
       {/* Sidebar toggle, controls the 'sidebarOpen' sidebar state. */}
       <SidebarButton onToggleNavigationOpen={onToggleNavigationOpen} />
-      <div className="flex-1 flex justify-between px-4 sm:px-6 lg:px-8">
+      <div className="flex-1 flex justify-between px-4 sm:px-0">
         <TrackSearch />
         <div className="flex items-center">
           {/* Profile dropdown */}

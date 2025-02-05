@@ -8,7 +8,7 @@ type ProgressBarProps = {
 export const ProgressBar = forwardRef<HTMLInputElement, ProgressBarProps>(
   ({ onChange, percentage = 0 }, ref) => {
     return (
-      <div className="relative w-full h-2 bg-gray-300 rounded-full">
+      <div className="relative w-full h-2 bg-border rounded-full">
         <input
           ref={ref}
           type="range"
@@ -21,7 +21,7 @@ export const ProgressBar = forwardRef<HTMLInputElement, ProgressBarProps>(
           step="0.01"
         />
         <div
-          className="bg-gray-600 h-full rounded-l-full rounded-r-full"
+          className="bg-primary h-full rounded-l-full rounded-r-full"
           style={{
             width: `${percentage}%`, // Map percentage to width directly
           }}

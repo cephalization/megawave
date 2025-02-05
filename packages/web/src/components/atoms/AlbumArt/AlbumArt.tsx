@@ -23,10 +23,10 @@ export function AlbumArt({ src, alt, className }: AlbumArtProps) {
       <div
         className={clsx(
           className,
-          'bg-gray-200 flex items-center justify-center shrink-0',
+          'bg-muted transition-colors flex items-center justify-center shrink-0',
         )}
       >
-        <MusicalNoteIcon className="w-1/2 h-1/2 text-gray-400" />
+        <MusicalNoteIcon className="w-1/2 h-1/2 text-muted-foreground" />
       </div>
     );
   }
@@ -38,7 +38,7 @@ export function AlbumArt({ src, alt, className }: AlbumArtProps) {
         onClick={() => setIsDialogOpen(true)}
         type="button"
       >
-        <img src={src} alt={alt} />
+        <img src={src} alt={alt} className="w-full h-full object-cover" />
       </button>
       <Transition show={isDialogOpen} as={React.Fragment}>
         <Dialog

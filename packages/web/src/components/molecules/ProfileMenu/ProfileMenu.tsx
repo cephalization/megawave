@@ -3,14 +3,14 @@ export const ProfileMenu = () => {
     <div className="ml-3 relative">
       <div>
         <button
-          className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+          className="max-w-xs bg-card flex items-center text-sm rounded-full focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           id="user-menu"
           aria-haspopup="true"
         >
           <span className="sr-only">Open user menu</span>
-          <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-gray-100">
+          <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-card">
             <svg
-              className="h-full w-full text-gray-300"
+              className="h-full w-full text-muted-foreground"
               fill="currentColor"
               viewBox="0 0 24 24"
             >

@@ -77,21 +77,21 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
   const filterDisplay: Filter[] = getFilterDisplay();
 
   return (
-    <div className="flex-1 grow-0 pl-5 px-4 py-4 sm:px-6 lg:px-8 items-center justify-end w-full flex gap-2">
+    <div className="bg-card transition-colors flex-1 grow-0 px-2 sm:px-4 py-4 items-center justify-end w-full flex gap-2">
       {loading && (
-        <ArrowPathIcon className="animate-spin h-5 w-5 text-gray-400" />
+        <ArrowPathIcon className="animate-spin h-5 w-5 text-muted-foreground" />
       )}
-      <h2 className="text-sm leading-6 text-gray-500 font-semibold flex items-center gap-2">
+      <h2 className="text-sm text-muted-foreground font-semibold flex items-center gap-2">
         {filterDisplay.length > 0 &&
           filterDisplay.map((f) => (
             <span
               key={f.field}
-              className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md flex items-center gap-1"
+              className="bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1"
             >
               {f.field}: {f.value}
               <button
                 onClick={(e) => clearFilter(e, f)}
-                className="hover:bg-blue-100 rounded-sm p-0.5"
+                className="hover:bg-primary/20 hover:text-primary rounded-sm p-0.5"
                 title="Clear filter"
                 type="button"
               >
@@ -100,7 +100,9 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
             </span>
           ))}
         Tracks:{' '}
-        <span className="text-gray-600 font-bold font-mono">{trackCount}</span>
+        <span className="text-foreground font-bold font-mono text-end">
+          {trackCount}
+        </span>
       </h2>
     </div>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router';
 
 import logo from '~/assets/logo.svg';
+import { ThemeToggle } from '~/components/atoms/ThemeToggle';
 
 import { MobileNav } from './MobileNav';
 
@@ -18,15 +19,15 @@ export function Nav({ open = false, toggleNav }: NavProps) {
       <MobileNav open={open} toggleNav={toggleNav} />
 
       <div className="hidden lg:flex lg:shrink-0" id="side-nav">
-        <div className="flex flex-col w-64 border-r border-gray-200 pt-5 pb-4 bg-gray-100">
-          <div className="flex items-center shrink-0 px-6">
+        <div className="flex flex-col w-64 border-r border-border pt-5 pb-4 bg-card text-card-foreground transition-colors">
+          <div className="flex items-center shrink-0 px-4">
             <img className="h-8 w-auto" src={logo} alt="Megawave" />
-            <h2 className="text-xl pl-2 ">
+            <h2 className="text-xl pl-2">
               <b className="font-extrabold">Megawave</b>
             </h2>
           </div>
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="h-0 flex-1 flex flex-col overflow-y-auto">
+          <div className="h-0 flex-1 flex flex-col overflow-y-auto justify-between">
             {/* Navigation */}
             <nav className="px-3 mt-6">
               <div className="space-y-1">
@@ -34,12 +35,12 @@ export function Nav({ open = false, toggleNav }: NavProps) {
                   to="/"
                   className={`${
                     location.pathname === '/'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                   } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
                 >
                   <svg
-                    className="text-gray-500 mr-3 h-6 w-6"
+                    className="text-muted-foreground mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -59,12 +60,12 @@ export function Nav({ open = false, toggleNav }: NavProps) {
                   to="/playlists"
                   className={`${
                     location.pathname === '/playlists'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                   } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
                 >
                   <svg
-                    className="text-gray-400 group-hover:text-gray-500 mr-3 h-6 w-6"
+                    className="text-muted-foreground group-hover:text-foreground mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -84,12 +85,12 @@ export function Nav({ open = false, toggleNav }: NavProps) {
                   to="/recent"
                   className={`${
                     location.pathname === '/recent'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                   } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
                 >
                   <svg
-                    className="text-gray-400 group-hover:text-gray-500 mr-3 h-6 w-6"
+                    className="text-muted-foreground group-hover:text-foreground mr-3 h-6 w-6"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -107,6 +108,7 @@ export function Nav({ open = false, toggleNav }: NavProps) {
                 </Link>
               </div>
             </nav>
+            <ThemeToggle />
           </div>
         </div>
       </div>

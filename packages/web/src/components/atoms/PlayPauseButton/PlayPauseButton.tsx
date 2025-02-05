@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ICON_SIZE_SCALAR } from '~/constants/controls';
 
 type PlayPauseButtonProps = {
@@ -16,7 +14,7 @@ export const PlayPauseButton = ({
   return (
     <button
       type="button"
-      className="mx-8 hover:text-gray-900"
+      className="mx-8 text-muted-foreground hover:text-foreground"
       onClick={playing ? () => onPause?.() : () => onPlay?.()}
     >
       {playing ? (

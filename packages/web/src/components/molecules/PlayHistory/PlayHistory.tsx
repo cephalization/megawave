@@ -65,15 +65,15 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
             leaveTo="translate-x-full"
           >
             <div className="w-screen max-w-md">
-              <div className="h-full flex flex-col py-6 bg-white @container shadow-xl">
+              <div className="h-full flex flex-col py-6 bg-card @container shadow-xl">
                 <div className="px-4 sm:px-6">
                   <div className="flex items-start justify-between">
-                    <DialogTitle className="text-lg font-medium text-gray-900">
+                    <DialogTitle className="text-lg font-medium text-foreground">
                       Play Queue & History
                     </DialogTitle>
                     <div className="ml-3 h-7 flex items-center">
                       <button
-                        className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="bg-card rounded-md text-muted-foreground hover:text-foreground focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         onClick={() => setOpen(false)}
                       >
                         <span className="sr-only">Close panel</span>
@@ -89,14 +89,14 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                     onChange={setSelectedTab}
                     className="h-full"
                   >
-                    <TabList className="flex space-x-1 rounded-xl bg-gray-100 p-1 mx-4">
+                    <TabList className="flex space-x-1 rounded-xl bg-card p-1 mx-4 transition-colors duration-300">
                       <Tab
                         className={({ selected }) =>
                           `w-full rounded-lg py-2.5 text-sm font-medium leading-5
                           ${
                             selected
-                              ? 'bg-white text-indigo-600 shadow-sm'
-                              : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'
+                              ? 'bg-accent text-primary shadow-sm'
+                              : 'text-muted-foreground hover:bg-accent/[0.12] hover:text-foreground'
                           }`
                         }
                       >
@@ -107,8 +107,8 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                           `w-full rounded-lg py-2.5 text-sm font-medium leading-5
                           ${
                             selected
-                              ? 'bg-white text-indigo-600 shadow-sm'
-                              : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'
+                              ? 'bg-accent text-primary shadow-sm'
+                              : 'text-muted-foreground bg-accent/[0.12] hover:bg-accent/[0.24] hover:text-foreground'
                           }`
                         }
                       >

@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ICON_SIZE_SCALAR } from '~/constants/controls';
 
 type PrevButtonProps = {
@@ -10,7 +8,7 @@ export const PrevButton = ({ onClick }: PrevButtonProps) => {
   return (
     <button
       type="button"
-      className="mx-1 hover:text-gray-900"
+      className="mx-1 text-muted-foreground hover:text-foreground"
       onClick={onClick}
     >
       <svg

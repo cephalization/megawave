@@ -4,8 +4,8 @@ import React from 'react';
 import { useSearchParams } from 'react-router';
 
 export const styles = {
-  headerItem: 'text-sm leading-6 text-gray-500 font-semibold',
-  rowPadding: 'px-2 py-1',
+  headerItem: 'text-sm leading-6 text-foreground font-semibold',
+  rowPadding: 'px-2 py-1 sm:px-4',
 } as const;
 
 export const sectionWidthRatio = {
@@ -43,8 +43,8 @@ const HeaderItem = ({
         onClick={() => onSort(field)}
         className={clsx(
           styles.headerItem,
-          'flex items-center gap-1 hover:text-gray-700 transition-colors duration-150 group w-full',
-          isCurrentSort && 'text-gray-700',
+          'flex items-center gap-2 text-foreground hover:underline underline-offset-2 transition-colors duration-150 group w-full',
+          isCurrentSort && 'text-foreground',
         )}
       >
         {children}
@@ -93,7 +93,7 @@ export function TrackListHeader() {
   return (
     <div
       className={clsx(
-        'flex w-full border-t border-gray-200',
+        'flex w-full border-t border-border bg-card transition-colors',
         styles.rowPadding,
       )}
     >
