@@ -1,22 +1,10 @@
 import { EntityId } from '@reduxjs/toolkit';
-import React, {
-  forwardRef,
-  useRef,
-  useEffect,
-  useMemo,
-  CSSProperties,
-} from 'react';
+import React, { forwardRef, useRef, useEffect, useMemo } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 
-import {
-  useAppDispatch,
-  useAppSelector,
-  useAvailableDimensions,
-} from '~/hooks';
+import { useAvailableDimensions } from '~/hooks';
 import { useTrackSelection } from '~/hooks/useTrackSelection';
-import { libraryActions } from '~/store/slices/library/library';
-import { librarySelectors } from '~/store/slices/library/selectors';
 import { Track } from '~/types/library';
 
 import { ScrollIndicator } from './components/ScrollIndicator';
@@ -29,19 +17,17 @@ export type TrackListProps = {
   onPlayTrackId: (arg: {
     trackId?: EntityId | null;
     requeue?: boolean;
-    context?: 'library' | 'history';
+    context?: 'library' | 'history' | 'queue';
     addHistory?: boolean;
   }) => void;
   onFilterLibrary: (field: keyof Track, trackId: EntityId) => void;
   currentTrack?: Track | null;
   containerId?: string;
-  context?: 'library' | 'history';
+  context?: 'library' | 'history' | 'queue';
   scrollToTrack?: EntityId | null;
 };
 
-const MOBILE_BREAKPOINT = 640;
 export const LIST_PADDING = 16;
-const SCROLLBAR_WIDTH = 12;
 
 // react-window construct
 // used to add padding to virtualized list contents
@@ -121,7 +107,7 @@ export const TrackList = ({
                 width={width}
                 itemCount={trackIDs.length}
                 itemKey={(index) => `${index}-${trackIDs[index]}`}
-                itemSize={width >= MOBILE_BREAKPOINT ? 40 : 55}
+                itemSize={50}
                 innerElementType={innerElementType}
                 overscanCount={20}
               >

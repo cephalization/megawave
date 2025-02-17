@@ -38,6 +38,8 @@ type PlayerActionPayload = {
   requeue?: boolean;
   // should the current track be added to the history?
   addHistory?: boolean;
+  // the index to requeue from
+  requeueIndex?: number;
 };
 
 const sharedPlayerActions = {
@@ -56,7 +58,7 @@ export const playTrack = createAsyncThunk<
 >(
   'player/play_thunk',
   async (
-    { trackId, requeue, context = 'library', addHistory },
+    { trackId, requeue, context = 'library', addHistory, requeueIndex },
     { dispatch, getState },
   ) => {
     const state = getState() as RootState;
@@ -72,14 +74,15 @@ export const playTrack = createAsyncThunk<
         break;
       case 'history':
         trackContext = librarySelectors.selectLibraryHistory(state);
+        if (trackId) {
+          trackContext = trackContext.slice(
+            requeueIndex != null ? requeueIndex : trackContext.indexOf(trackId),
+          );
+        }
         break;
       case 'queue':
         trackContext = librarySelectors.selectLibraryQueue(state);
         break;
-    }
-
-    if (trackId) {
-      trackContext = trackContext.slice(trackContext.indexOf(trackId));
     }
 
     dispatch(

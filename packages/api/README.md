@@ -2,9 +2,9 @@
 
 ## Requirements
 
-- Python 3.12+
-- [UV](https://github.com/astral-sh/uv) - An extremely fast Python package installer and resolver
 - Git
+- [UV](https://github.com/astral-sh/uv) - An extremely fast Python package installer and resolver
+- Python 3.12+ (uv will install this)
 
 ## Setup
 
@@ -21,12 +21,7 @@
 2. Create virtual environment and install dependencies:
 
     ```bash
-    uv venv
-    source .venv/bin/activate  # On Unix/macOS
-    # or
-    .venv\Scripts\activate     # On Windows
-
-    uv pip install -e ".[dev]"  # Install with dev dependencies
+    uv sync --all-extras
     ```
 
 3. Start the API server:
@@ -49,10 +44,6 @@ The project uses modern Python development tools, all configured in `pyproject.t
   - Static type checking
   - Run with `./typecheck.sh`
   - [Type hints cheat sheet](https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html)
-
-- [pytest](https://docs.pytest.org/)
-  - Testing framework with coverage reporting
-  - Run with `uv run pytest`
 
 ## Key Libraries
 

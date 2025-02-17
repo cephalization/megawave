@@ -17,11 +17,11 @@ export const usePollingLibrary = () => {
           async function check() {
             const status = await getStatus();
             if (status.data !== 'idle') {
-              dispatch(fetchLibrary());
               setTimeout(check, 2500);
             } else {
               setLoading(false);
             }
+            dispatch(fetchLibrary());
           }
 
           check();

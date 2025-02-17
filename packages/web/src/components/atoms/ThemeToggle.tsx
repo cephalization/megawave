@@ -15,8 +15,10 @@ export function ThemeToggle() {
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('green');
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('green');
     }
   }, [isDark]);
 

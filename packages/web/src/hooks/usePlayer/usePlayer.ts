@@ -66,13 +66,22 @@ export const usePlayer = (audioRef: RefObject<HTMLAudioElement | null>) => {
       dispatch(playerActions.stop());
     }
   }, [dispatch, nextTrackId]);
+  // TODO:
+  // You were trying to fix forward/back buttons
+  // The issue is that you want to requeue from history[last] + queue when you hit back
+  // but when you do that, it doesn't work due to assumptions made in the library slice handling of playTrack
   const playPrev = useCallback<_Player['playPrev']>(() => {
     if (prevTrackId) {
-      dispatch(playTrack({ trackId: prevTrackId }));
+      dispatch(
+        playTrack({
+          trackId: prevTrackId,
+          requeueIndex: activeTrackIndex ?? undefined,
+        }),
+      );
     } else {
       dispatch(playerActions.stop());
     }
-  }, [dispatch, prevTrackId]);
+  }, [dispatch, prevTrackId, activeTrackIndex]);
 
   // prep handlers into redux for consumption by audio ref
   const _player: _Player = {

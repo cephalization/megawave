@@ -1,9 +1,10 @@
 import asyncio
 import os
-from typing import Dict, List, Literal, Tuple, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import mutagen
-from mutagen import MutagenError
+from mutagen._file import StreamInfo
+from mutagen._util import MutagenError
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3
 from mutagen.mp3 import MP3
@@ -83,7 +84,7 @@ class AudioFile:
         self.fileType: str = fileType or ""
         self.id: str = getId()
         self.meta = None
-        self.info = None
+        self.info: Optional[StreamInfo] = None
         self.art: Union[List[str], None] = None
         self.raw = None
         self.tags = None
@@ -103,9 +104,10 @@ class AudioFile:
         def load():
             if self.fileType == "mp3":
                 self.raw = MP3(self.filePath)
+                self.info = self.raw.info
             elif self.fileType == "wav":
                 self.raw = WAVE(self.filePath)
-            self.info = self.raw.info
+                self.info = self.raw.info
             self.ok = True
             # we've got all required info, lets try to grab some more complex data
             try:
@@ -237,6 +239,8 @@ class AudioLibrary:
     status: AudioLibraryStatus
     library: List[str]
     libraryDict: Dict[str, AudioFile]
+    _current_load_task: Optional[asyncio.Task]
+    _cancel_requested: bool
 
     def __init__(self) -> None:
         self.reset()
@@ -245,6 +249,8 @@ class AudioLibrary:
         self.library = []
         self.libraryDict = {}
         self.status = "idle"
+        self._current_load_task = None
+        self._cancel_requested = False
 
     def getById(self, id: str) -> Union[AudioFile, None]:
         entry = self.libraryDict.get(id, None)
@@ -280,32 +286,102 @@ class AudioLibrary:
 
         return output
 
+    def cancel_load(self) -> None:
+        """Cancel the current load operation if one is in progress"""
+        if self._current_load_task and not self._current_load_task.done():
+            self._cancel_requested = True
+
+    async def _process_file_batch(
+        self, files_to_process: List[Tuple[str, str, str]]
+    ) -> Tuple[int, int]:
+        """Process a batch of files and return (added, skipped) counts"""
+        added = 0
+        skipped = 0
+
+        for root, name, ext in files_to_process:
+            if self._cancel_requested:
+                return added, skipped
+
+            audio = AudioFile(root, name, ext)
+            if audio.ok:
+                self.append(audio)
+                added += 1
+            else:
+                skipped += 1
+
+        return added, skipped
+
     async def load(self, paths: List[str]) -> None:
         """
-        Asynchronously load audio files from a list of paths into this library
+        Asynchronously load audio files from a list of paths into this library.
+        Can be cancelled by calling cancel_load().
         """
+        # Cancel any existing load operation
+        self.cancel_load()
+
+        # Reset state for new load
         self.reset()
+        self._cancel_requested = False
         self.status = "loading"
-        for path in paths:
-            added = 0
-            skipped = 0
-            print(f'- - - Loading music library at "{path}" - - - ')
-            for root, _, files in os.walk(path):
-                for name in files:
-                    hasExt, ext = hasAudioFileExtension(name)
-                    if hasExt:
-                        audio = AudioFile(root, name, ext)
-                        # if mutagen cannot parse the audio file within the AudioFile
-                        # constructor we do not add the file to the library
-                        if audio.ok:
-                            self.append(audio)
-                            added += 1
-                        else:
-                            skipped += 1
-                # this just yields control back to the event loop so that this function doesn't block
-                await asyncio.sleep(0)
-            print(f"- - - - Loaded {added} songs from {path} - - - - ")
-            print(f"- - - - Skipped {skipped} songs from {path} - - - - ")
-        print(f"- - - Loaded {len(self.library)} songs total - - - ")
-        print("- - - Done loading music library - - - ")
-        self.status = "idle"
+
+        total_added = 0
+        total_skipped = 0
+        BATCH_SIZE = 50  # Process files in batches of 50
+
+        async def load_operation():
+            nonlocal total_added, total_skipped
+
+            try:
+                for path in paths:
+                    if self._cancel_requested:
+                        break
+
+                    print(f'- - - Loading music library at "{path}" - - - ')
+                    current_batch: List[Tuple[str, str, str]] = []
+
+                    for root, _, files in os.walk(path):
+                        for name in files:
+                            if self._cancel_requested:
+                                break
+
+                            hasExt, ext = hasAudioFileExtension(name)
+                            if hasExt:
+                                current_batch.append((root, name, ext))
+
+                                if len(current_batch) >= BATCH_SIZE:
+                                    added, skipped = await self._process_file_batch(
+                                        current_batch
+                                    )
+                                    total_added += added
+                                    total_skipped += skipped
+                                    current_batch = []
+                                    await asyncio.sleep(
+                                        0
+                                    )  # Yield to event loop after each batch
+
+                    # Process remaining files in the last batch
+                    if current_batch and not self._cancel_requested:
+                        added, skipped = await self._process_file_batch(current_batch)
+                        total_added += added
+                        total_skipped += skipped
+
+                    print(f"- - - - Loaded {total_added} songs from {path} - - - - ")
+                    print(f"- - - - Skipped {total_skipped} songs from {path} - - - - ")
+
+                print(f"- - - Loaded {len(self.library)} songs total - - - ")
+                print("- - - Done loading music library - - - ")
+
+            except Exception as e:
+                print(f"Error loading library: {str(e)}")
+                self.status = "error"
+                return
+
+            finally:
+                if self._cancel_requested:
+                    print("Library load cancelled")
+                self._cancel_requested = False
+                self.status = "idle"
+
+        # Start the load operation as a task
+        self._current_load_task = asyncio.create_task(load_operation())
+        await self._current_load_task  # Wait for completion

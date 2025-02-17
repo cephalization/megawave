@@ -11,10 +11,10 @@ export const SearchHeader = ({
   onToggleNavigationOpen = () => {},
 }: SearchHeaderProps) => {
   return (
-    <div className="relative z-8 shrink-0 flex h-16 bg-card transition-colors border-b border-border sm:px-4">
+    <div className="relative z-8 shrink-0 flex h-16 bg-card transition-colors border-b border-border lg:px-4">
       {/* Sidebar toggle, controls the 'sidebarOpen' sidebar state. */}
       <SidebarButton onToggleNavigationOpen={onToggleNavigationOpen} />
-      <div className="flex-1 flex justify-between px-4 sm:px-0">
+      <div className="flex-1 flex justify-between px-4 lg:px-0">
         <TrackSearch />
         <div className="flex items-center">
           {/* Profile dropdown */}

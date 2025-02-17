@@ -13,7 +13,7 @@ import {
 } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { bindActionCreators, EntityId } from '@reduxjs/toolkit';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { TrackList } from '~/components/molecules/TrackList';
 import { useAppDispatch, useAppSelector } from '~/hooks';
@@ -33,6 +33,15 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
   const queueTrackIds = useAppSelector(librarySelectors.selectLibraryQueue);
   const currentTrack = useCurrentTrack();
   const [selectedTab, setSelectedTab] = useState(0);
+
+  const queueTrackIdsFromCurrentTrack = useMemo(() => {
+    if (!currentTrack) {
+      return queueTrackIds;
+    }
+    // get the _last_ index of the current track in the queue
+    const currentTrackIndex = queueTrackIds.lastIndexOf(currentTrack.id);
+    return queueTrackIds.slice(currentTrackIndex);
+  }, [queueTrackIds, currentTrack]);
 
   const handlePlayTrackFromQueue = ({ trackId }: { trackId: EntityId }) => {
     play({ trackId, requeue: true, context: 'queue' });
@@ -124,7 +133,7 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                           <TrackList
                             context="library"
                             containerId="queue-container"
-                            trackIDs={queueTrackIds}
+                            trackIDs={queueTrackIdsFromCurrentTrack}
                             onPlayTrackId={({ trackId }) =>
                               trackId != null &&
                               handlePlayTrackFromQueue({ trackId })

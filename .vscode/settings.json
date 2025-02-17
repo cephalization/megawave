@@ -14,6 +14,7 @@
     }
   },
   "python.terminal.activateEnvironment": false,
-  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.typeCheckingMode": "off",
+  "mypy-type-checker.path": ["${workspaceFolder}/packages/api/.venv/bin/mypy"],
   "tailwindCSS.experimental.configFile": "./packages/web/src/global.css"
 }

@@ -27,4 +27,7 @@ known-first-party = ["megawave"]
 
 [tool.mypy]
 files = ["megawave"]
-ignore_missing_imports = true
+check_untyped_defs = true
+
+[tool.pyright]
+reportPrivateImportUsage = false
