@@ -13,6 +13,7 @@ export type LibraryState = {
   search: string;
   subkeyfilter: string;
   sort: string;
+  viewMode: 'tracks' | 'albums'; // Add view mode
   activeTrackIndex: number | null;
   queue: EntityId[];
   history: EntityId[];
@@ -28,6 +29,7 @@ const initialState = libraryAdapter.getInitialState<LibraryState>({
   search: '',
   subkeyfilter: '',
   sort: '',
+  viewMode: 'tracks', // Default to tracks view
   tracksByFilter: {},
   scrollPositions: {},
   // queue
@@ -51,6 +53,12 @@ export const librarySlice = createSlice({
       state.search = search ?? state.search;
       state.subkeyfilter = subkeyfilter ?? state.subkeyfilter;
       state.sort = sort ?? state.sort;
+    },
+    setViewMode(
+      state,
+      { payload: viewMode }: { payload: 'tracks' | 'albums' },
+    ) {
+      state.viewMode = viewMode;
     },
     setScrollPosition(
       state,

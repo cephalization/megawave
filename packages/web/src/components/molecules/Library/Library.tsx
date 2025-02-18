@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { bindActionCreators } from 'redux';
 
 import { useAppDispatch, useAppSelector } from '~/hooks';
 import { useCurrentTrack } from '~/hooks/useCurrentTrack';
+import { libraryActions } from '~/store/slices/library/library';
 import { librarySelectors } from '~/store/slices/library/selectors';
 import {
   fetchFilteredLibrary,
@@ -13,9 +15,11 @@ import { getArrayString } from '~/utils/trackMeta';
 
 import { TrackList } from '../TrackList';
 import { WaveLoader } from '../WaveLoader';
+import { AlbumList } from './AlbumList';
 
 export function Library() {
   const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
   const [scrollToTrack, setScrollToTrack] = useState<string | number | null>(
     null,
   );
@@ -26,10 +30,16 @@ export function Library() {
     librarySelectors.selectLibraryInitialized,
   );
   const isLoading = useAppSelector(librarySelectors.selectLibraryLoading);
+  const viewMode = searchParams.get('view') || 'tracks';
   const currentTrack = useCurrentTrack();
   const play = bindActionCreators(playTrack, dispatch);
   const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
+  const setViewMode = bindActionCreators(libraryActions.setViewMode, dispatch);
   const isLoadingRef = useRef(isLoading);
+  // Keep redux state in sync with URL params
+  useEffect(() => {
+    setViewMode(viewMode as 'tracks' | 'albums');
+  }, [viewMode, setViewMode]);
 
   useEffect(() => {
     const handleScrollToTrack = (e: CustomEvent<string | number>) => {
@@ -67,15 +77,21 @@ export function Library() {
   return (
     <>
       {currentTrack ? <title>{title}</title> : null}
-      <TrackList
-        trackIDs={trackIDs}
-        onPlayTrackId={play}
-        onFilterLibrary={(field, trackId) => {
-          filterByField({ field, trackId, resetFilter: true });
-        }}
-        currentTrack={currentTrack}
-        scrollToTrack={scrollToTrack}
-      />
+      {/* TODO: These need to always be full height, even if there is no content */}
+      {viewMode === 'tracks' ? (
+        <TrackList
+          containerId="library-container"
+          trackIDs={trackIDs}
+          onPlayTrackId={play}
+          onFilterLibrary={(field, trackId) => {
+            filterByField({ field, trackId, resetFilter: true });
+          }}
+          currentTrack={currentTrack}
+          scrollToTrack={scrollToTrack}
+        />
+      ) : (
+        <AlbumList onPlayTrackId={play} containerId="library-container" />
+      )}
     </>
   );
 }

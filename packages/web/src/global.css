@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@theme {
+  --container-8xl: 96rem;
+  --container-10xl: 128rem;
+  --container-12xl: 144rem;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -127,4 +133,9 @@ input:-webkit-autofill:active {
 body {
   background-color: hsl(var(--card));
   color: hsl(var(--card-foreground));
+}
+
+/* overscroll-behavior */
+* {
+  overscroll-behavior: none;
 }

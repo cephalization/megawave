@@ -53,7 +53,7 @@ const sharedPlayerActions = {
 export const playTrack = createAsyncThunk<
   EntityId[],
   Omit<PlayerActionPayload, 'trackContext'> & {
-    context?: 'library' | 'history' | 'queue';
+    context?: 'library' | 'history' | 'queue' | 'album';
   }
 >(
   'player/play_thunk',
@@ -82,6 +82,15 @@ export const playTrack = createAsyncThunk<
         break;
       case 'queue':
         trackContext = librarySelectors.selectLibraryQueue(state);
+        break;
+      case 'album':
+        // When playing from album view, find the album group and use its tracks
+        const albums = librarySelectors.selectAlbumGroups(state);
+        // TODO: this is a hack to get the album group. we should use add IDs to albums, and use that
+        const album = albums.find((a) => a.trackIds.includes(trackId!));
+        if (album) {
+          trackContext = album.trackIds;
+        }
         break;
     }
 

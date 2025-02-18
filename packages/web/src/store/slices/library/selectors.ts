@@ -44,6 +44,46 @@ const selectFilteredTrackIds = createSelector(
     return trackIDsByFilter[filterKey] || EMPTY_ARRAY;
   },
 );
+
+const selectAlbumGroups = createSelector(
+  selectFilteredTrackIds,
+  selectTrackEntities,
+  (trackIds, trackEntities) => {
+    const albumGroups = new Map<
+      string,
+      {
+        name: string;
+        artist: string[];
+        art: string[] | undefined;
+        trackIds: EntityId[];
+      }
+    >();
+
+    trackIds.forEach((id) => {
+      const track = trackEntities[id];
+      if (!track) return;
+
+      const albumKey = track.album?.[0] || 'Unknown Album';
+      const existingGroup = albumGroups.get(albumKey);
+      const group = existingGroup || {
+        name: albumKey,
+        artist: track.artist || [],
+        art: track.art || undefined,
+        trackIds: [],
+      };
+
+      group.trackIds.push(id);
+      if (!existingGroup) {
+        albumGroups.set(albumKey, group);
+      }
+    });
+
+    return Array.from(albumGroups.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+  },
+);
+
 const selectFilteredTrackIdCount = createSelector(
   selectFilteredTrackIds,
   (filteredTrackIds) => filteredTrackIds?.length ?? 0,
@@ -98,6 +138,8 @@ export const librarySelectors = {
   selectFilteredTrackIdCount,
   selectCurrentScrollPosition,
   selectLibraryFilterKey,
+  selectLibraryError: (state: RootState) => state.library.error,
+  selectLibraryViewMode: (state: RootState) => state.library.viewMode,
   selectTracksByIds: (state: RootState, ids: EntityId[]) => {
     const entities = libraryAdapter
       .getSelectors()
@@ -107,4 +149,5 @@ export const librarySelectors = {
       .filter((track): track is Track => track != null);
   },
   selectSelectedTracks: (state: RootState) => state.library.selectedTracks,
+  selectAlbumGroups,
 };

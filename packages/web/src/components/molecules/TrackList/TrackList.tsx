@@ -17,13 +17,13 @@ export type TrackListProps = {
   onPlayTrackId: (arg: {
     trackId?: EntityId | null;
     requeue?: boolean;
-    context?: 'library' | 'history' | 'queue';
+    context?: 'library' | 'history' | 'queue' | 'album';
     addHistory?: boolean;
   }) => void;
   onFilterLibrary: (field: keyof Track, trackId: EntityId) => void;
   currentTrack?: Track | null;
   containerId?: string;
-  context?: 'library' | 'history' | 'queue';
+  context?: 'library' | 'history' | 'queue' | 'album';
   scrollToTrack?: EntityId | null;
 };
 
