@@ -1,2 +1,2 @@
 #!/bin/bash
-uvx mypy ./**/*.py
+uv run mypy ./**/*.py

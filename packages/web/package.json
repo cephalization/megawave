@@ -1,12 +1,14 @@
 {
+  "name": "web",
+  "version": "1.0.0",
   "scripts": {
     "start": "NODE_ENV=development vite --host",
     "dev": "wait-on http-get://0.0.0.0:5001/api/health && npm start",
-    "build": "NODE_ENV=production npm run check && vite build",
+    "build": "vite build",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{ts,tsx}\"",
     "eslint": "eslint \"src/**/*.{ts,tsx}\"",
-    "check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "type": "module",
   "dependencies": {
