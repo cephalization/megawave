@@ -3,8 +3,9 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 
-import { trackSchema } from "./schemas.js";
-import { strictJSONResponse } from "./responses.js";
+import { paginatedResponseSchema, trackSchema } from "./schemas.js";
+import { paginatedJSONResponse } from "./responses.js";
+import { getNextUrl, getPreviousUrl } from "./pagination.js";
 
 export const tracksRouter = new Hono().get(
   "/",
@@ -17,7 +18,7 @@ export const tracksRouter = new Hono().get(
         description: "Tracks",
         content: {
           "application/json": {
-            schema: resolver(trackSchema.array()),
+            schema: resolver(paginatedResponseSchema(trackSchema)),
           },
         },
       },
@@ -37,6 +38,10 @@ export const tracksRouter = new Hono().get(
       limit: query.limit,
       offset: query.offset,
     });
-    return strictJSONResponse(c, trackSchema.array(), tracks);
+    return paginatedJSONResponse(c, trackSchema, tracks.data, {
+      ...tracks.meta,
+      next: getNextUrl(c.req.url, query.limit, query.offset, tracks.meta.total),
+      previous: getPreviousUrl(c.req.url, query.limit, query.offset),
+    });
   }
 );

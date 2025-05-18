@@ -1,11 +1,24 @@
 import { z } from "zod";
 
-export const paginationSchema = z.object({
-  limit: z.coerce.number().optional(),
-  offset: z.coerce.number().optional(),
+export const paginationMetaSchema = z.object({
+  total: z.number(),
+  limit: z.number(),
+  offset: z.number(),
+  next: z.string().nullable(),
+  previous: z.string().nullable(),
 });
 
-export type Pagination = z.infer<typeof paginationSchema>;
+export function paginatedResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
+  return z.object({
+    data: z.array(itemSchema),
+    meta: paginationMetaSchema,
+  });
+}
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  meta: z.infer<typeof paginationMetaSchema>;
+};
 
 export const trackSchema = z.object({
   id: z.union([z.string(), z.number()]),

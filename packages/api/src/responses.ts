@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { z, ZodSchema } from "zod";
+import { paginatedResponseSchema, paginationMetaSchema } from "./schemas.js";
 
 /**
  * Return a hono JSON response with strict IDE type inference and runtime validation.
@@ -29,4 +30,20 @@ export function strictJSONResponse<
   }
 
   return c.json(validatedResponse.data, statusCode);
+}
+
+export function paginatedJSONResponse<
+  C extends Context,
+  T extends z.ZodTypeAny,
+  U extends ContentfulStatusCode
+>(
+  c: C,
+  itemSchema: T,
+  data: z.infer<T>[],
+  meta: z.infer<typeof paginationMetaSchema>,
+  statusCode?: U
+) {
+  const schema = paginatedResponseSchema(itemSchema);
+  const response = { data, meta };
+  return strictJSONResponse(c, schema, response, statusCode);
 }

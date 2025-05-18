@@ -25,10 +25,17 @@ export class Library {
   }
 
   getTracks({ limit, offset }: { limit?: number; offset?: number }) {
-    return this.tracks.slice(
-      offset ?? 0,
-      (offset ?? 0) + (limit ?? this.tracks.length)
-    );
+    return {
+      data: this.tracks.slice(
+        offset ?? 0,
+        (offset ?? 0) + (limit ?? this.tracks.length)
+      ),
+      meta: {
+        total: this.tracks.length,
+        limit: limit ?? this.tracks.length,
+        offset: offset ?? 0,
+      },
+    };
   }
 
   getTrack(id: string) {
