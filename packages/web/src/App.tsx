@@ -1,3 +1,4 @@
+import { makeMegawaveClient } from 'api/client';
 import { BrowserRouter, Route, Routes } from 'react-router';
 
 import { Home } from '~/components/views/Home';
@@ -24,6 +25,9 @@ import { Home } from '~/components/views/Home';
 // function App() {
 //   return <RouterProvider router={router} />;
 // }
+
+const client = makeMegawaveClient('http://0.0.0.0:5001');
+client.tracks.$get({ query: { limit: '10' } }).then(console.log);
 
 function App() {
   return (

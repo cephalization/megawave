@@ -1,0 +1,42 @@
+import { z } from "zod";
+import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
+
+import { trackSchema } from "./schemas.js";
+import { strictJSONResponse } from "./responses.js";
+
+export const tracksRouter = new Hono().get(
+  "/",
+  describeRoute({
+    tags: ["tracks"],
+    summary: "List tracks",
+    description: "List tracks",
+    responses: {
+      200: {
+        description: "Tracks",
+        content: {
+          "application/json": {
+            schema: resolver(trackSchema.array()),
+          },
+        },
+      },
+    },
+  }),
+  validator(
+    "query",
+    z.object({
+      limit: z.coerce.number().optional().default(10),
+      offset: z.coerce.number().optional().default(0),
+    })
+  ),
+  async (c) => {
+    const library = c.get("library");
+    const query = c.req.valid("query");
+    const tracks = library.getTracks({
+      limit: query.limit,
+      offset: query.offset,
+    });
+    return strictJSONResponse(c, trackSchema.array(), tracks);
+  }
+);
