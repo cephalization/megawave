@@ -48,23 +48,168 @@ export class Library {
     }
   }
 
-  public getEntries({ limit, offset }: { limit?: number; offset?: number }): {
+  public getEntries({
+    limit,
+    offset,
+    filter,
+    sort,
+    subkeyfilter,
+  }: {
+    limit?: number;
+    offset?: number;
+    filter?: string;
+    sort?: string;
+    subkeyfilter?: string;
+  }): {
     data: Track[];
     meta: PaginationMeta;
   } {
-    const filteredTracks = this.trackIds
-      .slice(offset ?? 0, (offset ?? 0) + (limit ?? this.trackIds.length))
+    let allTracks = this.trackIds
       .map((id) => this.tracks.get(id)?.serialize())
       .filter((track) => track) as Track[]; // Filter out undefined or !ok tracks
 
+    // Apply filtering
+    if (filter) {
+      const sanitizedFilterQuery = filter.toLowerCase();
+      const groupedByMatchingKey: {
+        artist: Track[];
+        name: Track[];
+        album: Track[];
+      } = {
+        artist: [],
+        name: [],
+        album: [],
+      };
+
+      for (const track of allTracks) {
+        const { match, key } = AudioTrack.matchesFilter(
+          track,
+          sanitizedFilterQuery
+        );
+        if (match && key) {
+          if (key === "artist") groupedByMatchingKey.artist.push(track);
+          else if (key === "name") groupedByMatchingKey.name.push(track);
+          else if (key === "album") groupedByMatchingKey.album.push(track);
+        }
+      }
+      allTracks = [
+        ...groupedByMatchingKey.artist,
+        ...groupedByMatchingKey.name,
+        ...groupedByMatchingKey.album,
+      ];
+    }
+
+    if (subkeyfilter) {
+      const parts = subkeyfilter.split("-");
+      if (parts.length >= 2) {
+        const field = parts[0].toLocaleLowerCase();
+        const term = parts.slice(1).join("-").toLocaleLowerCase();
+
+        if (field === "artist" || field === "album" || field === "name") {
+          allTracks = allTracks.filter((track) => {
+            const trackValue = track[field as keyof Track];
+            if (Array.isArray(trackValue)) {
+              return trackValue.some((val) =>
+                val.toLocaleLowerCase().includes(term)
+              );
+            } else if (typeof trackValue === "string") {
+              return trackValue.toLocaleLowerCase().includes(term);
+            }
+            return false;
+          });
+        }
+      }
+    }
+
+    // Apply sorting
+    const getTrackNo = (track: Track): number => track.track?.no ?? Infinity;
+
+    if (sort) {
+      const reverse = sort.startsWith("-");
+      const sortKeyString = (reverse ? sort.substring(1) : sort).toLowerCase();
+
+      if (
+        sortKeyString === "name" ||
+        sortKeyString === "artist" ||
+        sortKeyString === "album"
+      ) {
+        const sortKey = sortKeyString as "name" | "artist" | "album";
+        allTracks.sort((a, b) => {
+          let valA_primary = AudioTrack.getAudioFileSortValue(a, sortKey);
+          let valB_primary = AudioTrack.getAudioFileSortValue(b, sortKey);
+
+          if (reverse) {
+            if (valA_primary === "zzzzz") valA_primary = "";
+            if (valB_primary === "zzzzz") valB_primary = "";
+          }
+
+          let comparison = 0;
+          if (valA_primary < valB_primary) {
+            comparison = -1;
+          } else if (valA_primary > valB_primary) {
+            comparison = 1;
+          }
+
+          if (comparison === 0) {
+            const trackNoA = getTrackNo(a);
+            const trackNoB = getTrackNo(b);
+
+            if (sortKey === "album") {
+              const subkeyFilterIsAlbum = subkeyfilter
+                ?.toLocaleLowerCase()
+                .startsWith("album-");
+              const shouldReverseTracks = reverse && subkeyFilterIsAlbum;
+
+              if (shouldReverseTracks) {
+                comparison = trackNoB - trackNoA;
+              } else {
+                comparison = trackNoA - trackNoB;
+              }
+            } else {
+              comparison = trackNoA - trackNoB;
+            }
+          }
+          return reverse ? comparison * -1 : comparison;
+        });
+      }
+      // If sortKey is invalid, it falls through, and the original (or previously filtered) order is maintained before default sort.
+    } else {
+      // Default sort: by album name (asc), then track number (asc)
+      allTracks.sort((a, b) => {
+        const albumA = AudioTrack.getAudioFileSortValue(a, "album");
+        const albumB = AudioTrack.getAudioFileSortValue(b, "album");
+
+        let comparison = 0;
+        if (albumA < albumB) {
+          comparison = -1;
+        } else if (albumA > albumB) {
+          comparison = 1;
+        }
+
+        if (comparison === 0) {
+          comparison = getTrackNo(a) - getTrackNo(b);
+        }
+        return comparison;
+      });
+    }
+
+    const totalFilteredTracks = allTracks.length;
+    const actualOffset = offset ?? 0;
+    const actualLimit = limit ?? totalFilteredTracks;
+
+    const paginatedTracks = allTracks.slice(
+      actualOffset,
+      actualOffset + actualLimit
+    );
+
     return {
-      data: filteredTracks,
+      data: paginatedTracks,
       meta: {
-        total: this.trackIds.length,
-        limit: limit ?? this.trackIds.length,
-        offset: offset ?? 0,
-        next: null,
-        previous: null,
+        total: totalFilteredTracks, // Use the count after filtering
+        limit: actualLimit,
+        offset: actualOffset,
+        next: null, // These will be set by the router
+        previous: null, // These will be set by the router
       },
     };
   }

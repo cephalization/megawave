@@ -1,10 +1,9 @@
 import * as path from "path";
 import * as crypto from "crypto";
-import NodeID3 from "node-id3";
+import * as mm from "music-metadata";
 import { Buffer } from "buffer";
 import type { Track } from "./schemas.js";
 
-// Interfaces matching Python's serialized structures and node-id3 data
 export interface ArtItem {
   mime: string;
   imageBuffer: Buffer;
@@ -12,7 +11,7 @@ export interface ArtItem {
   type?: { id: number; name: string };
 }
 
-export const VALID_AUDIO_EXTENSIONS = ["mp3", "wav"]; // wav support by node-id3 might be limited to ID3 tags within wav
+export const VALID_AUDIO_EXTENSIONS = ["mp3", "wav"];
 
 export function hasAudioFileExtension(fileName: string): {
   hasExt: boolean;
@@ -79,7 +78,7 @@ export class AudioTrack {
   public fileDir: string;
   public fileType: string = "";
   public id: string;
-  public tags?: NodeID3.Tags;
+  public metadata?: mm.IAudioMetadata;
   public artCacheIds: string[] = [];
 
   // Parsed common properties
@@ -99,33 +98,22 @@ export class AudioTrack {
     if (hasExt && ext) {
       this.fileType = ext;
     } else {
-      this.ok = false; // Mark as not ok if not a valid extension or no extension
+      this.ok = false;
       return;
     }
   }
 
   public async initialize(): Promise<void> {
-    // node-id3 primarily supports ID3 tags (common in MP3s).
-    // WAV files can contain ID3 tags, but it's less common.
-    // Other types might not be supported.
-    if (!["mp3", "wav"].includes(this.fileType)) {
-      console.warn(
-        `File type ${this.fileType} for ${this.fileName} may not be well supported by node-id3 for tag extraction.`
-      );
-    }
-
     try {
-      const tags = await NodeID3.Promise.read(this.filePath);
-      if (tags && typeof tags !== "boolean") {
-        // Check if tags is an object
-        this.tags = tags;
-        this.parseTags();
+      const metadata = await mm.parseFile(this.filePath);
+      if (metadata) {
+        this.metadata = metadata;
+        this.parseMetadata();
         this.ok = true;
       } else {
-        // NodeID3.Promise.read might resolve with 'false' or an empty object if no tags found or error.
         console.warn(
-          `No tags found or error reading tags for ${this.filePath}. Received:`,
-          tags
+          `No metadata found or error reading metadata for ${this.filePath}. Received:`,
+          metadata
         );
         this.ok = false;
       }
@@ -138,89 +126,56 @@ export class AudioTrack {
     }
   }
 
-  private parseTags(): void {
-    if (!this.tags) return;
+  private parseMetadata(): void {
+    if (!this.metadata) return;
 
-    const rawTags = (this.tags.raw || {}) as Record<string, any>; // Cast to Record<string, any> for easier access
+    const common = this.metadata.common;
+    const format = this.metadata.format;
 
-    this.title = this.tags.title || this.fileName;
+    this.title = common.title || this.fileName;
 
-    // Artist: TPE1. node-id3 provides `tags.artist`.
-    let artistSource = this.tags.artist || rawTags["TPE1"];
-    if (artistSource) {
-      this.artists = Array.isArray(artistSource)
-        ? artistSource.map(String)
-        : [String(artistSource)];
+    // Artist: common.artist (string) or common.artists (string[])
+    if (common.artists && common.artists.length > 0) {
+      this.artists = common.artists.map(String);
+    } else if (common.artist) {
+      this.artists = [String(common.artist)];
+    } else {
+      this.artists = undefined;
     }
 
-    // Album: TALB. node-id3 provides `tags.album`.
-    let albumSource = this.tags.album || rawTags["TALB"];
-    if (albumSource) {
-      this.album = Array.isArray(albumSource)
-        ? albumSource.map(String)
-        : [String(albumSource)];
+    // Album: common.album (string)
+    if (common.album) {
+      this.album = [String(common.album)]; // Track schema expects string[]
+    } else {
+      this.album = undefined;
     }
 
-    // Length: TLEN (milliseconds string).
-    const tlen = (this.tags as any).length || rawTags["TLEN"]; // `tags.length` is an alias for TLEN
-    if (tlen && /^\\d+$/.test(String(tlen))) {
-      this.lengthSeconds = parseInt(String(tlen), 10) / 1000;
+    // Length: format.duration (seconds, number)
+    if (format && typeof format.duration === "number") {
+      this.lengthSeconds = format.duration;
+    } else {
+      // If format.duration is not available, lengthSeconds will be undefined.
+      this.lengthSeconds = undefined;
     }
 
-    // Track number: TRCK. Can be "number" or "number/total".
-    const trck = this.tags.trackNumber || rawTags["TRCK"];
-    if (trck) {
-      const parts = String(trck).split("/");
-      const trackNo = parseInt(parts[0], 10);
-      if (!isNaN(trackNo)) {
-        this.trackInfo = { no: trackNo };
-        if (parts.length > 1) {
-          const totalTracks = parseInt(parts[1], 10);
-          if (!isNaN(totalTracks)) {
-            this.trackInfo.total = totalTracks;
-          }
-        }
+    // Track number: common.track ({ no: number, of?: number })
+    const commonTrack = common.track;
+    if (commonTrack && typeof commonTrack.no === "number") {
+      this.trackInfo = { no: commonTrack.no };
+      if (typeof commonTrack.of === "number") {
+        this.trackInfo.total = commonTrack.of;
       }
     }
 
-    // Art: APIC. `tags.image` is one, `tags.raw.APIC` could be multiple or one.
-    // Define a type for the expected structure of an image frame object
-    type ImageFrameObject = {
-      mime: string;
-      imageBuffer: Buffer;
-      description?: string;
-      type?: { id: number; name: string };
-    };
-
-    const artFramesToProcess: ImageFrameObject[] = [];
-
-    const processFrame = (frame: any) => {
-      if (
-        frame &&
-        typeof frame === "object" &&
-        frame.mime &&
-        frame.imageBuffer
-      ) {
-        artFramesToProcess.push(frame as ImageFrameObject);
-      }
-    };
-
-    if (rawTags && rawTags["APIC"]) {
-      const apicData = rawTags["APIC"];
-      const apicArray = Array.isArray(apicData) ? apicData : [apicData];
-      apicArray.forEach(processFrame);
-    } else if (this.tags.image) {
-      processFrame(this.tags.image); // this.tags.image can be string | object
-    }
-
-    if (artFramesToProcess.length > 0) {
-      this.artCacheIds = artFramesToProcess.map((frame) =>
+    // Art: common.picture (Array of IPicture)
+    // Clear previous art cache IDs if any (e.g., if re-initializing)
+    this.artCacheIds = [];
+    if (common.picture && common.picture.length > 0) {
+      this.artCacheIds = common.picture.map((pic: mm.IPicture) =>
         addFrameToCache({
-          // addFrameToCache expects ArtItem which matches ImageFrameObject structure
-          mime: frame.mime,
-          imageBuffer: frame.imageBuffer,
-          description: frame.description,
-          type: frame.type,
+          mime: pic.format,
+          imageBuffer: Buffer.from(pic.data),
+          description: pic.description,
         })
       );
     }
@@ -242,9 +197,9 @@ export class AudioTrack {
       album: this.album || null,
       artist: this.artists || null,
       art: serializedArt || null,
-      length: this.lengthSeconds?.toString() || "",
+      length:
+        this.lengthSeconds !== undefined ? this.lengthSeconds.toString() : "",
       link: `/api/library/songs/${this.id}`,
-      // meta: this.tags?.raw || this.tags, // Prefer raw tags for detailed metadata
       fileType: this.fileType,
       track: this.trackInfo,
     };
