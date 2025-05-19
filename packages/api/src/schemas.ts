@@ -8,6 +8,8 @@ export const paginationMetaSchema = z.object({
   previous: z.string().nullable(),
 });
 
+export type PaginationMeta = z.infer<typeof paginationMetaSchema>;
+
 export function paginatedResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
   return z.object({
     data: z.array(itemSchema),
@@ -34,6 +36,8 @@ export const trackSchema = z.object({
       no: z.number(),
     })
     .optional(),
+  fileType: z.string(),
+  meta: z.any().optional(),
 });
 
 export type Track = z.infer<typeof trackSchema>;

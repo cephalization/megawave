@@ -3,11 +3,12 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { openAPISpecs } from "hono-openapi";
 
-import { HOST, PORT } from "./env.js";
+import { HOST, MUSIC_LIBRARY_PATH, PORT } from "./env.js";
 import { getServerUrl } from "./util.js";
-import { tracksRouter } from "./router.js";
+import { artRouter, statusRouter, songsRouter } from "./router.js";
 import { Scalar } from "@scalar/hono-api-reference";
 import { Library } from "./library.js";
+import { logger } from "hono/logger";
 
 declare module "hono" {
   interface ContextVariableMap {
@@ -16,16 +17,25 @@ declare module "hono" {
 }
 
 const library = new Library();
+library.load(MUSIC_LIBRARY_PATH.split(","));
 
-const app = new Hono();
+const app = new Hono().basePath("/api");
 app.use(cors());
+app.use(logger());
 app.use(async (c, next) => {
   c.set("library", library);
   await next();
 });
 
 // chain new routers to the end of this for proper type inference
-const router = app.route("/tracks", tracksRouter);
+const libraryRouter = new Hono().basePath("/library");
+const router = app.route(
+  "/",
+  libraryRouter
+    .route("/", statusRouter)
+    .route("/", songsRouter)
+    .route("/", artRouter)
+);
 
 export type AppType = typeof router;
 
@@ -45,7 +55,11 @@ app.get(
   })
 );
 
-app.get("/docs", Scalar({ url: "/openapi", theme: "saturn" }));
+app.get("/docs", Scalar({ url: "openapi", theme: "saturn" }));
+
+app.get("/health", (c) => {
+  return c.json({ status: "ok" });
+});
 
 serve(
   {
@@ -54,8 +68,8 @@ serve(
     hostname: HOST,
   },
   (info) => {
-    console.log(`Server:              ${getServerUrl()}`);
-    console.log(`API Reference:       ${getServerUrl("/docs")}`);
-    console.log(`OpenAPI Schema:      ${getServerUrl("/openapi")}`);
+    console.log(`Server:              ${getServerUrl("/api")}`);
+    console.log(`API Reference:       ${getServerUrl("/api/docs")}`);
+    console.log(`OpenAPI Schema:      ${getServerUrl("/api/openapi")}`);
   }
 );

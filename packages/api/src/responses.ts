@@ -47,3 +47,12 @@ export function paginatedJSONResponse<
   const response = { data, meta };
   return strictJSONResponse(c, schema, response, statusCode);
 }
+
+export function getContentTypeFromExtension(extension: string): string {
+  if (extension === "mp3") {
+    return "audio/mpeg";
+  } else if (extension === "wav") {
+    return "audio/wav";
+  }
+  return "";
+}
