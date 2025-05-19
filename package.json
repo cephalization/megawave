@@ -1,6 +1,7 @@
 {
   "name": "megawave",
   "version": "1.0.0",
+  "type": "module",
   "description": "Monorepo for the Megawave music streaming platform",
   "scripts": {
     "build": "turbo build",
@@ -10,8 +11,8 @@
   "keywords": [],
   "author": "Tony Powell <powell.anthonyd@proton.me>",
   "license": "MIT",
-  "devDependencies": {
-    "turbo": "^2.5.3"
+  "dependencies": {
+    "turbo": "^2.5.4-canary.0"
   },
   "packageManager": "pnpm@10.11.0"
 }
