@@ -17,7 +17,6 @@ declare module "hono" {
 }
 
 const library = new Library();
-library.load(MUSIC_LIBRARY_PATH.split(","));
 
 const app = new Hono().basePath("/api");
 app.use(cors());
@@ -71,5 +70,7 @@ serve(
     console.log(`Server:              ${getServerUrl("/api")}`);
     console.log(`API Reference:       ${getServerUrl("/api/docs")}`);
     console.log(`OpenAPI Schema:      ${getServerUrl("/api/openapi")}`);
+    console.log("");
+    library.load(MUSIC_LIBRARY_PATH.split(","));
   }
 );
