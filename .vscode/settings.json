@@ -1,20 +1,4 @@
 {
-  "python.analysis.extraPaths": ["${workspaceFolder}/packages/api"],
-  "python.defaultInterpreterPath": "${workspaceFolder}/packages/api/.venv",
-  "python.autoComplete.extraPaths": ["${workspaceFolder}/packages/api"],
-  "python.envFile": "${workspaceFolder}/packages/api/.env",
   "editor.formatOnSave": true,
-  "ruff.lint.run": "onSave",
-  "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "explicit"
-    }
-  },
-  "python.terminal.activateEnvironment": false,
-  "python.analysis.typeCheckingMode": "off",
-  "mypy-type-checker.path": ["${workspaceFolder}/packages/api/.venv/bin/mypy"],
   "tailwindCSS.experimental.configFile": "./packages/web/src/global.css"
 }

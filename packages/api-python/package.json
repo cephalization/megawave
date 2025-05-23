@@ -1,7 +1,0 @@
-{
-  "name": "api-python",
-  "version": "1.0.0",
-  "scripts": {
-    "py-dev": "./start-dev.sh"
-  }
-}

@@ -1,8 +1,3 @@
 {
-  "recommendations": [
-    "freakypie.code-python-isort",
-    "dbaeumer.vscode-eslint",
-    "ms-python.python",
-    "bradlc.vscode-tailwindcss"
-  ]
+  "recommendations": ["dbaeumer.vscode-eslint", "bradlc.vscode-tailwindcss"]
 }
