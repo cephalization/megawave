@@ -9,7 +9,9 @@
     "dev": "turbo dev --ui tui",
     "db:push": "drizzle-kit push --config packages/db/drizzle.config.ts",
     "db:generate": "drizzle-kit generate --config packages/db/drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config packages/db/drizzle.config.ts"
+    "db:migrate": "drizzle-kit migrate --config packages/db/drizzle.config.ts",
+    "db:clean": "rimraf db/megawave.db",
+    "clean": "rimraf node_modules dist packages/**/dist packages/**/node_modules"
   },
   "keywords": [],
   "author": "Tony Powell <powell.anthonyd@proton.me>",
@@ -24,6 +26,7 @@
     }
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.1"
+    "drizzle-kit": "^0.31.1",
+    "rimraf": "^6.0.1"
   }
 }
