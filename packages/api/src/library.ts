@@ -1,8 +1,11 @@
 import * as fs from "fs/promises";
 import * as path from "path";
+import { z } from "zod";
+
+import type { makeDb } from "db";
+
 import { AudioTrack, hasAudioFileExtension } from "./audio.js";
 import type { PaginationMeta, Track } from "./schemas.js";
-import { z } from "zod";
 
 export const audioLibraryStatusSchema = z.enum(["loading", "idle", "error"]);
 export type AudioLibraryStatus = z.infer<typeof audioLibraryStatusSchema>;
@@ -39,7 +42,7 @@ export class Library {
   private _cancelRequested: boolean;
   private _loadProgress: LoadProgress | null;
 
-  constructor() {
+  constructor(private db: ReturnType<typeof makeDb>) {
     this.status = "idle";
     this.tracks = new Map();
     this.trackIds = [];

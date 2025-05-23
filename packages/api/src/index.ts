@@ -2,8 +2,9 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { openAPISpecs } from "hono-openapi";
+import { makeDb } from "db";
 
-import { HOST, MUSIC_LIBRARY_PATH, PORT } from "./env.js";
+import { HOST, MUSIC_LIBRARY_PATH, PORT, DATABASE_PATH } from "./env.js";
 import { getServerUrl } from "./util.js";
 import { artRouter, statusRouter, songsRouter } from "./router.js";
 import { Scalar } from "@scalar/hono-api-reference";
@@ -16,7 +17,8 @@ declare module "hono" {
   }
 }
 
-const library = new Library();
+const db = makeDb(DATABASE_PATH);
+const library = new Library(db);
 
 const app = new Hono().basePath("/api");
 app.use(cors());
@@ -67,6 +69,7 @@ serve(
     hostname: HOST,
   },
   (info) => {
+    console.log("");
     console.log(`Server:              ${getServerUrl("/api")}`);
     console.log(`API Reference:       ${getServerUrl("/api/docs")}`);
     console.log(`OpenAPI Schema:      ${getServerUrl("/api/openapi")}`);

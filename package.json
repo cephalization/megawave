@@ -6,7 +6,10 @@
   "scripts": {
     "build": "turbo build",
     "typecheck": "turbo typecheck",
-    "dev": "turbo dev --ui tui"
+    "dev": "turbo dev --ui tui",
+    "db:push": "drizzle-kit push --config packages/db/drizzle.config.ts",
+    "db:generate": "drizzle-kit generate --config packages/db/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config packages/db/drizzle.config.ts"
   },
   "keywords": [],
   "author": "Tony Powell <powell.anthonyd@proton.me>",
@@ -19,5 +22,8 @@
     "overrides": {
       "rollup": "npm:@rollup/wasm-node"
     }
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.1"
   }
 }

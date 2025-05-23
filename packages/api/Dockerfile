@@ -28,14 +28,16 @@ RUN adduser --system --uid 1001 hono
 # Copy the built application and necessary node_modules from the installer stage
 # The exact path will depend on your 'api' package's build output and turbo prune structure.
 # It's typically <WORKDIR>/packages/<packageName>/dist and node_modules.
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/out ./
+COPY --from=builder /app/packages/db ./packages/db
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/packages/api/start.sh ./start.sh
 
 USER hono
 EXPOSE 5001
 
-# The start script in packages/api/package.json is "node dist/index.js"
-# This should now be relative to /app/packages/api if turbo prune maintains that structure,
-# or just /app/dist if package.json is moved to root of the pruned app.
-# Check the output of `turbo prune api --docker` to confirm the final path of package.json and dist.
-# Assuming package.json is at /app/ and its start script refers to dist/index.js
-CMD ["node", "dist/index.js"]
+ARG DATABASE_PATH
+ENV DATABASE_PATH=${DATABASE_PATH}
+
+CMD ["./start.sh"]

@@ -1,6 +1,7 @@
 config.ini
 .DS_Store
 .turbo
+megawave.db
 
 ###
 # Frontend

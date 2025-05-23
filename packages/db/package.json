@@ -1,0 +1,24 @@
+{
+  "name": "db",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./schema": "./dist/src/schema.js"
+  },
+  "packageManager": "pnpm@10.11.0",
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "dotenv": "^16.5.0",
+    "drizzle-kit": "^0.31.1",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.7",
+    "drizzle-orm": "^0.43.1"
+  }
+}
