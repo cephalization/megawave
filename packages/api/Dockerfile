@@ -9,20 +9,11 @@ WORKDIR /app
 # libc6-compat is needed for Turborepo, might be needed for other dependencies
 RUN apk add --no-cache libc6-compat
 
-# Copy root configuration files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
-# Copy all package.json files to ensure turbo can map dependencies
-COPY packages/*/*.json ./packages/
-# If you have specific tsconfig files at the root or in shared packages that are needed for pruning, copy them as well.
-# COPY tsconfig.json ./
-# COPY packages/common/tsconfig.json ./packages/common/ # Example if you have a common package
-
-# Install all dependencies once to be able to prune
-# Using --frozen-lockfile is good practice for CI/Docker
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-
 # Copy the rest of the monorepo source for pruning
 COPY . .
+
+# Using --frozen-lockfile is good practice for CI/Docker
+RUN pnpm install --frozen-lockfile
 
 RUN pnpm exec turbo run build --filter=api
 RUN pnpm deploy --filter=api --prod=/app/out

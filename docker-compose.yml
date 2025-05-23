@@ -16,8 +16,6 @@ services:
     networks:
       - web
       - api
-    depends_on:
-      - api
     restart: "on-failure"
 
 networks:

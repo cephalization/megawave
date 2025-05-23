@@ -3,7 +3,6 @@ import * as crypto from "crypto";
 import * as mm from "music-metadata";
 import { Buffer } from "buffer";
 import type { Track } from "./schemas.js";
-import { getServerUrl } from "./util.js";
 
 export interface ArtItem {
   mime: string;
@@ -62,7 +61,7 @@ function addFrameToCache(frame: ArtItem): string {
     id,
     mime: frame.mime,
     buffer: frame.imageBuffer,
-    link: getServerUrl(`/api/library/art/${id}`).toString(),
+    link: `/api/library/art/${id}`,
   };
   return id;
 }
@@ -200,7 +199,7 @@ export class AudioTrack {
       art: serializedArt || null,
       length:
         this.lengthSeconds !== undefined ? this.lengthSeconds.toString() : "",
-      link: getServerUrl(`/api/library/songs/${this.id}`).toString(),
+      link: `/api/library/songs/${this.id}`,
       fileType: this.fileType,
       track: this.trackInfo,
     };

@@ -14,5 +14,10 @@
   "dependencies": {
     "turbo": "^2.5.4-canary.0"
   },
-  "packageManager": "pnpm@10.11.0"
+  "packageManager": "pnpm@10.11.0",
+  "pnpm": {
+    "overrides": {
+      "rollup": "npm:@rollup/wasm-node"
+    }
+  }
 }
