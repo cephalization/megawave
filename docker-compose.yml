@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: ./packages/api
+      dockerfile: packages/api/Dockerfile
     volumes:
       - ${MUSIC_LIBRARY_PATH}:/musiclibrary
     networks:
@@ -10,13 +10,11 @@ services:
       - MUSIC_LIBRARY_PATH=/musiclibrary
   web:
     build:
-      context: ./packages/web
+      dockerfile: packages/web/Dockerfile
     ports:
       - "80:80"
     networks:
       - web
-      - api
-    depends_on:
       - api
     restart: "on-failure"
 

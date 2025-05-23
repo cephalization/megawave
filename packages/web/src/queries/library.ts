@@ -14,7 +14,7 @@ export async function getStatus() {
   const res = await fetch('/api/library/status');
   const data = await res.json();
 
-  return data as { data: 'loading' | 'idle' | 'error' };
+  return data as 'loading' | 'idle' | 'error';
 }
 
 export async function get({
@@ -33,7 +33,7 @@ export async function get({
   );
 
   const data = await res.json();
-  const tracks = data.data.songs as Track[];
+  const tracks = data.data as Track[];
 
   return tracks;
 }

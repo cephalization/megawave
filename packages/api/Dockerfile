@@ -1,49 +1,41 @@
-FROM python:3.12-slim-bookworm AS builder
+FROM node:23-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# 1. Builder stage: Prunes the monorepo
+FROM base AS builder
+WORKDIR /app
+# libc6-compat is needed for Turborepo, might be needed for other dependencies
+RUN apk add --no-cache libc6-compat
 
-# Set environment variables
-ENV PYTHONFAULTHANDLER=1 \
-  PYTHONHASHSEED=random \
-  PYTHONUNBUFFERED=1 \
-  UV_SYSTEM_PYTHON=1 \
-  UV_COMPILE_BYTECODE=1
+# Copy the rest of the monorepo source for pruning
+COPY . .
 
+# Using --frozen-lockfile is good practice for CI/Docker
+RUN pnpm install --frozen-lockfile
+
+RUN pnpm exec turbo run build --filter=api
+RUN pnpm deploy --filter=api --prod=/app/out
+
+# 2. Runner stage: Final image with only the built 'api' application
+FROM base AS runner
 WORKDIR /app
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  build-essential \
-  curl \
-  && rm -rf /var/lib/apt/lists/*
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 hono
 
-# Install dependencies first (for better caching)
-COPY pyproject.toml ./
-RUN --mount=type=cache,target=/root/.cache/uv \
-  uv pip install --system -r pyproject.toml
+# Copy the built application and necessary node_modules from the installer stage
+# The exact path will depend on your 'api' package's build output and turbo prune structure.
+# It's typically <WORKDIR>/packages/<packageName>/dist and node_modules.
+COPY --from=builder /app/out ./
 
-# Copy the project and install it
-COPY . .
-RUN --mount=type=cache,target=/root/.cache/uv \
-  uv pip install --system -e .
+USER hono
+EXPOSE 5001
 
-FROM python:3.12-slim-bookworm AS final
-
-# Install uv in the final stage
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-# Copy Python packages and application files
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
-COPY --from=builder /app/megawave ./megawave
-COPY --from=builder /app/main.py .
-COPY docker-entrypoint.sh ./
-COPY start.sh ./
-ARG MUSIC_LIBRARY_PATH
-ENV MUSIC_LIBRARY_PATH=${MUSIC_LIBRARY_PATH}
-
-CMD ["./docker-entrypoint.sh"]
-
-# https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker
-# https://mherman.org/blog/dockerizing-a-react-app/
+# The start script in packages/api/package.json is "node dist/index.js"
+# This should now be relative to /app/packages/api if turbo prune maintains that structure,
+# or just /app/dist if package.json is moved to root of the pruned app.
+# Check the output of `turbo prune api --docker` to confirm the final path of package.json and dist.
+# Assuming package.json is at /app/ and its start script refers to dist/index.js
+CMD ["node", "dist/index.js"]

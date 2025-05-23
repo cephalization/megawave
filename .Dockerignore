@@ -1,4 +1,5 @@
-packages/web/dist
-packages/web/node_modules
 .mypy_cache
 .venv
+.turbo
+node_modules
+dist

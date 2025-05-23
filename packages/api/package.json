@@ -1,7 +1,31 @@
 {
   "name": "api",
-  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "./start-dev.sh"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "exports": {
+    "./client": "./src/client.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.1",
+    "@hono/zod-validator": "^0.5.0",
+    "@scalar/hono-api-reference": "^0.8.10",
+    "add": "^2.0.6",
+    "dotenv": "^16.5.0",
+    "hono": "^4.7.10",
+    "hono-openapi": "^0.4.8",
+    "music-metadata": "^11.2.3",
+    "pnpm": "^10.11.0",
+    "znv": "^0.5.0",
+    "zod": "^3.24.4",
+    "zod-openapi": "^4.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
   }
 }
