@@ -4,6 +4,7 @@ import * as mm from "music-metadata";
 import { Buffer } from "node:buffer";
 import type { Track } from "./schemas.js";
 import fs from "node:fs/promises";
+import type { DB } from "db";
 
 export interface ArtItem {
   mime: string;
@@ -191,6 +192,7 @@ export function getArtFromCache(id: string): CachedArt | undefined {
 }
 
 export class AudioTrack {
+  private _db: DB;
   public ok: boolean = false;
   public filePath: string;
   public fileName: string;
@@ -207,11 +209,12 @@ export class AudioTrack {
   public lengthSeconds?: number;
   public trackInfo?: { no: number; total?: number };
 
-  constructor(filePath: string) {
+  constructor(filePath: string, db: DB) {
     this.filePath = path.resolve(filePath);
     this.fileName = path.basename(this.filePath);
     this.fileDir = path.dirname(this.filePath);
     this.id = audioFileHash(this.filePath);
+    this._db = db;
 
     const { hasExt, ext } = hasAudioFileExtension(this.fileName);
     if (hasExt && ext) {

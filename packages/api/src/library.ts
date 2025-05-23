@@ -2,7 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { z } from "zod";
 
-import type { makeDb } from "db";
+import type { DB, makeDb } from "db";
 
 import { AudioTrack, hasAudioFileExtension } from "./audio.js";
 import type { PaginationMeta, Track } from "./schemas.js";
@@ -41,14 +41,16 @@ export class Library {
   private _currentLoadPromise: Promise<void> | null;
   private _cancelRequested: boolean;
   private _loadProgress: LoadProgress | null;
+  private _db: DB;
 
-  constructor(private db: ReturnType<typeof makeDb>) {
+  constructor(db: DB) {
     this.status = "idle";
     this.tracks = new Map();
     this.trackIds = [];
     this._currentLoadPromise = null;
     this._cancelRequested = false;
     this._loadProgress = null;
+    this._db = db;
   }
 
   /**
@@ -420,7 +422,7 @@ export class Library {
     for (const filePath of filesToProcess) {
       if (this._cancelRequested) break;
 
-      const audioTrack = new AudioTrack(filePath);
+      const audioTrack = new AudioTrack(filePath, this._db);
       await audioTrack.initialize();
 
       if (audioTrack.ok) {

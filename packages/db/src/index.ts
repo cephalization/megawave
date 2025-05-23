@@ -16,3 +16,5 @@ export const makeDb = (connectionString: string) => {
   globalThis.db = db;
   return db;
 };
+
+export type DB = ReturnType<typeof makeDb>;

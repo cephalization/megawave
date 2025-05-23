@@ -52,6 +52,9 @@ importers:
       pnpm:
         specifier: ^10.11.0
         version: 10.11.0
+      remeda:
+        specifier: ^2.22.1
+        version: 2.22.1
       znv:
         specifier: ^0.5.0
         version: 0.5.0(zod@3.25.23)
@@ -2089,6 +2092,9 @@ packages:
   redux@5.0.1:
     resolution: {integrity: sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w==}
 
+  remeda@2.22.1:
+    resolution: {integrity: sha512-7bcggqt1D7sEmkpzuGowcsAfkO5Ae03+HFt6zA+AfJ/r5+wVJMq8DEHBAitbKWsdyeUX7qqjfi/jnH9HmdU3uA==}
+
   reselect@5.1.1:
     resolution: {integrity: sha512-K/BG6eIky/SBpzfHZv/dd+9JBFiS4SWV7FIujVyJRux6e45+73RaUHXLmIR1f7WOMaQ0U1km6qwklRQxpJJY0w==}
 
@@ -4044,6 +4050,10 @@ snapshots:
       redux: 5.0.1
 
   redux@5.0.1: {}
+
+  remeda@2.22.1:
+    dependencies:
+      type-fest: 4.41.0
 
   reselect@5.1.1: {}
 

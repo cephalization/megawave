@@ -20,6 +20,7 @@
     "hono-openapi": "^0.4.8",
     "music-metadata": "^11.2.3",
     "pnpm": "^10.11.0",
+    "remeda": "^2.22.1",
     "znv": "^0.5.0",
     "zod": "^3.24.4",
     "zod-openapi": "^4.2.4"

@@ -14,6 +14,7 @@ import { logger } from "hono/logger";
 declare module "hono" {
   interface ContextVariableMap {
     library: Library;
+    db: ReturnType<typeof makeDb>;
   }
 }
 
@@ -25,6 +26,7 @@ app.use(cors());
 app.use(logger());
 app.use(async (c, next) => {
   c.set("library", library);
+  c.set("db", db);
   await next();
 });
 
