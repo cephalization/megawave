@@ -3,9 +3,9 @@ import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { eq, and } from 'db/drizzle';
 
 import type { DB } from 'db';
+import { eq, and } from 'db/drizzle';
 import { tracks, artists, albums, genres, trackArtists } from 'db/schema';
 
 import type { Track } from './schemas.js';
@@ -379,7 +379,6 @@ export class AudioTrack {
 
       // Handle normalized entities
       await this.saveNormalizedEntities();
-
     } catch (error) {
       console.error(`Error saving track ${this.filePath}:`, error);
       throw error;
@@ -543,10 +542,12 @@ export class AudioTrack {
     audioTrack.contentHash = trackData.contentHash;
     audioTrack.title = trackData.title;
     audioTrack.lengthSeconds = trackData.duration || undefined;
-    audioTrack.trackInfo = trackData.trackNumber ? {
-      no: trackData.trackNumber,
-      total: trackData.totalTracks || undefined,
-    } : undefined;
+    audioTrack.trackInfo = trackData.trackNumber
+      ? {
+          no: trackData.trackNumber,
+          total: trackData.totalTracks || undefined,
+        }
+      : undefined;
 
     // Set denormalized data
     if (trackData.primaryArtistName) {
@@ -563,7 +564,10 @@ export class AudioTrack {
   /**
    * Load track from database by content hash
    */
-  public static async loadByContentHash(contentHash: string, db: DB): Promise<AudioTrack | null> {
+  public static async loadByContentHash(
+    contentHash: string,
+    db: DB,
+  ): Promise<AudioTrack | null> {
     const result = await db
       .select()
       .from(tracks)
@@ -583,8 +587,8 @@ export class AudioTrack {
     const serializedArt =
       this.artCacheIds.length > 0
         ? (this.artCacheIds
-          .map((id) => ALBUM_ART_CACHE[id]?.link)
-          .filter(Boolean) as string[])
+            .map((id) => ALBUM_ART_CACHE[id]?.link)
+            .filter(Boolean) as string[])
         : undefined;
 
     return {

@@ -1,10 +1,18 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { z } from 'zod';
-import { eq, and, or, like, desc, asc, sql, count } from 'db/drizzle';
 
 import type { DB, makeDb } from 'db';
-import { tracks, artists, albums, genres, scanSessions, trackScans, trackArtists } from 'db/schema';
+import { eq, and, or, like, desc, asc, sql, count } from 'db/drizzle';
+import {
+  tracks,
+  artists,
+  albums,
+  genres,
+  scanSessions,
+  trackScans,
+  trackArtists,
+} from 'db/schema';
 
 import { AudioTrack, hasAudioFileExtension } from './audio.js';
 import type { PaginationMeta, Track } from './schemas.js';
@@ -115,7 +123,7 @@ export class Library {
     meta: PaginationMeta;
   }> {
     try {
-      let query = this._db.select().from(tracks);
+      let query = this._db.select().from(tracks).$dynamic();
       const conditions = [];
 
       // Apply text-based filtering across artist/name/album fields
@@ -125,8 +133,8 @@ export class Library {
           or(
             like(sql`lower(${tracks.title})`, sanitizedFilter),
             like(sql`lower(${tracks.primaryArtistName})`, sanitizedFilter),
-            like(sql`lower(${tracks.albumTitle})`, sanitizedFilter)
-          )
+            like(sql`lower(${tracks.albumTitle})`, sanitizedFilter),
+          ),
         );
       }
 
@@ -138,7 +146,9 @@ export class Library {
           const term = `%${parts.slice(1).join('-').toLowerCase()}%`;
 
           if (field === 'artist') {
-            conditions.push(like(sql`lower(${tracks.primaryArtistName})`, term));
+            conditions.push(
+              like(sql`lower(${tracks.primaryArtistName})`, term),
+            );
           } else if (field === 'album') {
             conditions.push(like(sql`lower(${tracks.albumTitle})`, term));
           } else if (field === 'name') {
@@ -158,13 +168,19 @@ export class Library {
         const sortKey = (reverse ? sort.substring(1) : sort).toLowerCase();
 
         if (sortKey === 'name') {
-          query = query.orderBy(reverse ? desc(tracks.title) : asc(tracks.title));
+          query = query.orderBy(
+            reverse ? desc(tracks.title) : asc(tracks.title),
+          );
         } else if (sortKey === 'artist') {
-          query = query.orderBy(reverse ? desc(tracks.primaryArtistName) : asc(tracks.primaryArtistName));
+          query = query.orderBy(
+            reverse
+              ? desc(tracks.primaryArtistName)
+              : asc(tracks.primaryArtistName),
+          );
         } else if (sortKey === 'album') {
           query = query.orderBy(
             reverse ? desc(tracks.albumTitle) : asc(tracks.albumTitle),
-            asc(tracks.trackNumber)
+            asc(tracks.trackNumber),
           );
         }
       } else {
@@ -173,16 +189,19 @@ export class Library {
       }
 
       // Get total count for pagination
-      const totalQuery = this._db.select({ count: count() }).from(tracks);
+      let totalQuery = this._db
+        .select({ count: count() })
+        .from(tracks)
+        .$dynamic();
       if (conditions.length > 0) {
-        totalQuery.where(and(...conditions));
+        totalQuery = totalQuery.where(and(...conditions));
       }
       const totalResult = await totalQuery;
       const total = totalResult[0].count;
 
       // Apply pagination
       const actualOffset = offset ?? 0;
-      const actualLimit = limit ?? 50;
+      const actualLimit = limit ?? total;
       query = query.limit(actualLimit).offset(actualOffset);
 
       const results = await query;
@@ -197,10 +216,12 @@ export class Library {
         length: row.duration ? row.duration.toString() : '',
         link: `/api/library/songs/${row.id}`,
         fileType: path.extname(row.fileName).slice(1),
-        track: row.trackNumber ? {
-          no: row.trackNumber,
-          total: row.totalTracks || undefined,
-        } : undefined,
+        track: row.trackNumber
+          ? {
+              no: row.trackNumber,
+              total: row.totalTracks || undefined,
+            }
+          : undefined,
       }));
 
       return {
@@ -273,7 +294,7 @@ export class Library {
   private async completeScanSession(
     sessionId: number,
     stats: { found: number; added: number; updated: number },
-    status: 'completed' | 'failed' | 'cancelled' = 'completed'
+    status: 'completed' | 'failed' | 'cancelled' = 'completed',
   ): Promise<void> {
     await this._db
       .update(scanSessions)
@@ -290,7 +311,11 @@ export class Library {
   /**
    * Records that a track was seen during a scan session
    */
-  private async recordTrackScan(trackId: number, sessionId: number, filePath: string): Promise<void> {
+  private async recordTrackScan(
+    trackId: number,
+    sessionId: number,
+    filePath: string,
+  ): Promise<void> {
     await this._db.insert(trackScans).values({
       trackId,
       scanSessionId: sessionId,
@@ -312,7 +337,7 @@ export class Library {
             SELECT ${trackScans.trackId} 
             FROM ${trackScans} 
             WHERE ${trackScans.scanSessionId} = ${sessionId}
-          )`
+          )`,
         );
 
       if (orphanTracks.length > 0) {
@@ -407,7 +432,9 @@ export class Library {
       if (this._loadProgress) {
         this._loadProgress.filesProcessed = processed;
         this._loadProgress.trackCount = added + updated;
-        this._loadProgress.percentage = Math.floor((processed / files.length) * 100);
+        this._loadProgress.percentage = Math.floor(
+          (processed / files.length) * 100,
+        );
       }
 
       // Yield to main thread between batches
@@ -446,7 +473,11 @@ export class Library {
 
           // Record this track in the current scan session
           if (this._currentScanSessionId && audioTrack.id) {
-            await this.recordTrackScan(audioTrack.id, this._currentScanSessionId, filePath);
+            await this.recordTrackScan(
+              audioTrack.id,
+              this._currentScanSessionId,
+              filePath,
+            );
           }
 
           if (existingTrack.length > 0) {
@@ -514,7 +545,9 @@ export class Library {
           if (this._cancelRequested) break;
 
           const currentPath = pathsToScan[i];
-          console.log(`Scanning path ${i + 1}/${pathsToScan.length}: ${currentPath}`);
+          console.log(
+            `Scanning path ${i + 1}/${pathsToScan.length}: ${currentPath}`,
+          );
 
           // Update progress
           if (this._loadProgress) {
@@ -529,10 +562,13 @@ export class Library {
           if (this._cancelRequested) break;
 
           totalFound += audioFiles.length;
-          console.log(`Found ${audioFiles.length} audio files in ${currentPath}`);
+          console.log(
+            `Found ${audioFiles.length} audio files in ${currentPath}`,
+          );
 
           // Process files
-          const { added, updated, skipped } = await this.processFiles(audioFiles);
+          const { added, updated, skipped } =
+            await this.processFiles(audioFiles);
           if (this._cancelRequested) {
             console.log(`Load cancelled during processing of ${currentPath}`);
             break;
@@ -543,13 +579,15 @@ export class Library {
           totalSkipped += skipped;
 
           console.log(
-            `Processed ${currentPath}: Added ${added}, Updated ${updated}, Skipped ${skipped} files`
+            `Processed ${currentPath}: Added ${added}, Updated ${updated}, Skipped ${skipped} files`,
           );
         }
 
         if (!this._cancelRequested) {
           // Clean up orphaned tracks
-          const orphansRemoved = await this.cleanupOrphanTracks(this._currentScanSessionId);
+          const orphansRemoved = await this.cleanupOrphanTracks(
+            this._currentScanSessionId,
+          );
 
           // Complete scan session
           await this.completeScanSession(this._currentScanSessionId, {
@@ -559,32 +597,40 @@ export class Library {
           });
 
           console.log(
-            `Library scan complete: ${totalAdded} added, ${totalUpdated} updated, ${totalSkipped} skipped, ${orphansRemoved} orphaned tracks removed`
+            `Library scan complete: ${totalAdded} added, ${totalUpdated} updated, ${totalSkipped} skipped, ${orphansRemoved} orphaned tracks removed`,
           );
         } else {
           // Mark scan as cancelled
-          await this.completeScanSession(this._currentScanSessionId, {
-            found: totalFound,
-            added: totalAdded,
-            updated: totalUpdated,
-          }, 'cancelled');
+          await this.completeScanSession(
+            this._currentScanSessionId,
+            {
+              found: totalFound,
+              added: totalAdded,
+              updated: totalUpdated,
+            },
+            'cancelled',
+          );
         }
-
       } catch (error) {
         console.error('Error during library load:', error);
         this.status = 'error';
 
         // Mark scan as failed
         if (this._currentScanSessionId) {
-          await this.completeScanSession(this._currentScanSessionId, {
-            found: 0,
-            added: 0,
-            updated: 0,
-          }, 'failed');
+          await this.completeScanSession(
+            this._currentScanSessionId,
+            {
+              found: 0,
+              added: 0,
+              updated: 0,
+            },
+            'failed',
+          );
         }
 
         if (this._loadProgress) {
-          this._loadProgress.error = error instanceof Error ? error.message : String(error);
+          this._loadProgress.error =
+            error instanceof Error ? error.message : String(error);
         }
       } finally {
         // Clean up
@@ -611,12 +657,13 @@ export class Library {
     totalGenres: number;
   }> {
     try {
-      const [trackCount, artistCount, albumCount, genreCount] = await Promise.all([
-        this._db.select({ count: count() }).from(tracks),
-        this._db.select({ count: count() }).from(artists),
-        this._db.select({ count: count() }).from(albums),
-        this._db.select({ count: count() }).from(genres),
-      ]);
+      const [trackCount, artistCount, albumCount, genreCount] =
+        await Promise.all([
+          this._db.select({ count: count() }).from(tracks),
+          this._db.select({ count: count() }).from(artists),
+          this._db.select({ count: count() }).from(albums),
+          this._db.select({ count: count() }).from(genres),
+        ]);
 
       return {
         totalTracks: trackCount[0].count,
@@ -638,7 +685,9 @@ export class Library {
   /**
    * Get all artists
    */
-  public async getArtists(): Promise<Array<{ id: number; name: string; trackCount: number }>> {
+  public async getArtists(): Promise<
+    Array<{ id: number; name: string; trackCount: number }>
+  > {
     try {
       const result = await this._db
         .select({
@@ -661,7 +710,14 @@ export class Library {
   /**
    * Get all albums
    */
-  public async getAlbums(): Promise<Array<{ id: number; title: string; artistName: string | null; trackCount: number }>> {
+  public async getAlbums(): Promise<
+    Array<{
+      id: number;
+      title: string;
+      artistName: string | null;
+      trackCount: number;
+    }>
+  > {
     try {
       const result = await this._db
         .select({

@@ -86,7 +86,7 @@ export const songsRouter = new Hono()
     async (c) => {
       const library = c.get('library');
       const query = c.req.valid('query');
-      let tracks = library.getEntries({
+      let tracks = await library.getEntries({
         limit: query.limit,
         offset: query.offset,
         filter: query.filter,
@@ -141,7 +141,7 @@ export const songsRouter = new Hono()
       const id = c.req.valid('param').id;
       const range = c.req.valid('header').range;
       const library = c.get('library');
-      const song = library.getById(id);
+      const song = await library.getById(id);
       if (!song) {
         return c.json({ error: 'Song not found' }, 404);
       }
