@@ -5,6 +5,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import type { DB } from 'db';
+import { eq, and } from 'db/drizzle';
+import { tracks, artists, albums, genres, trackArtists } from 'db/schema';
 
 import type { Track } from './schemas.js';
 
@@ -40,7 +42,7 @@ export function getMediaType(ext: string): string {
 }
 
 /**
- * Generate a robust hash that can be used as an ID for an audio file.
+ * Generate a robust hash that can be used as a content identifier for an audio file.
  * Uses multiple stable identifiers including file content, metadata, and fallbacks.
  * This approach is more resilient to file moves and metadata changes.
  */
@@ -200,7 +202,8 @@ export class AudioTrack {
   public fileName: string;
   public fileDir: string;
   public fileType: string = '';
-  public id: string;
+  public id?: number; // SQLite auto-increment ID
+  public contentHash?: string; // Content-based hash for duplicate detection
   public metadata?: mm.IAudioMetadata;
   public artCacheIds: string[] = [];
 
@@ -215,7 +218,6 @@ export class AudioTrack {
     this.filePath = path.resolve(filePath);
     this.fileName = path.basename(this.filePath);
     this.fileDir = path.dirname(this.filePath);
-    this.id = audioFileHash(this.filePath);
     this._db = db;
 
     const { hasExt, ext } = hasAudioFileExtension(this.fileName);
@@ -233,6 +235,7 @@ export class AudioTrack {
       if (metadata) {
         this.metadata = metadata;
         this.parseMetadata();
+        this.contentHash = await generateContentHash(this.filePath);
         this.ok = true;
       } else {
         console.warn(
@@ -305,8 +308,281 @@ export class AudioTrack {
     }
   }
 
+  /**
+   * Save or update the track in the database
+   */
+  public async save(): Promise<void> {
+    if (!this.ok || !this.contentHash) {
+      throw new Error('Track not properly initialized');
+    }
+
+    const stats = await fs.stat(this.filePath);
+    const now = Date.now();
+
+    try {
+      // Check if track already exists by content hash
+      const existingTrack = await this._db
+        .select()
+        .from(tracks)
+        .where(eq(tracks.contentHash, this.contentHash))
+        .limit(1);
+
+      if (existingTrack.length > 0) {
+        // Update existing track
+        const track = existingTrack[0];
+        this.id = track.id;
+
+        // Update track data
+        await this._db
+          .update(tracks)
+          .set({
+            filePath: this.filePath,
+            fileName: this.fileName,
+            fileSize: stats.size,
+            lastModified: stats.mtime.getTime(),
+            title: this.title || this.fileName,
+            trackNumber: this.trackInfo?.no || null,
+            totalTracks: this.trackInfo?.total || null,
+            duration: this.lengthSeconds || null,
+            bitrate: this.metadata?.format?.bitrate || null,
+            sampleRate: this.metadata?.format?.sampleRate || null,
+            channels: this.metadata?.format?.numberOfChannels || null,
+            codec: this.metadata?.format?.codec || null,
+            dateModified: now,
+          })
+          .where(eq(tracks.id, this.id));
+      } else {
+        // Create new track
+        const insertResult = await this._db
+          .insert(tracks)
+          .values({
+            contentHash: this.contentHash,
+            filePath: this.filePath,
+            fileName: this.fileName,
+            fileSize: stats.size,
+            lastModified: stats.mtime.getTime(),
+            title: this.title || this.fileName,
+            trackNumber: this.trackInfo?.no || null,
+            totalTracks: this.trackInfo?.total || null,
+            duration: this.lengthSeconds || null,
+            bitrate: this.metadata?.format?.bitrate || null,
+            sampleRate: this.metadata?.format?.sampleRate || null,
+            channels: this.metadata?.format?.numberOfChannels || null,
+            codec: this.metadata?.format?.codec || null,
+            dateAdded: now,
+            dateModified: now,
+          })
+          .returning({ id: tracks.id });
+
+        this.id = insertResult[0].id;
+      }
+
+      // Handle normalized entities
+      await this.saveNormalizedEntities();
+    } catch (error) {
+      console.error(`Error saving track ${this.filePath}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Save normalized entities (artists, albums, genres) and their relationships
+   */
+  private async saveNormalizedEntities(): Promise<void> {
+    if (!this.id) return;
+
+    let albumId: number | null = null;
+    let primaryArtistId: number | null = null;
+    let genreId: number | null = null;
+
+    // Handle album
+    if (this.album && this.album.length > 0) {
+      const albumTitle = this.album[0];
+      albumId = await this.getOrCreateAlbum(albumTitle);
+    }
+
+    // Handle artists
+    if (this.artists && this.artists.length > 0) {
+      const primaryArtistName = this.artists[0];
+      primaryArtistId = await this.getOrCreateArtist(primaryArtistName);
+
+      // Clear existing track-artist relationships
+      await this._db
+        .delete(trackArtists)
+        .where(eq(trackArtists.trackId, this.id));
+
+      // Create new track-artist relationships
+      for (let i = 0; i < this.artists.length; i++) {
+        const artistName = this.artists[i];
+        const artistId = await this.getOrCreateArtist(artistName);
+
+        await this._db.insert(trackArtists).values({
+          trackId: this.id,
+          artistId: artistId,
+          role: i === 0 ? 'primary' : 'featured',
+          order: i,
+        });
+      }
+    }
+
+    // Handle genre (if available in metadata)
+    if (this.metadata?.common?.genre && this.metadata.common.genre.length > 0) {
+      const genreName = this.metadata.common.genre[0];
+      genreId = await this.getOrCreateGenre(genreName);
+    }
+
+    // Update track with normalized IDs and denormalized data
+    await this._db
+      .update(tracks)
+      .set({
+        albumId,
+        primaryArtistId,
+        genreId,
+        albumTitle: this.album?.[0] || null,
+        primaryArtistName: this.artists?.[0] || null,
+        genreName: this.metadata?.common?.genre?.[0] || null,
+      })
+      .where(eq(tracks.id, this.id));
+  }
+
+  /**
+   * Get or create an artist
+   */
+  private async getOrCreateArtist(name: string): Promise<number> {
+    const existing = await this._db
+      .select()
+      .from(artists)
+      .where(eq(artists.name, name))
+      .limit(1);
+
+    if (existing.length > 0) {
+      return existing[0].id;
+    }
+
+    const result = await this._db
+      .insert(artists)
+      .values({
+        name,
+        sortName: name, // Could be enhanced with proper sort name logic
+      })
+      .returning({ id: artists.id });
+
+    return result[0].id;
+  }
+
+  /**
+   * Get or create an album
+   */
+  private async getOrCreateAlbum(title: string): Promise<number> {
+    const existing = await this._db
+      .select()
+      .from(albums)
+      .where(eq(albums.title, title))
+      .limit(1);
+
+    if (existing.length > 0) {
+      return existing[0].id;
+    }
+
+    const result = await this._db
+      .insert(albums)
+      .values({
+        title,
+        sortTitle: title, // Could be enhanced with proper sort title logic
+        year: this.metadata?.common?.year || null,
+      })
+      .returning({ id: albums.id });
+
+    return result[0].id;
+  }
+
+  /**
+   * Get or create a genre
+   */
+  private async getOrCreateGenre(name: string): Promise<number> {
+    const existing = await this._db
+      .select()
+      .from(genres)
+      .where(eq(genres.name, name))
+      .limit(1);
+
+    if (existing.length > 0) {
+      return existing[0].id;
+    }
+
+    const result = await this._db
+      .insert(genres)
+      .values({
+        name,
+      })
+      .returning({ id: genres.id });
+
+    return result[0].id;
+  }
+
+  /**
+   * Load track from database by ID
+   */
+  public static async loadById(id: number, db: DB): Promise<AudioTrack | null> {
+    const result = await db
+      .select()
+      .from(tracks)
+      .where(eq(tracks.id, id))
+      .limit(1);
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    const trackData = result[0];
+    const audioTrack = new AudioTrack(trackData.filePath, db);
+
+    // Set the data from database
+    audioTrack.id = trackData.id;
+    audioTrack.contentHash = trackData.contentHash;
+    audioTrack.title = trackData.title;
+    audioTrack.lengthSeconds = trackData.duration || undefined;
+    audioTrack.trackInfo = trackData.trackNumber
+      ? {
+          no: trackData.trackNumber,
+          total: trackData.totalTracks || undefined,
+        }
+      : undefined;
+
+    // Set denormalized data
+    if (trackData.primaryArtistName) {
+      audioTrack.artists = [trackData.primaryArtistName];
+    }
+    if (trackData.albumTitle) {
+      audioTrack.album = [trackData.albumTitle];
+    }
+
+    audioTrack.ok = true;
+    return audioTrack;
+  }
+
+  /**
+   * Load track from database by content hash
+   */
+  public static async loadByContentHash(
+    contentHash: string,
+    db: DB,
+  ): Promise<AudioTrack | null> {
+    const result = await db
+      .select()
+      .from(tracks)
+      .where(eq(tracks.contentHash, contentHash))
+      .limit(1);
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    return AudioTrack.loadById(result[0].id, db);
+  }
+
   public serialize(): Track | null {
-    if (!this.ok) return null;
+    if (!this.ok || !this.id) return null;
 
     const serializedArt =
       this.artCacheIds.length > 0
@@ -316,7 +592,7 @@ export class AudioTrack {
         : undefined;
 
     return {
-      id: this.id,
+      id: this.id.toString(), // Convert to string for API compatibility
       name: this.title || this.fileName,
       album: this.album || null,
       artist: this.artists || null,
