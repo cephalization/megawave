@@ -1,10 +1,12 @@
-import path from "node:path";
-import crypto from "node:crypto";
-import * as mm from "music-metadata";
-import { Buffer } from "node:buffer";
-import type { Track } from "./schemas.js";
-import fs from "node:fs/promises";
-import type { DB } from "db";
+import * as mm from 'music-metadata';
+import { Buffer } from 'node:buffer';
+import crypto from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+import type { DB } from 'db';
+
+import type { Track } from './schemas.js';
 
 export interface ArtItem {
   mime: string;
@@ -13,13 +15,13 @@ export interface ArtItem {
   type?: { id: number; name: string };
 }
 
-export const VALID_AUDIO_EXTENSIONS = ["mp3", "wav"];
+export const VALID_AUDIO_EXTENSIONS = ['mp3', 'wav'];
 
 export function hasAudioFileExtension(fileName: string): {
   hasExt: boolean;
   ext?: string;
 } {
-  const parts = fileName.split(".");
+  const parts = fileName.split('.');
   if (parts.length < 2) return { hasExt: false };
   const fileExt = parts.pop()!.toLowerCase();
   if (VALID_AUDIO_EXTENSIONS.includes(fileExt)) {
@@ -29,12 +31,12 @@ export function hasAudioFileExtension(fileName: string): {
 }
 
 export function getMediaType(ext: string): string {
-  if (ext === "mp3") {
-    return "audio/mpeg";
-  } else if (ext === "wav") {
-    return "audio/wav";
+  if (ext === 'mp3') {
+    return 'audio/mpeg';
+  } else if (ext === 'wav') {
+    return 'audio/wav';
   }
-  return "";
+  return '';
 }
 
 /**
@@ -45,9 +47,9 @@ export function getMediaType(ext: string): string {
 export function audioFileHash(
   filePath: string,
   metadata?: mm.IAudioMetadata,
-  fileStats?: { size: number; mtime: Date }
+  fileStats?: { size: number; mtime: Date },
 ): string {
-  const hash = crypto.createHash("sha256");
+  const hash = crypto.createHash('sha256');
 
   // File content identifiers (most stable)
   if (fileStats?.size) {
@@ -78,7 +80,7 @@ export function audioFileHash(
   const fileName = path.basename(filePath).toLowerCase();
   hash.update(`filename:${fileName}`);
 
-  return hash.digest("hex");
+  return hash.digest('hex');
 }
 
 /**
@@ -118,10 +120,10 @@ export class HashCollisionResolver {
    */
   static resolveCollision(
     originalHash: string,
-    existingTracks: { contentHash: string; filePath: string }[]
+    existingTracks: { contentHash: string; filePath: string }[],
   ): HashCollisionInfo {
     const existingTrack = existingTracks.find(
-      (t) => t.contentHash === originalHash
+      (t) => t.contentHash === originalHash,
     );
 
     if (!existingTrack) {
@@ -154,7 +156,7 @@ export class HashCollisionResolver {
    */
   static verifyCollision(track1: any, track2: any): boolean {
     // Compare key identifying fields
-    const fields = ["title", "artist", "album", "duration", "trackNumber"];
+    const fields = ['title', 'artist', 'album', 'duration', 'trackNumber'];
 
     for (const field of fields) {
       if (track1[field] !== track2[field]) {
@@ -176,7 +178,7 @@ interface CachedArt {
 const ALBUM_ART_CACHE: Record<string, CachedArt> = {};
 
 function addFrameToCache(frame: ArtItem): string {
-  const id = crypto.randomBytes(16).toString("hex");
+  const id = crypto.randomBytes(16).toString('hex');
   ALBUM_ART_CACHE[id] = {
     id,
     mime: frame.mime,
@@ -197,7 +199,7 @@ export class AudioTrack {
   public filePath: string;
   public fileName: string;
   public fileDir: string;
-  public fileType: string = "";
+  public fileType: string = '';
   public id: string;
   public metadata?: mm.IAudioMetadata;
   public artCacheIds: string[] = [];
@@ -235,14 +237,14 @@ export class AudioTrack {
       } else {
         console.warn(
           `No metadata found or error reading metadata for ${this.filePath}. Received:`,
-          metadata
+          metadata,
         );
         this.ok = false;
       }
     } catch (error) {
       console.error(
         `Error initializing AudioTrack for ${this.filePath}:`,
-        error
+        error,
       );
       this.ok = false;
     }
@@ -273,7 +275,7 @@ export class AudioTrack {
     }
 
     // Length: format.duration (seconds, number)
-    if (format && typeof format.duration === "number") {
+    if (format && typeof format.duration === 'number') {
       this.lengthSeconds = format.duration;
     } else {
       // If format.duration is not available, lengthSeconds will be undefined.
@@ -282,9 +284,9 @@ export class AudioTrack {
 
     // Track number: common.track ({ no: number, of?: number })
     const commonTrack = common.track;
-    if (commonTrack && typeof commonTrack.no === "number") {
+    if (commonTrack && typeof commonTrack.no === 'number') {
       this.trackInfo = { no: commonTrack.no };
-      if (typeof commonTrack.of === "number") {
+      if (typeof commonTrack.of === 'number') {
         this.trackInfo.total = commonTrack.of;
       }
     }
@@ -298,7 +300,7 @@ export class AudioTrack {
           mime: pic.format,
           imageBuffer: Buffer.from(pic.data),
           description: pic.description,
-        })
+        }),
       );
     }
   }
@@ -320,7 +322,7 @@ export class AudioTrack {
       artist: this.artists || null,
       art: serializedArt || null,
       length:
-        this.lengthSeconds !== undefined ? this.lengthSeconds.toString() : "",
+        this.lengthSeconds !== undefined ? this.lengthSeconds.toString() : '',
       link: `/api/library/songs/${this.id}`,
       fileType: this.fileType,
       track: this.trackInfo,
@@ -329,21 +331,21 @@ export class AudioTrack {
 
   public static matchesFilter(
     audio: Track,
-    filterTerm: string
-  ): { match: boolean; key?: "name" | "artist" | "album" } {
+    filterTerm: string,
+  ): { match: boolean; key?: 'name' | 'artist' | 'album' } {
     const sanitizedFilterTerm = filterTerm.toLowerCase();
 
     if (!audio) return { match: false };
 
     if (audio.name?.toLowerCase().includes(sanitizedFilterTerm)) {
-      return { match: true, key: "name" };
+      return { match: true, key: 'name' };
     }
 
     if (audio.artist) {
       for (const artist of audio.artist) {
         // Assumes audio.artist is string[]
         if (artist.toLowerCase().includes(sanitizedFilterTerm)) {
-          return { match: true, key: "artist" };
+          return { match: true, key: 'artist' };
         }
       }
     }
@@ -352,7 +354,7 @@ export class AudioTrack {
       for (const album of audio.album) {
         // Assumes audio.album is string[]
         if (album.toLowerCase().includes(sanitizedFilterTerm)) {
-          return { match: true, key: "album" };
+          return { match: true, key: 'album' };
         }
       }
     }
@@ -361,23 +363,23 @@ export class AudioTrack {
 
   public static getSafeArtist(audio: Track): string {
     if (audio.artist && audio.artist.length > 0) {
-      return audio.artist.join(", ");
+      return audio.artist.join(', ');
     }
-    return "";
+    return '';
   }
 
   public static getAudioFileSortValue(
     audio: Track,
-    sort: "artist" | "album" | "name"
+    sort: 'artist' | 'album' | 'name',
   ): string {
-    if (sort === "artist") {
-      return AudioTrack.getSafeArtist(audio).toLocaleLowerCase() || "zzzzz";
-    } else if (sort === "album") {
+    if (sort === 'artist') {
+      return AudioTrack.getSafeArtist(audio).toLocaleLowerCase() || 'zzzzz';
+    } else if (sort === 'album') {
       // Assumes album is string[]
-      return audio.album?.[0]?.toLocaleLowerCase() || "zzzzz";
-    } else if (sort === "name") {
-      return audio.name?.toLocaleLowerCase() || "zzzzz";
+      return audio.album?.[0]?.toLocaleLowerCase() || 'zzzzz';
+    } else if (sort === 'name') {
+      return audio.name?.toLocaleLowerCase() || 'zzzzz';
     }
-    return "";
+    return '';
   }
 }

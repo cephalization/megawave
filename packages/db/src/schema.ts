@@ -5,11 +5,11 @@ import {
   real,
   index,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+} from 'drizzle-orm/sqlite-core';
 
 // Artists table - normalized
 export const artists = sqliteTable(
-  "artists",
+  'artists',
   {
     id: integer().primaryKey(),
     name: text().notNull(),
@@ -17,14 +17,14 @@ export const artists = sqliteTable(
     mbid: text(), // MusicBrainz ID for external linking
   },
   (table) => [
-    index("artists_name_idx").on(table.name),
-    index("artists_sort_name_idx").on(table.sortName),
-  ]
+    index('artists_name_idx').on(table.name),
+    index('artists_sort_name_idx').on(table.sortName),
+  ],
 );
 
 // Albums table - normalized
 export const albums = sqliteTable(
-  "albums",
+  'albums',
   {
     id: integer().primaryKey(),
     title: text().notNull(),
@@ -36,25 +36,25 @@ export const albums = sqliteTable(
     primaryArtistName: text(), // Denormalized for quick access
   },
   (table) => [
-    index("albums_title_idx").on(table.title),
-    index("albums_year_idx").on(table.year),
-    index("albums_primary_artist_idx").on(table.primaryArtistId),
-  ]
+    index('albums_title_idx').on(table.title),
+    index('albums_year_idx').on(table.year),
+    index('albums_primary_artist_idx').on(table.primaryArtistId),
+  ],
 );
 
 // Genres table - normalized
 export const genres = sqliteTable(
-  "genres",
+  'genres',
   {
     id: integer().primaryKey(),
     name: text().notNull(),
   },
-  (table) => [uniqueIndex("genres_name_unique_idx").on(table.name)]
+  (table) => [uniqueIndex('genres_name_unique_idx').on(table.name)],
 );
 
 // Main tracks table
 export const tracks = sqliteTable(
-  "tracks",
+  'tracks',
   {
     id: integer().primaryKey(),
 
@@ -96,70 +96,70 @@ export const tracks = sqliteTable(
   },
   (table) => [
     // Critical indexes for performance
-    uniqueIndex("tracks_content_hash_idx").on(table.contentHash),
-    index("tracks_file_path_idx").on(table.filePath),
-    index("tracks_album_idx").on(table.albumId),
-    index("tracks_artist_idx").on(table.primaryArtistId),
-    index("tracks_title_idx").on(table.title),
+    uniqueIndex('tracks_content_hash_idx').on(table.contentHash),
+    index('tracks_file_path_idx').on(table.filePath),
+    index('tracks_album_idx').on(table.albumId),
+    index('tracks_artist_idx').on(table.primaryArtistId),
+    index('tracks_title_idx').on(table.title),
 
     // Composite indexes for common query patterns
-    index("tracks_album_track_idx").on(
+    index('tracks_album_track_idx').on(
       table.albumId,
       table.discNumber,
-      table.trackNumber
+      table.trackNumber,
     ),
-    index("tracks_artist_album_idx").on(table.primaryArtistId, table.albumId),
-  ]
+    index('tracks_artist_album_idx').on(table.primaryArtistId, table.albumId),
+  ],
 );
 
 // Many-to-many relationships
 
 // Track-Artist relationships (for featuring, collaborations)
 export const trackArtists = sqliteTable(
-  "track_artists",
+  'track_artists',
   {
     id: integer().primaryKey(),
     trackId: integer()
       .notNull()
-      .references(() => tracks.id, { onDelete: "cascade" }),
+      .references(() => tracks.id, { onDelete: 'cascade' }),
     artistId: integer()
       .notNull()
-      .references(() => artists.id, { onDelete: "cascade" }),
+      .references(() => artists.id, { onDelete: 'cascade' }),
     role: text(), // 'primary', 'featured', 'composer', 'producer', etc.
     order: integer(), // For preserving artist order
   },
   (table) => [
-    index("track_artists_track_idx").on(table.trackId),
-    index("track_artists_artist_idx").on(table.artistId),
-    uniqueIndex("track_artists_unique_idx").on(
+    index('track_artists_track_idx').on(table.trackId),
+    index('track_artists_artist_idx').on(table.artistId),
+    uniqueIndex('track_artists_unique_idx').on(
       table.trackId,
       table.artistId,
-      table.role
+      table.role,
     ),
-  ]
+  ],
 );
 
 // Album-Artist relationships (for compilation albums)
 export const albumArtists = sqliteTable(
-  "album_artists",
+  'album_artists',
   {
     id: integer().primaryKey(),
     albumId: integer()
       .notNull()
-      .references(() => albums.id, { onDelete: "cascade" }),
+      .references(() => albums.id, { onDelete: 'cascade' }),
     artistId: integer()
       .notNull()
-      .references(() => artists.id, { onDelete: "cascade" }),
+      .references(() => artists.id, { onDelete: 'cascade' }),
     role: text(), // 'primary', 'various', 'compiler', etc.
   },
   (table) => [
-    index("album_artists_album_idx").on(table.albumId),
-    index("album_artists_artist_idx").on(table.artistId),
-  ]
+    index('album_artists_album_idx').on(table.albumId),
+    index('album_artists_artist_idx').on(table.artistId),
+  ],
 );
 
 // File tracking for scan management
-export const scanSessions = sqliteTable("scan_sessions", {
+export const scanSessions = sqliteTable('scan_sessions', {
   id: integer().primaryKey(),
   startTime: integer().notNull(),
   endTime: integer(),
@@ -172,18 +172,18 @@ export const scanSessions = sqliteTable("scan_sessions", {
 
 // Track which files were seen in which scans (for orphan cleanup)
 export const trackScans = sqliteTable(
-  "track_scans",
+  'track_scans',
   {
     trackId: integer()
       .notNull()
-      .references(() => tracks.id, { onDelete: "cascade" }),
+      .references(() => tracks.id, { onDelete: 'cascade' }),
     scanSessionId: integer()
       .notNull()
-      .references(() => scanSessions.id, { onDelete: "cascade" }),
+      .references(() => scanSessions.id, { onDelete: 'cascade' }),
     filePath: text().notNull(), // Path when seen in this scan
   },
   (table) => [
-    index("track_scans_track_idx").on(table.trackId),
-    index("track_scans_scan_idx").on(table.scanSessionId),
-  ]
+    index('track_scans_track_idx').on(table.trackId),
+    index('track_scans_scan_idx').on(table.scanSessionId),
+  ],
 );

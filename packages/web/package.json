@@ -5,8 +5,6 @@
     "start": "NODE_ENV=development vite --host",
     "dev": "wait-on http-get://0.0.0.0:5001/api/health && npm start",
     "build": "vite build",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "lint": "prettier --check \"src/**/*.{ts,tsx}\"",
     "eslint": "eslint \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },
@@ -34,7 +32,6 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.3",
-    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/lodash.debounce": "^4.0.6",
     "@types/lodash.throttle": "^4.1.6",
     "@types/react": "^19.0.8",

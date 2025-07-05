@@ -7,6 +7,8 @@
     "build": "turbo build",
     "typecheck": "turbo typecheck",
     "dev": "turbo dev --ui tui",
+    "format": "prettier --write \"packages/**/*.{ts,tsx}\"",
+    "lint": "prettier --check \"packages/**/*.{ts,tsx}\"",
     "db:push": "drizzle-kit push --config packages/db/drizzle.config.ts",
     "db:generate": "drizzle-kit generate --config packages/db/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config packages/db/drizzle.config.ts",
@@ -26,7 +28,9 @@
     }
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "drizzle-kit": "^0.31.1",
+    "prettier": "^3.5.3",
     "rimraf": "^6.0.1"
   }
 }

@@ -1,31 +1,32 @@
-import { z } from "zod";
-import { Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
+import { Hono } from 'hono';
+import { createReadStream, statSync } from 'node:fs';
+import { z } from 'zod';
 
-import { paginatedResponseSchema, trackSchema, type Track } from "./schemas.js";
+import { describeRoute } from 'hono-openapi';
+import { resolver, validator } from 'hono-openapi/zod';
+
+import { getArtFromCache, AudioTrack } from './audio.js';
+import { audioLibraryStatusSchema } from './library.js';
+import { getNextUrl, getPreviousUrl } from './pagination.js';
 import {
   getContentTypeFromExtension,
   paginatedJSONResponse,
   strictJSONResponse,
-} from "./responses.js";
-import { getNextUrl, getPreviousUrl } from "./pagination.js";
-import { getArtFromCache, AudioTrack } from "./audio.js";
-import { audioLibraryStatusSchema } from "./library.js";
-import { createReadStream, statSync } from "node:fs";
-import { createStreamBody, getByteRangeBounds } from "./stream.js";
+} from './responses.js';
+import { paginatedResponseSchema, trackSchema, type Track } from './schemas.js';
+import { createStreamBody, getByteRangeBounds } from './stream.js';
 
-export const statusRouter = new Hono().basePath("/status").get(
-  "/",
+export const statusRouter = new Hono().basePath('/status').get(
+  '/',
   describeRoute({
-    tags: ["status"],
-    summary: "Get status",
-    description: "Get status",
+    tags: ['status'],
+    summary: 'Get status',
+    description: 'Get status',
     responses: {
       200: {
-        description: "Status",
+        description: 'Status',
         content: {
-          "application/json": {
+          'application/json': {
             schema: resolver(audioLibraryStatusSchema),
           },
         },
@@ -33,18 +34,18 @@ export const statusRouter = new Hono().basePath("/status").get(
     },
   }),
   async (c) => {
-    const library = c.get("library");
+    const library = c.get('library');
     return strictJSONResponse(c, audioLibraryStatusSchema, library.status);
-  }
+  },
 );
 
 export const songsRouter = new Hono()
-  .basePath("/songs")
+  .basePath('/songs')
   .get(
-    "/",
+    '/',
     describeRoute({
-      tags: ["songs"],
-      summary: "List songs",
+      tags: ['songs'],
+      summary: 'List songs',
       description: `
     /songs?[sort]=[-]sortKeyStr&[filter]=filterStr&[subkeyfilter]=filterKeyStr-filterValueStr
 
@@ -63,9 +64,9 @@ export const songsRouter = new Hono()
     `,
       responses: {
         200: {
-          description: "Songs",
+          description: 'Songs',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(paginatedResponseSchema(trackSchema)),
             },
           },
@@ -73,18 +74,18 @@ export const songsRouter = new Hono()
       },
     }),
     validator(
-      "query",
+      'query',
       z.object({
         limit: z.coerce.number().optional(),
         offset: z.coerce.number().optional(),
         filter: z.string().optional(),
         sort: z.string().optional(),
         subkeyfilter: z.string().optional(),
-      })
+      }),
     ),
     async (c) => {
-      const library = c.get("library");
-      const query = c.req.valid("query");
+      const library = c.get('library');
+      const query = c.req.valid('query');
       let tracks = library.getEntries({
         limit: query.limit,
         offset: query.offset,
@@ -99,50 +100,50 @@ export const songsRouter = new Hono()
           c.req.url,
           tracks.meta.limit,
           tracks.meta.offset,
-          tracks.meta.total
+          tracks.meta.total,
         ),
         previous: getPreviousUrl(
           c.req.url,
           tracks.meta.limit,
-          tracks.meta.offset
+          tracks.meta.offset,
         ),
       });
-    }
+    },
   )
   .get(
-    "/:id",
+    '/:id',
     describeRoute({
-      tags: ["songs"],
-      summary: "Get song",
-      description: "Get song",
+      tags: ['songs'],
+      summary: 'Get song',
+      description: 'Get song',
       responses: {
         200: {
-          description: "Binary stream of audio data",
+          description: 'Binary stream of audio data',
           content: {
-            "audio/mpeg": {
+            'audio/mpeg': {
               schema: resolver(z.string()),
             },
           },
         },
         404: {
-          description: "Song not found",
+          description: 'Song not found',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(z.object({ error: z.string() })),
             },
           },
         },
       },
     }),
-    validator("param", z.object({ id: z.string() })),
-    validator("header", z.object({ range: z.string() })),
+    validator('param', z.object({ id: z.string() })),
+    validator('header', z.object({ range: z.string() })),
     async (c) => {
-      const id = c.req.valid("param").id;
-      const range = c.req.valid("header").range;
-      const library = c.get("library");
+      const id = c.req.valid('param').id;
+      const range = c.req.valid('header').range;
+      const library = c.get('library');
       const song = library.getById(id);
       if (!song) {
-        return c.json({ error: "Song not found" }, 404);
+        return c.json({ error: 'Song not found' }, 404);
       }
 
       const totalSize = statSync(song.filePath).size;
@@ -152,60 +153,60 @@ export const songsRouter = new Hono()
         end,
       });
 
-      c.header("Content-Type", getContentTypeFromExtension(song.fileType));
-      c.header("Accept-Ranges", "bytes");
-      c.header("Content-Length", chunksize.toString());
-      c.header("Content-Range", `bytes ${start}-${end}/${totalSize}`);
+      c.header('Content-Type', getContentTypeFromExtension(song.fileType));
+      c.header('Accept-Ranges', 'bytes');
+      c.header('Content-Length', chunksize.toString());
+      c.header('Content-Range', `bytes ${start}-${end}/${totalSize}`);
 
       return c.body(createStreamBody(songStream), 206);
-    }
+    },
   );
 
-export const artRouter = new Hono().basePath("/art").get(
-  "/:id",
+export const artRouter = new Hono().basePath('/art').get(
+  '/:id',
   describeRoute({
-    tags: ["art"],
-    summary: "Get art",
-    description: "Get art",
+    tags: ['art'],
+    summary: 'Get art',
+    description: 'Get art',
     responses: {
       200: {
-        description: "Binary image data in the original format",
+        description: 'Binary image data in the original format',
         content: {
-          "image/jpeg": {
+          'image/jpeg': {
             schema: resolver(z.string()),
           },
-          "image/png": {
+          'image/png': {
             schema: resolver(z.string()),
           },
-          "image/gif": {
+          'image/gif': {
             schema: resolver(z.string()),
           },
-          "image/webp": {
+          'image/webp': {
             schema: resolver(z.string()),
           },
         },
       },
       404: {
-        description: "Art not found",
+        description: 'Art not found',
         content: {
-          "application/json": {
+          'application/json': {
             schema: resolver(z.object({ error: z.string() })),
           },
         },
       },
     },
   }),
-  validator("param", z.object({ id: z.string() })),
+  validator('param', z.object({ id: z.string() })),
   async (c) => {
-    const id = c.req.valid("param").id;
+    const id = c.req.valid('param').id;
     const art = getArtFromCache(id);
     if (!art) {
-      return c.json({ error: "Art not found" }, 404);
+      return c.json({ error: 'Art not found' }, 404);
     }
 
     return c.body(art.buffer, 200, {
-      "Content-Type": art.mime,
-      "Cache-Control": "max-age=31536000",
+      'Content-Type': art.mime,
+      'Cache-Control': 'max-age=31536000',
     });
-  }
+  },
 );

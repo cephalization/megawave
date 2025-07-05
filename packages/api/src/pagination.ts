@@ -2,15 +2,15 @@ export function getNextUrl(
   url: string,
   limit: number,
   offset: number,
-  total: number
+  total: number,
 ) {
   const nextOffset = offset + limit;
   if (nextOffset >= total) {
     return null;
   }
   const nextUrl = new URL(url);
-  nextUrl.searchParams.set("offset", nextOffset.toString());
-  nextUrl.searchParams.set("limit", limit.toString());
+  nextUrl.searchParams.set('offset', nextOffset.toString());
+  nextUrl.searchParams.set('limit', limit.toString());
   return nextUrl.toString();
 }
 
@@ -20,7 +20,7 @@ export function getPreviousUrl(url: string, limit: number, offset: number) {
     return null;
   }
   const previousUrl = new URL(url);
-  previousUrl.searchParams.set("offset", previousOffset.toString());
-  previousUrl.searchParams.set("limit", limit.toString());
+  previousUrl.searchParams.set('offset', previousOffset.toString());
+  previousUrl.searchParams.set('limit', limit.toString());
   return previousUrl.toString();
 }
