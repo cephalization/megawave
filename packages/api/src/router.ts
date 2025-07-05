@@ -114,8 +114,8 @@ export const songsRouter = new Hono()
     '/:id',
     describeRoute({
       tags: ['songs'],
-      summary: 'Get song',
-      description: 'Get song',
+      summary: 'Stream song',
+      description: 'Stream song',
       responses: {
         200: {
           description: 'Binary stream of audio data',
