@@ -1,5 +1,9 @@
 import type { Context } from 'hono';
-import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import type { TypedResponse } from 'hono/types';
+import type {
+  ContentfulStatusCode,
+  SuccessStatusCode,
+} from 'hono/utils/http-status';
 import type { z, ZodSchema } from 'zod';
 
 import { paginatedResponseSchema, paginationMetaSchema } from './schemas.js';
@@ -17,14 +21,19 @@ export function strictJSONResponse<
   C extends Context,
   S extends ZodSchema,
   D extends Parameters<Context['json']>[0] & z.infer<S>,
-  U extends ContentfulStatusCode,
->(c: C, schema: S, data: D, statusCode?: U) {
+  U extends Extract<ContentfulStatusCode, SuccessStatusCode>,
+>(
+  c: C,
+  schema: S,
+  data: D,
+  statusCode?: U,
+): TypedResponse<D, U, 'json'> | TypedResponse<{ error: string }, 500, 'json'> {
   const validatedResponse = schema.safeParse(data);
 
   if (!validatedResponse.success) {
     return c.json(
       {
-        message: 'Strict response validation failed',
+        error: 'Strict response validation failed',
       },
       500,
     );
@@ -36,7 +45,7 @@ export function strictJSONResponse<
 export function paginatedJSONResponse<
   C extends Context,
   T extends z.ZodTypeAny,
-  U extends ContentfulStatusCode,
+  U extends Extract<ContentfulStatusCode, SuccessStatusCode>,
 >(
   c: C,
   itemSchema: T,
