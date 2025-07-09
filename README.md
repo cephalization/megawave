@@ -39,4 +39,5 @@ Development is tested and supported on Linux, Mac OS, and WSL 2
 
 - `docker-compose up --build`
 
-- Go to [localhost](http://localhost) or serve behind a reverse proxy
+- Go to [localhost](http://localhost:3294) or serve behind a reverse proxy
+  - You can remember the port by the word "mega" - 3294

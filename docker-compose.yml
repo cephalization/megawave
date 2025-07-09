@@ -12,11 +12,11 @@ services:
     build:
       dockerfile: packages/web/Dockerfile
     ports:
-      - "80:80"
+      - "3294:80"
     networks:
       - web
       - api
-    restart: "on-failure"
+    restart: "unless-stopped"
 
 networks:
   web:
