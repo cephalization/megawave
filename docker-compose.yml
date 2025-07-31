@@ -4,10 +4,12 @@ services:
       dockerfile: packages/api/Dockerfile
     volumes:
       - ${MUSIC_LIBRARY_PATH}:/musiclibrary
+      - ${DATABASE_PATH}:/db
     networks:
       - api
     environment:
       - MUSIC_LIBRARY_PATH=/musiclibrary
+      - DATABASE_PATH=/db
   web:
     build:
       dockerfile: packages/web/Dockerfile

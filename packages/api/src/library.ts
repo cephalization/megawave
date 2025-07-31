@@ -1,10 +1,13 @@
-import * as fs from "fs/promises";
-import * as path from "path";
-import { AudioTrack, hasAudioFileExtension } from "./audio.js";
-import type { PaginationMeta, Track } from "./schemas.js";
-import { z } from "zod";
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { z } from 'zod';
 
-export const audioLibraryStatusSchema = z.enum(["loading", "idle", "error"]);
+import type { DB, makeDb } from 'db';
+
+import { AudioTrack, hasAudioFileExtension } from './audio.js';
+import type { PaginationMeta, Track } from './schemas.js';
+
+export const audioLibraryStatusSchema = z.enum(['loading', 'idle', 'error']);
 export type AudioLibraryStatus = z.infer<typeof audioLibraryStatusSchema>;
 
 /**
@@ -38,14 +41,16 @@ export class Library {
   private _currentLoadPromise: Promise<void> | null;
   private _cancelRequested: boolean;
   private _loadProgress: LoadProgress | null;
+  private _db: DB;
 
-  constructor() {
-    this.status = "idle";
+  constructor(db: DB) {
+    this.status = 'idle';
     this.tracks = new Map();
     this.trackIds = [];
     this._currentLoadPromise = null;
     this._cancelRequested = false;
     this._loadProgress = null;
+    this._db = db;
   }
 
   /**
@@ -56,7 +61,7 @@ export class Library {
   public reset(): void {
     this.tracks.clear();
     this.trackIds = [];
-    this.status = "idle";
+    this.status = 'idle';
     this._cancelRequested = true;
     this._currentLoadPromise = null;
     this._loadProgress = null;
@@ -137,12 +142,12 @@ export class Library {
       for (const track of allTracks) {
         const { match, key } = AudioTrack.matchesFilter(
           track,
-          sanitizedFilterQuery
+          sanitizedFilterQuery,
         );
         if (match && key) {
-          if (key === "artist") groupedByMatchingKey.artist.push(track);
-          else if (key === "name") groupedByMatchingKey.name.push(track);
-          else if (key === "album") groupedByMatchingKey.album.push(track);
+          if (key === 'artist') groupedByMatchingKey.artist.push(track);
+          else if (key === 'name') groupedByMatchingKey.name.push(track);
+          else if (key === 'album') groupedByMatchingKey.album.push(track);
         }
       }
       // Combine results with priority: artist > name > album
@@ -155,19 +160,19 @@ export class Library {
 
     // Apply field-specific filtering with format: field-value (e.g., artist-beatles)
     if (subkeyfilter) {
-      const parts = subkeyfilter.split("-");
+      const parts = subkeyfilter.split('-');
       if (parts.length >= 2) {
         const field = parts[0].toLocaleLowerCase();
-        const term = parts.slice(1).join("-").toLocaleLowerCase();
+        const term = parts.slice(1).join('-').toLocaleLowerCase();
 
-        if (field === "artist" || field === "album" || field === "name") {
+        if (field === 'artist' || field === 'album' || field === 'name') {
           allTracks = allTracks.filter((track) => {
             const trackValue = track[field as keyof Track];
             if (Array.isArray(trackValue)) {
               return trackValue.some((val) =>
-                val.toLocaleLowerCase().includes(term)
+                val.toLocaleLowerCase().includes(term),
               );
-            } else if (typeof trackValue === "string") {
+            } else if (typeof trackValue === 'string') {
               return trackValue.toLocaleLowerCase().includes(term);
             }
             return false;
@@ -181,22 +186,22 @@ export class Library {
 
     // Apply sorting if specified, or use default sort
     if (sort) {
-      const reverse = sort.startsWith("-");
+      const reverse = sort.startsWith('-');
       const sortKeyString = (reverse ? sort.substring(1) : sort).toLowerCase();
 
       if (
-        sortKeyString === "name" ||
-        sortKeyString === "artist" ||
-        sortKeyString === "album"
+        sortKeyString === 'name' ||
+        sortKeyString === 'artist' ||
+        sortKeyString === 'album'
       ) {
-        const sortKey = sortKeyString as "name" | "artist" | "album";
+        const sortKey = sortKeyString as 'name' | 'artist' | 'album';
         allTracks.sort((a, b) => {
           let valA_primary = AudioTrack.getAudioFileSortValue(a, sortKey);
           let valB_primary = AudioTrack.getAudioFileSortValue(b, sortKey);
 
           if (reverse) {
-            if (valA_primary === "zzzzz") valA_primary = "";
-            if (valB_primary === "zzzzz") valB_primary = "";
+            if (valA_primary === 'zzzzz') valA_primary = '';
+            if (valB_primary === 'zzzzz') valB_primary = '';
           }
 
           let comparison = 0;
@@ -211,10 +216,10 @@ export class Library {
             const trackNoA = getTrackNo(a);
             const trackNoB = getTrackNo(b);
 
-            if (sortKey === "album") {
+            if (sortKey === 'album') {
               const subkeyFilterIsAlbum = subkeyfilter
                 ?.toLocaleLowerCase()
-                .startsWith("album-");
+                .startsWith('album-');
               const shouldReverseTracks = reverse && subkeyFilterIsAlbum;
 
               if (shouldReverseTracks) {
@@ -232,8 +237,8 @@ export class Library {
     } else {
       // Default sort: album name (asc), then track number (asc)
       allTracks.sort((a, b) => {
-        const albumA = AudioTrack.getAudioFileSortValue(a, "album");
-        const albumB = AudioTrack.getAudioFileSortValue(b, "album");
+        const albumA = AudioTrack.getAudioFileSortValue(a, 'album');
+        const albumB = AudioTrack.getAudioFileSortValue(b, 'album');
 
         let comparison = 0;
         if (albumA < albumB) {
@@ -256,7 +261,7 @@ export class Library {
 
     const paginatedTracks = allTracks.slice(
       actualOffset,
-      actualOffset + actualLimit
+      actualOffset + actualLimit,
     );
 
     return {
@@ -296,9 +301,9 @@ export class Library {
    * The load will complete gracefully at the next cancellation check point.
    */
   public cancelLoad(): void {
-    if (this.status === "loading") {
+    if (this.status === 'loading') {
       this._cancelRequested = true;
-      console.log("Library load cancellation requested");
+      console.log('Library load cancellation requested');
     }
   }
 
@@ -370,7 +375,7 @@ export class Library {
    */
   private async processFiles(
     files: string[],
-    batchSize: number = 50
+    batchSize: number = 50,
   ): Promise<{ added: number; skipped: number }> {
     let added = 0;
     let skipped = 0;
@@ -391,7 +396,7 @@ export class Library {
         this._loadProgress.filesProcessed = processed;
         this._loadProgress.trackCount = this.tracks.size;
         this._loadProgress.percentage = Math.floor(
-          (processed / files.length) * 100
+          (processed / files.length) * 100,
         );
       }
 
@@ -409,7 +414,7 @@ export class Library {
    * @returns Promise with counts of added and skipped files
    */
   private async processBatch(
-    filesToProcess: string[]
+    filesToProcess: string[],
   ): Promise<{ added: number; skipped: number }> {
     let added = 0;
     let skipped = 0;
@@ -417,7 +422,7 @@ export class Library {
     for (const filePath of filesToProcess) {
       if (this._cancelRequested) break;
 
-      const audioTrack = new AudioTrack(filePath);
+      const audioTrack = new AudioTrack(filePath, this._db);
       await audioTrack.initialize();
 
       if (audioTrack.ok) {
@@ -446,26 +451,26 @@ export class Library {
    */
   public async load(pathsToScan: string[]): Promise<void> {
     // Cancel any ongoing load operation
-    if (this.status === "loading" && this._currentLoadPromise) {
-      console.log("Cancelling previous library load operation");
+    if (this.status === 'loading' && this._currentLoadPromise) {
+      console.log('Cancelling previous library load operation');
       this.cancelLoad();
       try {
         await this._currentLoadPromise;
       } catch (e) {
-        console.log("Previous load operation completed or cancelled");
+        console.log('Previous load operation completed or cancelled');
       }
     }
 
     // Reset state and prepare for new load
     this.reset();
     this._cancelRequested = false;
-    this.status = "loading";
+    this.status = 'loading';
 
     // Initialize progress tracking
     this._loadProgress = {
       totalPaths: pathsToScan.length,
       currentPathIndex: 0,
-      currentPath: "",
+      currentPath: '',
       filesDiscovered: 0,
       filesProcessed: 0,
       trackCount: 0,
@@ -482,7 +487,7 @@ export class Library {
 
           const currentPath = pathsToScan[i];
           console.log(
-            `Scanning path ${i + 1}/${pathsToScan.length}: ${currentPath}`
+            `Scanning path ${i + 1}/${pathsToScan.length}: ${currentPath}`,
           );
 
           // Update progress for current path
@@ -499,7 +504,7 @@ export class Library {
           if (this._cancelRequested) break;
 
           console.log(
-            `Found ${audioFiles.length} audio files in ${currentPath}`
+            `Found ${audioFiles.length} audio files in ${currentPath}`,
           );
 
           // Then process them in batches
@@ -511,18 +516,18 @@ export class Library {
           }
 
           console.log(
-            `Processed ${currentPath}: Added ${added}, Skipped ${skipped} files`
+            `Processed ${currentPath}: Added ${added}, Skipped ${skipped} files`,
           );
         }
 
         if (!this._cancelRequested) {
           console.log(
-            `Library load complete: ${this.tracks.size} tracks loaded`
+            `Library load complete: ${this.tracks.size} tracks loaded`,
           );
         }
       } catch (error) {
-        console.error("Error during library load:", error);
-        this.status = "error";
+        console.error('Error during library load:', error);
+        this.status = 'error';
 
         // Capture error for UI display
         if (this._loadProgress) {
@@ -531,8 +536,8 @@ export class Library {
         }
       } finally {
         // Clean up regardless of success or failure
-        if (this.status === "loading" || this._cancelRequested) {
-          this.status = "idle";
+        if (this.status === 'loading' || this._cancelRequested) {
+          this.status = 'idle';
         }
         this._cancelRequested = false;
         this._currentLoadPromise = null;

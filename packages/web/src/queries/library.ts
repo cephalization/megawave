@@ -1,20 +1,14 @@
-import { Track } from '~/types/library';
-
-import { library, track } from './urls';
-
-export const libraryAbortController = new AbortController();
-
-export type getLibraryResponse = {
-  data: {
-    songs: Track[];
-  };
-};
+import { client } from '~/client';
 
 export async function getStatus() {
-  const res = await fetch('/api/library/status');
-  const data = await res.json();
-
-  return data as 'loading' | 'idle' | 'error';
+  const res = await client.api.library.status.$get();
+  if (res.status === 500) {
+    const error = await res.json();
+    throw new Error(error.error);
+  } else {
+    const data = await res.json();
+    return data;
+  }
 }
 
 export async function get({
@@ -22,29 +16,23 @@ export async function get({
   sort,
   subkeyfilter,
 }: { search?: string; sort?: string; subkeyfilter?: string } = {}) {
-  const filterString = search ? `filter=${search}` : '';
-  const sortString = sort ? `sort=${sort}` : '';
-  const subkeyfilterString = subkeyfilter ? `subkeyfilter=${subkeyfilter}` : '';
-  const params = [filterString, sortString, subkeyfilterString].filter(
-    (p) => !!p,
-  );
-  const res = await fetch(
-    `${library()}${params.length ? `?${params.join('&')}` : ''}`,
-  );
+  const res = await client.api.library.songs.$get({
+    query: {
+      filter: !!search ? search : undefined,
+      sort: !!sort ? sort : undefined,
+      subkeyfilter: !!subkeyfilter ? subkeyfilter : undefined,
+    },
+  });
 
-  const data = await res.json();
-  const tracks = data.data as Track[];
-
-  return tracks;
-}
-
-export async function getOne(trackId: string) {
-  const res = await fetch(track(trackId));
-  const data = await res.json();
-  return data.data as Track;
+  if (res.status === 500) {
+    const error = await res.json();
+    throw new Error(error.error);
+  } else {
+    const data = await res.json();
+    return data.data;
+  }
 }
 
 export const libraryApi = {
   get,
-  getOne,
 };

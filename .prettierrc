@@ -1,11 +1,7 @@
 {
   "singleQuote": true,
   "trailingComma": "all",
-  "importOrder": [
-    "<THIRD_PARTY_MODULES>",
-    "^~/(.*)$",
-    "^[./]"
-  ],
+  "importOrder": ["<THIRD_PARTY_MODULES>", "(api|web|db)", "^~/(.*)$", "^[./]"],
   "importOrderSeparation": true,
   "plugins": ["@trivago/prettier-plugin-sort-imports"]
 }
