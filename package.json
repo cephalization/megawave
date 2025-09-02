@@ -6,7 +6,7 @@
   "scripts": {
     "build": "turbo build",
     "typecheck": "turbo typecheck",
-    "dev": "turbo dev --ui tui"
+    "dev": "dotenv -- turbo dev --ui tui"
   },
   "keywords": [],
   "author": "Tony Powell <powell.anthonyd@proton.me>",
@@ -19,5 +19,8 @@
     "overrides": {
       "rollup": "npm:@rollup/wasm-node"
     }
+  },
+  "devDependencies": {
+    "dotenv-cli": "^10.0.0"
   }
 }

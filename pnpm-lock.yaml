@@ -15,6 +15,10 @@ importers:
       turbo:
         specifier: ^2.5.4-canary.0
         version: 2.5.4-canary.0
+    devDependencies:
+      dotenv-cli:
+        specifier: ^10.0.0
+        version: 10.0.0
 
   packages/api:
     dependencies:
@@ -64,8 +68,6 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
-
-  packages/api-python: {}
 
   packages/web:
     dependencies:
@@ -682,8 +684,8 @@ packages:
       react-redux:
         optional: true
 
-  '@rollup/wasm-node@4.41.0':
-    resolution: {integrity: sha512-G+y2Uj8XvsPWMA+kVfKPcrhOWtcwKaCCr8KNZPiADfJV4+g4HUeJKuT8Fz71F7PNVD3t+xqX8rlpIULAlAJ+sQ==}
+  '@rollup/wasm-node@4.50.0':
+    resolution: {integrity: sha512-mCzoNeR8ynLTHJ5VQ9J/GzSKPJjEC4/nCmGw2y3NSCZoc4sbSVdNe5x4S7+bda6QIEUrk6lR1FE7FEDo+p/u1Q==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
@@ -869,6 +871,9 @@ packages:
 
   '@types/estree@1.0.7':
     resolution: {integrity: sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==}
+
+  '@types/estree@1.0.8':
+    resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -1078,8 +1083,20 @@ packages:
     resolution: {integrity: sha512-3UDv+G9CsCKO1WKMGw9fwq/SWJYbI0c5Y7LU1AXYoDdbhE2AHQ6N6Nb34sG8Fj7T5APy8qXDCKuuIHd1BR0tVA==}
     engines: {node: '>=8'}
 
+  dotenv-cli@10.0.0:
+    resolution: {integrity: sha512-lnOnttzfrzkRx2echxJHQRB6vOAMSCzzZg79IxpC00tU42wZPuZkQxNNrrwVAxaQZIIh001l4PxVlCrBxngBzA==}
+    hasBin: true
+
+  dotenv-expand@11.0.7:
+    resolution: {integrity: sha512-zIHwmZPRshsCdpMDyVsqGmgyP0yT8GAgXUnkdAoJisxvf33k7yO6OuoKmcTGuXPWSsm8Oh88nZicRLA9Y0rUeA==}
+    engines: {node: '>=12'}
+
   dotenv@16.5.0:
     resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
+    engines: {node: '>=12'}
+
+  dotenv@17.2.1:
+    resolution: {integrity: sha512-kQhDYKZecqnM0fCnzI5eIv5L4cAe/iRI+HqMbO/hbRdTAeXDG+M9FjipUxNfbARuEg4iHIbhnhs78BCHNbSxEQ==}
     engines: {node: '>=12'}
 
   electron-to-chromium@1.5.156:
@@ -2463,9 +2480,9 @@ snapshots:
       react: 19.1.0
       react-redux: 9.2.0(@types/react@19.1.5)(react@19.1.0)(redux@5.0.1)
 
-  '@rollup/wasm-node@4.41.0':
+  '@rollup/wasm-node@4.50.0':
     dependencies:
-      '@types/estree': 1.0.7
+      '@types/estree': 1.0.8
     optionalDependencies:
       fsevents: 2.3.3
 
@@ -2640,6 +2657,8 @@ snapshots:
       '@babel/types': 7.27.1
 
   '@types/estree@1.0.7': {}
+
+  '@types/estree@1.0.8': {}
 
   '@types/json-schema@7.0.15': {}
 
@@ -2870,7 +2889,20 @@ snapshots:
 
   detect-libc@2.0.4: {}
 
+  dotenv-cli@10.0.0:
+    dependencies:
+      cross-spawn: 7.0.6
+      dotenv: 17.2.1
+      dotenv-expand: 11.0.7
+      minimist: 1.2.8
+
+  dotenv-expand@11.0.7:
+    dependencies:
+      dotenv: 16.5.0
+
   dotenv@16.5.0: {}
+
+  dotenv@17.2.1: {}
 
   electron-to-chromium@1.5.156: {}
 
@@ -3567,7 +3599,7 @@ snapshots:
       fdir: 6.4.4(picomatch@4.0.2)
       picomatch: 4.0.2
       postcss: 8.5.3
-      rollup: '@rollup/wasm-node@4.41.0'
+      rollup: '@rollup/wasm-node@4.50.0'
       tinyglobby: 0.2.13
     optionalDependencies:
       '@types/node': 22.15.21

@@ -1,13 +1,17 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "globalDependencies": [".env"],
+  "globalEnv": ["MUSIC_LIBRARY_PATH"],
   "tasks": {
     "build": {
+      "inputs": ["$TURBO_DEFAULT$", ".env"],
       "outputs": ["dist/**"]
     },
     "typecheck": {
       "dependsOn": ["^build"]
     },
     "dev": {
+      "inputs": ["$TURBO_DEFAULT$", ".env"],
       "persistent": true,
       "cache": false
     }
