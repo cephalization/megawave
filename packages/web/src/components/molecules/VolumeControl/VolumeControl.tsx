@@ -12,8 +12,10 @@ type VolumeControlProps = {
 
 const VOLUME_KEY = 'mw-volume';
 
-const updateVolume = (volume: number) =>
-  debounce(() => localStorage.setItem(VOLUME_KEY, volume.toString()), 1000);
+const updateVolume = debounce(
+  (volume: number) => localStorage.setItem(VOLUME_KEY, volume.toString()),
+  1000,
+);
 
 export const VolumeControl = ({ volume, onChange }: VolumeControlProps) => {
   // get volume from local storage and sync with redux on mount
