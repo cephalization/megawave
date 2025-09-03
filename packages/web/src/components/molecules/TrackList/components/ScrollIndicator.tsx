@@ -1,6 +1,7 @@
 import { EntityId } from '@reduxjs/toolkit';
 import React, { useMemo, CSSProperties } from 'react';
 
+import { useFullHeightContainerContext } from '~/components/atoms/FullHeightContainer/FullHeightContainer';
 import { Track } from '~/types/library';
 
 const MOBILE_BREAKPOINT = 640;
@@ -9,14 +10,13 @@ const SCROLLBAR_WIDTH = 12;
 type ScrollIndicatorProps = {
   currentTrack: Track | null;
   trackIDs: EntityId[];
-  height: number;
 };
 
 export function ScrollIndicator({
   currentTrack,
   trackIDs,
-  height,
 }: ScrollIndicatorProps) {
+  const { height } = useFullHeightContainerContext();
   const style = useMemo((): CSSProperties | null => {
     if (!currentTrack || !height) return null;
     const currentTrackIndex = trackIDs.findIndex(

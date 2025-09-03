@@ -1,9 +1,9 @@
 import { EntityId } from '@reduxjs/toolkit';
-import React, { forwardRef, useRef, useEffect, useMemo } from 'react';
+import React, { forwardRef, useRef, useEffect } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 
-import { useAvailableDimensions } from '~/hooks';
+import { FullHeightContainer } from '~/components/atoms/FullHeightContainer/FullHeightContainer';
 import { useTrackSelection } from '~/hooks/useTrackSelection';
 import { Track } from '~/types/library';
 
@@ -62,8 +62,6 @@ export const TrackList = ({
   const { selectedTracks, handleTrackSelection, clearSelection } =
     useTrackSelection(trackIDs);
   const listRef = useRef<FixedSizeList>(null);
-  const { refToMeasure: libraryRef, height } =
-    useAvailableDimensions(containerId);
 
   // Add effect to scroll to track when scrollToTrack changes
   useEffect(() => {
@@ -88,16 +86,14 @@ export const TrackList = ({
   return (
     <>
       <TrackListHeader />
-      <div
+      <FullHeightContainer
+        idToMeasure={containerId}
         className="border-t border-border relative bg-card transition-colors"
-        style={{ height }}
-        ref={libraryRef}
       >
         <div className="h-full">
           <ScrollIndicator
             currentTrack={currentTrack ?? null}
             trackIDs={trackIDs}
-            height={height ?? 0}
           />
           <AutoSizer>
             {({ width, height: innerHeight }) => (
@@ -139,7 +135,7 @@ export const TrackList = ({
             )}
           </AutoSizer>
         </div>
-      </div>
+      </FullHeightContainer>
       <SelectionToolbar
         selectedTracks={selectedTracks}
         onAddToPlaylist={handleAddToPlaylist}
