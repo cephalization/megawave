@@ -9,7 +9,14 @@ import { openAPISpecs } from 'hono-openapi';
 
 import { HOST, MUSIC_LIBRARY_PATH, PORT, DATABASE_PATH } from './env.js';
 import { Library } from './library.js';
-import { artRouter, rescanRouter, statusRouter, songsRouter } from './router.js';
+import {
+  albumsRouter,
+  artRouter,
+  artistsRouter,
+  rescanRouter,
+  statusRouter,
+  songsRouter,
+} from './router.js';
 import { getServerUrl } from './util.js';
 
 declare module 'hono' {
@@ -42,6 +49,8 @@ const router = app.route(
   libraryRouter
     .route('/', statusRouter)
     .route('/', rescanRouter)
+    .route('/', albumsRouter)
+    .route('/', artistsRouter)
     .route('/', songsRouter)
     .route('/', artRouter),
 );

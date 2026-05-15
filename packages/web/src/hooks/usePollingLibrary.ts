@@ -12,11 +12,11 @@ export const usePollingLibrary = () => {
     async function init() {
       try {
         const status = await getStatus();
-        if (status === 'loading') {
+        if (status.scanActive) {
           // fetch status and library on 1 second timer until status is "idle"
           async function check() {
             const status = await getStatus();
-            if (status !== 'idle') {
+            if (status.scanActive) {
               setTimeout(check, 2500);
             } else {
               setLoading(false);

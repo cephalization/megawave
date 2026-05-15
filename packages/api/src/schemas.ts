@@ -24,6 +24,8 @@ export type PaginatedResponse<T> = {
 
 export const trackSchema = z.object({
   id: z.number(),
+  albumId: z.number().nullable(),
+  artistId: z.number().nullable(),
   name: z.string(),
   link: z.string(),
   artist: z.array(z.string()).nullable(),
@@ -42,3 +44,23 @@ export const trackSchema = z.object({
 });
 
 export type Track = z.infer<typeof trackSchema>;
+
+export const albumSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  artist: z.array(z.string()).nullable(),
+  art: z.array(z.string()).nullable(),
+  trackCount: z.number(),
+});
+
+export type Album = z.infer<typeof albumSchema>;
+
+export const artistSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  art: z.array(z.string()).nullable(),
+  trackCount: z.number(),
+  albumCount: z.number(),
+});
+
+export type Artist = z.infer<typeof artistSchema>;

@@ -15,12 +15,22 @@ export async function get({
   search,
   sort,
   subkeyfilter,
-}: { search?: string; sort?: string; subkeyfilter?: string } = {}) {
+  albumId,
+  artistId,
+}: {
+  search?: string;
+  sort?: string;
+  subkeyfilter?: string;
+  albumId?: number;
+  artistId?: number;
+} = {}) {
   const res = await client.api.library.songs.$get({
     query: {
       filter: !!search ? search : undefined,
       sort: !!sort ? sort : undefined,
       subkeyfilter: !!subkeyfilter ? subkeyfilter : undefined,
+      albumId: albumId?.toString(),
+      artistId: artistId?.toString(),
     },
   });
 
@@ -33,6 +43,34 @@ export async function get({
   }
 }
 
+export async function getAlbums({ search }: { search?: string } = {}) {
+  const res = await client.api.library.albums.$get({
+    query: { filter: !!search ? search : undefined },
+  });
+
+  if (res.status === 500) {
+    const error = await res.json();
+    throw new Error(error.error);
+  }
+
+  return res.json();
+}
+
+export async function getArtists({ search }: { search?: string } = {}) {
+  const res = await client.api.library.artists.$get({
+    query: { filter: !!search ? search : undefined },
+  });
+
+  if (res.status === 500) {
+    const error = await res.json();
+    throw new Error(error.error);
+  }
+
+  return res.json();
+}
+
 export const libraryApi = {
   get,
+  getAlbums,
+  getArtists,
 };

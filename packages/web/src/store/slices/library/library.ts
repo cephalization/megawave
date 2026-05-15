@@ -1,10 +1,11 @@
 import { createSlice, EntityId, SerializedError } from '@reduxjs/toolkit';
 
 import { makeFilterKey } from '~/store/slices/library/utils';
+import type { Album, Artist } from '~/types/library';
 
 import { playerActions } from '../player';
 import { libraryAdapter } from './adapter';
-import { fetchLibrary } from './thunks';
+import { fetchAlbums, fetchArtists, fetchLibrary } from './thunks';
 
 export type LibraryState = {
   loading: boolean;
@@ -12,8 +13,12 @@ export type LibraryState = {
   error: SerializedError | null;
   search: string;
   subkeyfilter: string;
+  albumId: number | null;
+  artistId: number | null;
   sort: string;
-  viewMode: 'tracks' | 'albums'; // Add view mode
+  viewMode: 'tracks' | 'albums' | 'artists';
+  albums: Album[];
+  artists: Artist[];
   activeTrackIndex: number | null;
   queue: EntityId[];
   history: EntityId[];
@@ -28,8 +33,12 @@ const initialState = libraryAdapter.getInitialState<LibraryState>({
   error: null,
   search: '',
   subkeyfilter: '',
+  albumId: null,
+  artistId: null,
   sort: '',
   viewMode: 'tracks', // Default to tracks view
+  albums: [],
+  artists: [],
   tracksByFilter: {},
   scrollPositions: {},
   // queue
@@ -47,16 +56,26 @@ export const librarySlice = createSlice({
     setLibraryFilter(
       state,
       {
-        payload: { search, subkeyfilter, sort },
-      }: { payload: { search?: string; subkeyfilter?: string; sort?: string } },
+        payload: { search, subkeyfilter, albumId, artistId, sort },
+      }: {
+        payload: {
+          search?: string;
+          subkeyfilter?: string;
+          albumId?: number | null;
+          artistId?: number | null;
+          sort?: string;
+        };
+      },
     ) {
       state.search = search ?? state.search;
       state.subkeyfilter = subkeyfilter ?? state.subkeyfilter;
+      state.albumId = albumId === undefined ? state.albumId : albumId;
+      state.artistId = artistId === undefined ? state.artistId : artistId;
       state.sort = sort ?? state.sort;
     },
     setViewMode(
       state,
-      { payload: viewMode }: { payload: 'tracks' | 'albums' },
+      { payload: viewMode }: { payload: 'tracks' | 'albums' | 'artists' },
     ) {
       state.viewMode = viewMode;
     },
@@ -68,6 +87,8 @@ export const librarySlice = createSlice({
       const filterKey = makeFilterKey(
         state.search,
         state.subkeyfilter,
+        state.albumId,
+        state.artistId,
         state.sort,
       );
       state.scrollPositions[filterKey] = position;
@@ -106,9 +127,17 @@ export const librarySlice = createSlice({
       const filterKey = makeFilterKey(
         payload.search ?? '',
         payload.subkeyfilter ?? '',
+        payload.albumId ?? null,
+        payload.artistId ?? null,
         payload.sort ?? '',
       );
       state.tracksByFilter[filterKey] = payload.tracks.map((t) => t.id);
+    });
+    builder.addCase(fetchAlbums.fulfilled, (state, { payload }) => {
+      state.albums = payload.albums;
+    });
+    builder.addCase(fetchArtists.fulfilled, (state, { payload }) => {
+      state.artists = payload.artists;
     });
     builder.addCase(fetchLibrary.pending, (state) => {
       state.loading = true;

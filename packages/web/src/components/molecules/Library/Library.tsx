@@ -16,6 +16,7 @@ import { getArrayString } from '~/utils/trackMeta';
 import { TrackList } from '../TrackList';
 import { WaveLoader } from '../WaveLoader';
 import { AlbumList } from './AlbumList';
+import { ArtistList } from './ArtistList';
 
 export function Library() {
   const dispatch = useAppDispatch();
@@ -38,7 +39,9 @@ export function Library() {
   const isLoadingRef = useRef(isLoading);
   // Keep redux state in sync with URL params
   useEffect(() => {
-    setViewMode(viewMode as 'tracks' | 'albums');
+    setViewMode(
+      viewMode === 'albums' || viewMode === 'artists' ? viewMode : 'tracks',
+    );
   }, [viewMode, setViewMode]);
 
   useEffect(() => {
@@ -89,8 +92,10 @@ export function Library() {
           currentTrack={currentTrack}
           scrollToTrack={scrollToTrack}
         />
+      ) : viewMode === 'artists' ? (
+        <ArtistList containerId="library-container" />
       ) : (
-        <AlbumList onPlayTrackId={play} containerId="library-container" />
+        <AlbumList containerId="library-container" />
       )}
     </>
   );

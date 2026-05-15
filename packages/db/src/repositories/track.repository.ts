@@ -1,10 +1,16 @@
-import { count, eq, inArray } from 'drizzle-orm';
+import { and, count, eq, inArray, like, or } from 'drizzle-orm';
 
 import type { DB } from '../index.js';
 import { trackArt, tracks } from '../schema.js';
 
 export type TrackRow = typeof tracks.$inferSelect;
 export type TrackInsert = typeof tracks.$inferInsert;
+
+export type TrackListOptions = {
+  filter?: string;
+  albumId?: number;
+  artistId?: number;
+};
 
 export class TrackRepository {
   constructor(private readonly db: DB) {}
@@ -32,11 +38,28 @@ export class TrackRepository {
     return rows[0] ?? null;
   }
 
-  async allWithArtIds() {
+  async allWithArtIds(options: TrackListOptions = {}) {
+    const conditions = [];
+
+    if (options.albumId != null) conditions.push(eq(tracks.albumId, options.albumId));
+    if (options.artistId != null)
+      conditions.push(eq(tracks.primaryArtistId, options.artistId));
+    if (options.filter) {
+      const term = `%${options.filter}%`;
+      conditions.push(
+        or(
+          like(tracks.title, term),
+          like(tracks.albumTitle, term),
+          like(tracks.primaryArtistName, term),
+        ),
+      );
+    }
+
     return this.db
       .select({ track: tracks, artId: trackArt.id })
       .from(tracks)
-      .leftJoin(trackArt, eq(trackArt.trackId, tracks.id));
+      .leftJoin(trackArt, eq(trackArt.trackId, tracks.id))
+      .where(conditions.length ? and(...conditions) : undefined);
   }
 
   async upsertByContentHash(values: TrackInsert) {

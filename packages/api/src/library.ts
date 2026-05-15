@@ -15,7 +15,7 @@ import {
 import type { DB } from 'db';
 
 import { AudioTrack, generateContentHash, hasAudioFileExtension } from './audio.js';
-import type { PaginationMeta, Track } from './schemas.js';
+import type { Album, Artist, PaginationMeta, Track } from './schemas.js';
 
 export const scanProgressSchema = z.object({
   status: z.enum(['idle', 'loading', 'error']),
@@ -109,19 +109,25 @@ export class Library {
     filter,
     sort,
     subkeyfilter,
+    albumId,
+    artistId,
   }: {
     limit?: number;
     offset?: number;
     filter?: string;
     sort?: string;
     subkeyfilter?: string;
+    albumId?: number;
+    artistId?: number;
   }): Promise<{
     data: Track[];
     meta: PaginationMeta;
   }> {
-    let allTracks = this.serializeRows(await this.getRowsWithArt());
+    let allTracks = this.serializeRows(
+      await this.getRowsWithArt({ filter, albumId, artistId }),
+    );
 
-    if (filter) {
+    if (filter && albumId == null && artistId == null) {
       const sanitizedFilterQuery = filter.toLowerCase();
       const groupedByMatchingKey: {
         artist: Track[];
@@ -228,6 +234,73 @@ export class Library {
         previous: null,
       },
     };
+  }
+
+  public async getAlbums(filter?: string): Promise<Album[]> {
+    const rows = await this.getRowsWithArt({ filter });
+    const albums = new Map<number, Album & { trackIds: Set<number> }>();
+
+    for (const row of rows) {
+      if (row.track.albumId == null || row.track.albumTitle == null) continue;
+      const existing = albums.get(row.track.albumId);
+      const album = existing ?? {
+        id: row.track.albumId,
+        name: row.track.albumTitle,
+        artist: row.track.primaryArtistName ? [row.track.primaryArtistName] : null,
+        art: null,
+        trackCount: 0,
+        trackIds: new Set<number>(),
+      };
+
+      album.trackIds.add(row.track.id);
+      if (!album.art && row.artIds.length) {
+        album.art = row.artIds.map((id) => `/api/library/art/${id}`);
+      }
+      albums.set(row.track.albumId, album);
+    }
+
+    return [...albums.values()]
+      .map(({ trackIds, ...album }) => ({ ...album, trackCount: trackIds.size }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  public async getArtists(filter?: string): Promise<Artist[]> {
+    const rows = await this.getRowsWithArt({ filter });
+    const artists = new Map<
+      number,
+      Artist & { trackIds: Set<number>; albumIds: Set<number> }
+    >();
+
+    for (const row of rows) {
+      if (row.track.primaryArtistId == null || row.track.primaryArtistName == null) {
+        continue;
+      }
+      const existing = artists.get(row.track.primaryArtistId);
+      const artist = existing ?? {
+        id: row.track.primaryArtistId,
+        name: row.track.primaryArtistName,
+        art: null,
+        trackCount: 0,
+        albumCount: 0,
+        trackIds: new Set<number>(),
+        albumIds: new Set<number>(),
+      };
+
+      artist.trackIds.add(row.track.id);
+      if (row.track.albumId != null) artist.albumIds.add(row.track.albumId);
+      if (!artist.art && row.artIds.length) {
+        artist.art = row.artIds.map((id) => `/api/library/art/${id}`);
+      }
+      artists.set(row.track.primaryArtistId, artist);
+    }
+
+    return [...artists.values()]
+      .map(({ trackIds, albumIds, ...artist }) => ({
+        ...artist,
+        trackCount: trackIds.size,
+        albumCount: albumIds.size,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   public async load(pathsToScan: string[]): Promise<LoadProgress> {
@@ -386,8 +459,8 @@ export class Library {
     }
   }
 
-  private async getRowsWithArt(): Promise<SerializedRow[]> {
-    const rows = await this.trackRepo.allWithArtIds();
+  private async getRowsWithArt(options?: Parameters<TrackRepository['allWithArtIds']>[0]): Promise<SerializedRow[]> {
+    const rows = await this.trackRepo.allWithArtIds(options);
     const byId = new Map<number, SerializedRow>();
 
     for (const row of rows) {
@@ -415,6 +488,8 @@ export class Library {
 
     return {
       id: track.id,
+      albumId: track.albumId,
+      artistId: track.primaryArtistId,
       name: track.title || track.fileName,
       album: track.albumTitle ? [track.albumTitle] : null,
       artist: track.primaryArtistName ? [track.primaryArtistName] : null,

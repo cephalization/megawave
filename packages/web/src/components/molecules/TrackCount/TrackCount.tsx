@@ -1,6 +1,7 @@
 import {
   ArrowPathIcon,
   ListBulletIcon,
+  UserGroupIcon,
   RectangleStackIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
@@ -11,7 +12,11 @@ import { useSearchParams } from 'react-router';
 import { useAppDispatch, useAppSelector } from '~/hooks';
 import { libraryActions } from '~/store/slices/library/library';
 import { librarySelectors } from '~/store/slices/library/selectors';
-import { fetchLibrary } from '~/store/slices/library/thunks';
+import {
+  fetchAlbums,
+  fetchArtists,
+  fetchLibrary,
+} from '~/store/slices/library/thunks';
 
 type Filter = {
   field: string;
@@ -24,15 +29,24 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
   const trackCount = useAppSelector(
     librarySelectors.selectFilteredTrackIdCount,
   );
+  const albumCount = useAppSelector(librarySelectors.selectAlbums).length;
+  const artistCount = useAppSelector(librarySelectors.selectArtists).length;
 
   // Pull filters from URL
   const subkeyfilter = searchParams.get('subkeyfilter');
   const searchQuery = searchParams.get('q');
   const sort = searchParams.get('sort');
   const viewMode = searchParams.get('view') || 'tracks';
+  const albumId = searchParams.get('albumId');
+  const artistId = searchParams.get('artistId');
 
   const debouncedFetchLibrary = useMemo(
-    () => debounce(() => dispatch(fetchLibrary({ fallback: true })), 300),
+    () =>
+      debounce((view: string) => {
+        if (view === 'albums') dispatch(fetchAlbums({ fallback: true }));
+        else if (view === 'artists') dispatch(fetchArtists({ fallback: true }));
+        else dispatch(fetchLibrary({ fallback: true }));
+      }, 300),
     [dispatch],
   );
 
@@ -42,9 +56,33 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
     dispatch(
       libraryActions.setLibraryFilter({ subkeyfilter: subkeyfilter ?? '' }),
     );
+    dispatch(
+      libraryActions.setLibraryFilter({
+        albumId: albumId == null ? null : Number(albumId),
+      }),
+    );
+    dispatch(
+      libraryActions.setLibraryFilter({
+        artistId: artistId == null ? null : Number(artistId),
+      }),
+    );
     dispatch(libraryActions.setLibraryFilter({ sort: sort ?? '' }));
-    debouncedFetchLibrary();
-  }, [subkeyfilter, searchQuery, sort, dispatch, debouncedFetchLibrary]);
+    dispatch(
+      libraryActions.setViewMode(
+        viewMode === 'albums' || viewMode === 'artists' ? viewMode : 'tracks',
+      ),
+    );
+    debouncedFetchLibrary(viewMode);
+  }, [
+    albumId,
+    artistId,
+    subkeyfilter,
+    searchQuery,
+    sort,
+    viewMode,
+    dispatch,
+    debouncedFetchLibrary,
+  ]);
 
   // only clear the filter based on the filter field
   const clearFilter = (e: React.MouseEvent, filter: Filter) => {
@@ -62,8 +100,10 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
       });
     } else {
       setSearchParams((p) => {
-        p.delete('subkeyfilter');
-        return p;
+      p.delete('subkeyfilter');
+      p.delete('albumId');
+      p.delete('artistId');
+      return p;
       });
     }
   };
@@ -74,6 +114,8 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
       const [field, ...value] = subkeyfilter.split('-');
       filters.push({ field, value: decodeURIComponent(value.join('-')) });
     }
+    if (albumId) filters.push({ field: 'album', value: `#${albumId}` });
+    if (artistId) filters.push({ field: 'artist', value: `#${artistId}` });
     if (searchQuery) {
       filters.push({ field: 'search', value: searchQuery });
     }
@@ -108,9 +150,18 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
                 </button>
               </span>
             ))}
-          Tracks:{' '}
+          {viewMode === 'albums'
+            ? 'Albums'
+            : viewMode === 'artists'
+              ? 'Artists'
+              : 'Tracks'}
+          :{' '}
           <span className="text-foreground font-bold font-mono text-end">
-            {trackCount}
+            {viewMode === 'albums'
+              ? albumCount
+              : viewMode === 'artists'
+                ? artistCount
+                : trackCount}
           </span>
         </h2>
       </div>
@@ -119,6 +170,8 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
           onClick={() =>
             setSearchParams((p) => {
               p.set('view', 'tracks');
+              p.delete('albumId');
+              p.delete('artistId');
               return p;
             })
           }
@@ -135,6 +188,8 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
           onClick={() =>
             setSearchParams((p) => {
               p.set('view', 'albums');
+              p.delete('albumId');
+              p.delete('artistId');
               return p;
             })
           }
@@ -146,6 +201,24 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
           title="Album view"
         >
           <RectangleStackIcon className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() =>
+            setSearchParams((p) => {
+              p.set('view', 'artists');
+              p.delete('albumId');
+              p.delete('artistId');
+              return p;
+            })
+          }
+          className={`p-2 rounded-md transition-colors ${
+            viewMode === 'artists'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent-foreground/10'
+          }`}
+          title="Artist view"
+        >
+          <UserGroupIcon className="h-5 w-5" />
         </button>
       </div>
     </div>

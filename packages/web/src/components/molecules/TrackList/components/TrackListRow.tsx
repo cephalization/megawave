@@ -75,15 +75,23 @@ export function TrackListRow({
   };
 
   const handleArtistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setSearchParams({
-      subkeyfilter: `artist-${encodeURIComponent(getArrayString(artist))}`,
+      view: 'tracks',
+      ...(track.artistId == null
+        ? { subkeyfilter: `artist-${encodeURIComponent(getArrayString(artist))}` }
+        : { artistId: track.artistId.toString() }),
     });
     onClickField('artist');
   };
 
   const handleAlbumClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setSearchParams({
-      subkeyfilter: `album-${encodeURIComponent(getArrayString(album))}`,
+      view: 'tracks',
+      ...(track.albumId == null
+        ? { subkeyfilter: `album-${encodeURIComponent(getArrayString(album))}` }
+        : { albumId: track.albumId.toString() }),
     });
     onClickField('album');
   };

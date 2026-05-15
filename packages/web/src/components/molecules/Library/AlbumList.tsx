@@ -1,4 +1,3 @@
-import { EntityId } from '@reduxjs/toolkit';
 import { useRef } from 'react';
 import { useSearchParams } from 'react-router';
 
@@ -6,55 +5,42 @@ import { AlbumArt } from '~/components/atoms/AlbumArt/AlbumArt';
 import { useAppSelector } from '~/hooks';
 import { useAvailableDimensions } from '~/hooks';
 import { librarySelectors } from '~/store/slices/library/selectors';
+import type { Album } from '~/types/library';
 import { getArrayString } from '~/utils/trackMeta';
 
 type AlbumListProps = {
-  onPlayTrackId: (arg: {
-    trackId?: EntityId | null;
-    requeue?: boolean;
-    context?: 'library' | 'history' | 'queue' | 'album';
-    addHistory?: boolean;
-  }) => void;
   containerId?: string;
 };
 
 export function AlbumList({
-  onPlayTrackId,
   containerId = 'library-container',
 }: AlbumListProps) {
-  const albums = useAppSelector(librarySelectors.selectAlbumGroups);
+  const albums = useAppSelector(librarySelectors.selectAlbums);
   const { refToMeasure: libraryRef, height } =
     useAvailableDimensions(containerId);
   const [, setSearchParams] = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleAlbumClick = (e: React.MouseEvent, album: string) => {
+  const handleAlbumClick = (e: React.MouseEvent, album: Album) => {
     e.stopPropagation();
     setSearchParams((params) => {
       params.set('view', 'tracks');
-      params.set('subkeyfilter', `album-${encodeURIComponent(album)}`);
+      params.set('albumId', album.id.toString());
+      params.delete('artistId');
+      params.delete('subkeyfilter');
       return params;
     });
   };
 
-  const handleArtistClick = (e: React.MouseEvent, artist: string[]) => {
+  const handleArtistClick = (e: React.MouseEvent, album: Album) => {
     e.stopPropagation();
+    if (!album.artist?.[0]) return;
     setSearchParams((params) => {
       params.set('view', 'tracks');
-      params.set(
-        'subkeyfilter',
-        `artist-${encodeURIComponent(getArrayString(artist))}`,
-      );
+      params.set('subkeyfilter', `artist-${encodeURIComponent(album.artist![0])}`);
+      params.delete('albumId');
+      params.delete('artistId');
       return params;
-    });
-  };
-
-  const handlePlayAlbum = (album: { trackIds: EntityId[] }) => {
-    onPlayTrackId({
-      trackId: album.trackIds[0],
-      requeue: true,
-      context: 'album',
-      addHistory: true,
     });
   };
 
@@ -73,7 +59,7 @@ export function AlbumList({
             <div
               key={album.name}
               className="flex flex-col items-center group cursor-pointer"
-              onClick={() => handlePlayAlbum(album)}
+              onClick={(e) => handleAlbumClick(e, album)}
             >
               <div className="relative w-full aspect-square mb-4">
                 <AlbumArt
@@ -106,19 +92,19 @@ export function AlbumList({
               </div>
               <h3
                 className="text-foreground font-medium text-center line-clamp-1 w-full hover:text-primary cursor-pointer"
-                onClick={(e) => handleAlbumClick(e, album.name)}
+                 onClick={(e) => handleAlbumClick(e, album)}
               >
                 {album.name}
               </h3>
               <p
                 className="text-muted-foreground text-sm text-center line-clamp-1 w-full hover:text-primary cursor-pointer"
-                onClick={(e) => handleArtistClick(e, album.artist)}
+                onClick={(e) => handleArtistClick(e, album)}
               >
                 {getArrayString(album.artist)}
               </p>
               <p className="text-muted-foreground text-xs mt-1">
-                {album.trackIds.length} track
-                {album.trackIds.length !== 1 ? 's' : ''}
+                {album.trackCount} track
+                {album.trackCount !== 1 ? 's' : ''}
               </p>
             </div>
           ))}

@@ -34,7 +34,17 @@ export function filterTracksByValue(
 export const makeFilterKey = (
   search: string,
   subkeyfilter: string,
+  albumId: number | null,
+  artistId: number | null,
   sort: string,
 ) => {
-  return [search, subkeyfilter, sort].filter(Boolean).join('|');
+  return [
+    search,
+    subkeyfilter,
+    albumId == null ? '' : `album:${albumId}`,
+    artistId == null ? '' : `artist:${artistId}`,
+    sort,
+  ]
+    .filter(Boolean)
+    .join('|');
 };

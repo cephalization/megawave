@@ -22,6 +22,8 @@ const selectLibraryLoading = (state: RootState) => state.library.loading;
 const selectLibrarySearch = (state: RootState) => state.library.search;
 const selectLibrarySubkeyfilter = (state: RootState) =>
   state.library.subkeyfilter;
+const selectLibraryAlbumId = (state: RootState) => state.library.albumId;
+const selectLibraryArtistId = (state: RootState) => state.library.artistId;
 const selectLibrarySort = (state: RootState) => state.library.sort;
 const selectLibraryQueue = (state: RootState) => state.library.queue;
 const selectLibraryActiveTrackIndex = (state: RootState) =>
@@ -35,11 +37,19 @@ const selectLibraryScrollPositions = (state: RootState) =>
 const selectFilteredTrackIds = createSelector(
   selectLibrarySearch,
   selectLibrarySubkeyfilter,
+  selectLibraryAlbumId,
+  selectLibraryArtistId,
   selectLibrarySort,
   selectLibraryTracksByFilter,
   selectTrackIds,
-  (search, subkeyfilter, sort, trackIDsByFilter, trackIDs) => {
-    const filterKey = makeFilterKey(search, subkeyfilter, sort);
+  (search, subkeyfilter, albumId, artistId, sort, trackIDsByFilter) => {
+    const filterKey = makeFilterKey(
+      search,
+      subkeyfilter,
+      albumId,
+      artistId,
+      sort,
+    );
 
     return trackIDsByFilter[filterKey] || EMPTY_ARRAY;
   },
@@ -98,10 +108,18 @@ const selectLibraryActiveTrackId = createSelector(
 const selectCurrentScrollPosition = createSelector(
   selectLibrarySearch,
   selectLibrarySubkeyfilter,
+  selectLibraryAlbumId,
+  selectLibraryArtistId,
   selectLibrarySort,
   selectLibraryScrollPositions,
-  (search, subkeyfilter, sort, scrollPositions) => {
-    const filterKey = makeFilterKey(search, subkeyfilter, sort);
+  (search, subkeyfilter, albumId, artistId, sort, scrollPositions) => {
+    const filterKey = makeFilterKey(
+      search,
+      subkeyfilter,
+      albumId,
+      artistId,
+      sort,
+    );
 
     return scrollPositions[filterKey] || 0;
   },
@@ -110,8 +128,11 @@ const selectCurrentScrollPosition = createSelector(
 const selectLibraryFilterKey = createSelector(
   selectLibrarySearch,
   selectLibrarySubkeyfilter,
+  selectLibraryAlbumId,
+  selectLibraryArtistId,
   selectLibrarySort,
-  (search, subkeyfilter, sort) => makeFilterKey(search, subkeyfilter, sort),
+  (search, subkeyfilter, albumId, artistId, sort) =>
+    makeFilterKey(search, subkeyfilter, albumId, artistId, sort),
 );
 
 export const librarySelectors = {
@@ -126,6 +147,8 @@ export const librarySelectors = {
   selectLibraryLoading,
   selectLibrarySearch,
   selectLibrarySubkeyfilter,
+  selectLibraryAlbumId,
+  selectLibraryArtistId,
   selectLibrarySort,
   selectLibraryQueue,
   selectLibraryActiveTrackIndex,
@@ -140,6 +163,8 @@ export const librarySelectors = {
   selectLibraryFilterKey,
   selectLibraryError: (state: RootState) => state.library.error,
   selectLibraryViewMode: (state: RootState) => state.library.viewMode,
+  selectAlbums: (state: RootState) => state.library.albums,
+  selectArtists: (state: RootState) => state.library.artists,
   selectTracksByIds: (state: RootState, ids: EntityId[]) => {
     const entities = libraryAdapter
       .getSelectors()

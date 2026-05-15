@@ -12,7 +12,13 @@ import {
   paginatedJSONResponse,
   strictJSONResponse,
 } from './responses.js';
-import { paginatedResponseSchema, trackSchema, type Track } from './schemas.js';
+import {
+  albumSchema,
+  artistSchema,
+  paginatedResponseSchema,
+  trackSchema,
+  type Track,
+} from './schemas.js';
 import { createStreamBody, getByteRangeBounds } from './stream.js';
 
 export const statusRouter = new Hono().basePath('/status').get(
@@ -113,6 +119,8 @@ export const songsRouter = new Hono()
         filter: z.string().optional(),
         sort: z.string().optional(),
         subkeyfilter: z.string().optional(),
+        albumId: z.coerce.number().optional(),
+        artistId: z.coerce.number().optional(),
       }),
     ),
     async (c) => {
@@ -124,6 +132,8 @@ export const songsRouter = new Hono()
         filter: query.filter,
         sort: query.sort,
         subkeyfilter: query.subkeyfilter,
+        albumId: query.albumId,
+        artistId: query.artistId,
       });
 
       return paginatedJSONResponse(c, trackSchema, tracks.data, {
@@ -196,6 +206,110 @@ export const songsRouter = new Hono()
       c.header('Content-Range', `bytes ${start}-${end}/${totalSize}`);
 
       return c.body(createStreamBody(songStream), 206);
+    },
+  );
+
+export const albumsRouter = new Hono()
+  .basePath('/albums')
+  .get(
+    '/',
+    describeRoute({
+      tags: ['albums'],
+      summary: 'List albums',
+      description: 'List albums with track counts and representative art.',
+      responses: {
+        200: {
+          description: 'Albums',
+          content: {
+            'application/json': {
+              schema: resolver(z.array(albumSchema)),
+            },
+          },
+        },
+      },
+    }),
+    validator('query', z.object({ filter: z.string().optional() })),
+    async (c) => {
+      const library = c.get('library');
+      const query = c.req.valid('query');
+      return strictJSONResponse(c, z.array(albumSchema), await library.getAlbums(query.filter));
+    },
+  )
+  .get(
+    '/:id/tracks',
+    describeRoute({
+      tags: ['albums'],
+      summary: 'List album tracks',
+      description: 'List tracks for an album.',
+      responses: {
+        200: {
+          description: 'Tracks',
+          content: {
+            'application/json': {
+              schema: resolver(paginatedResponseSchema(trackSchema)),
+            },
+          },
+        },
+      },
+    }),
+    validator('param', z.object({ id: z.coerce.number() })),
+    async (c) => {
+      const library = c.get('library');
+      const albumId = c.req.valid('param').id;
+      const tracks = await library.getEntries({ albumId, sort: 'album' });
+      return paginatedJSONResponse(c, trackSchema, tracks.data, tracks.meta);
+    },
+  );
+
+export const artistsRouter = new Hono()
+  .basePath('/artists')
+  .get(
+    '/',
+    describeRoute({
+      tags: ['artists'],
+      summary: 'List artists',
+      description: 'List artists with track and album counts.',
+      responses: {
+        200: {
+          description: 'Artists',
+          content: {
+            'application/json': {
+              schema: resolver(z.array(artistSchema)),
+            },
+          },
+        },
+      },
+    }),
+    validator('query', z.object({ filter: z.string().optional() })),
+    async (c) => {
+      const library = c.get('library');
+      const query = c.req.valid('query');
+      return strictJSONResponse(c, z.array(artistSchema), await library.getArtists(query.filter));
+    },
+  )
+  .get(
+    '/:id/tracks',
+    describeRoute({
+      tags: ['artists'],
+      summary: 'List artist tracks',
+      description: 'List tracks for an artist.',
+      responses: {
+        200: {
+          description: 'Tracks',
+          content: {
+            'application/json': {
+              schema: resolver(paginatedResponseSchema(trackSchema)),
+            },
+          },
+        },
+      },
+    }),
+    validator('param', z.object({ id: z.coerce.number() })),
+    async (c) => {
+      const library = c.get('library');
+      const artistId = c.req.valid('param').id;
+      const tracks = await library.getEntries({ artistId, sort: 'album' });
+      return paginatedJSONResponse(c, trackSchema, tracks.data, tracks.meta);
     },
   );
 

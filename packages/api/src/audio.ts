@@ -318,6 +318,8 @@ export class AudioTrack {
 
     return {
       id: this.id,
+      albumId: null,
+      artistId: null,
       name: this.title || this.fileName,
       album: this.album || null,
       artist: this.artists || null,
