@@ -2,11 +2,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import React, { useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 
-import { useAppDispatch } from '~/hooks';
-import { libraryActions } from '~/store/slices/library/library';
-
 export function TrackSearch() {
-  const dispatch = useAppDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const filter = searchParams.get('q') || '';
 
@@ -34,7 +30,6 @@ export function TrackSearch() {
         className="w-full flex md:ml-0"
         onSubmit={(e) => {
           e.preventDefault();
-          dispatch(libraryActions.setLibraryFilter({ search: filter }));
         }}
       >
         <label htmlFor="search_field" className="sr-only">

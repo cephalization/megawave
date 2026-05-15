@@ -1,15 +1,5 @@
-import { useAppSelector } from '~/hooks';
-import { librarySelectors } from '~/store/slices/library/selectors';
+import { selectCurrentTrack, usePlayerStore } from '~/store/playerStore';
 
 export const useCurrentTrack = () => {
-  const activeTrackId = useAppSelector(
-    librarySelectors.selectLibraryActiveTrackId,
-  );
-  const currentTrack = useAppSelector((state) =>
-    activeTrackId
-      ? librarySelectors.selectTrackById(state, activeTrackId)
-      : null,
-  );
-
-  return currentTrack;
+  return usePlayerStore(selectCurrentTrack);
 };

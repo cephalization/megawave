@@ -5,17 +5,16 @@ import {
   QueueListIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { EntityId } from '@reduxjs/toolkit';
 import clsx from 'clsx';
 import React from 'react';
 
-import { useAppDispatch } from '~/hooks';
-import { libraryActions } from '~/store/slices/library/library';
+import { usePlayerStore } from '~/store/playerStore';
+import type { Track } from '~/types/library';
 
 type SelectionToolbarProps = {
-  selectedTracks: EntityId[];
-  onAddToPlaylist: (trackIds: EntityId[]) => void;
-  onQueueTracks: (trackIds: EntityId[]) => void;
+  selectedTracks: Track['id'][];
+  onAddToPlaylist: (trackIds: Track['id'][]) => void;
+  onQueueTracks: (trackIds: Track['id'][]) => void;
 };
 
 export function SelectionToolbar({
@@ -23,7 +22,9 @@ export function SelectionToolbar({
   onAddToPlaylist,
   onQueueTracks,
 }: SelectionToolbarProps) {
-  const dispatch = useAppDispatch();
+  const clearSelectedTrackIds = usePlayerStore(
+    (state) => state.clearSelectedTrackIds,
+  );
 
   if (selectedTracks.length === 0) return null;
 
@@ -57,7 +58,7 @@ export function SelectionToolbar({
             <QueueListIcon className="h-5 w-5" />
           </button>
           <button
-            onClick={() => dispatch(libraryActions.clearTrackSelection())}
+            onClick={clearSelectedTrackIds}
             className="p-2 hover:bg-accent-foreground hover:text-accent rounded-full transition-colors"
             title="Clear selection"
           >

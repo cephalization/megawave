@@ -1,7 +1,6 @@
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
 import { SpeakerWaveIcon } from '@heroicons/react/24/outline';
-import debounce from 'lodash.debounce';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { VolumeSlider } from '~/components/atoms/VolumeSlider';
 
@@ -10,28 +9,7 @@ type VolumeControlProps = {
   onChange: (volume: number) => void;
 };
 
-const VOLUME_KEY = 'mw-volume';
-
-const updateVolume = (volume: number) =>
-  debounce(() => localStorage.setItem(VOLUME_KEY, volume.toString()), 1000);
-
 export const VolumeControl = ({ volume, onChange }: VolumeControlProps) => {
-  // get volume from local storage and sync with redux on mount
-  useEffect(() => {
-    try {
-      const storedVolume = localStorage.getItem(VOLUME_KEY);
-      if (storedVolume) {
-        onChange(parseFloat(storedVolume));
-      }
-    } catch {
-      // did not update volume
-    }
-  }, [onChange]);
-
-  useEffect(() => {
-    updateVolume(volume);
-  }, [volume]);
-
   return (
     <>
       {/* Show inline on larger screens */}

@@ -1,4 +1,3 @@
-import { EntityId } from '@reduxjs/toolkit';
 import React, { useMemo, CSSProperties } from 'react';
 
 import { Track } from '~/types/library';
@@ -8,7 +7,7 @@ const SCROLLBAR_WIDTH = 12;
 
 type ScrollIndicatorProps = {
   currentTrack: Track | null;
-  trackIDs: EntityId[];
+  trackIDs: Track['id'][];
   height: number;
 };
 

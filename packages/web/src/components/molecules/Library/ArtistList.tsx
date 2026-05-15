@@ -2,17 +2,20 @@ import { useRef } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { AlbumArt } from '~/components/atoms/AlbumArt/AlbumArt';
-import { useAppSelector } from '~/hooks';
 import { useAvailableDimensions } from '~/hooks';
-import { librarySelectors } from '~/store/slices/library/selectors';
+import { useArtistsQuery } from '~/queries/hooks';
 import type { Artist } from '~/types/library';
 
 type ArtistListProps = {
   containerId?: string;
 };
 
-export function ArtistList({ containerId = 'library-container' }: ArtistListProps) {
-  const artists = useAppSelector(librarySelectors.selectArtists);
+export function ArtistList({
+  containerId = 'library-container',
+}: ArtistListProps) {
+  const [searchParams] = useSearchParams();
+  const artistsQuery = useArtistsQuery(searchParams.get('q') || undefined);
+  const artists = artistsQuery.data ?? [];
   const { refToMeasure: libraryRef, height } =
     useAvailableDimensions(containerId);
   const [, setSearchParams] = useSearchParams();
@@ -34,7 +37,10 @@ export function ArtistList({ containerId = 'library-container' }: ArtistListProp
       style={{ height }}
       ref={libraryRef}
     >
-      <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto">
+      <div
+        ref={scrollContainerRef}
+        className="absolute inset-0 overflow-y-auto"
+      >
         <div className="grid grid-cols-1 @md:grid-cols-3 @xl:grid-cols-4 @2xl:grid-cols-6 @7xl:grid-cols-8 @10xl:grid-cols-10 @12xl:grid-cols-12 gap-6 p-6">
           {artists.map((artist) => (
             <button

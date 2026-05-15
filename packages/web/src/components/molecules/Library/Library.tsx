@@ -1,16 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { bindActionCreators } from 'redux';
 
-import { useAppDispatch, useAppSelector } from '~/hooks';
 import { useCurrentTrack } from '~/hooks/useCurrentTrack';
-import { libraryActions } from '~/store/slices/library/library';
-import { librarySelectors } from '~/store/slices/library/selectors';
-import {
-  fetchFilteredLibrary,
-  fetchLibrary,
-} from '~/store/slices/library/thunks';
-import { playTrack } from '~/store/slices/player/player';
+import { useTracksQuery } from '~/queries/hooks';
+import { usePlayerStore } from '~/store/playerStore';
+import type { Track } from '~/types/library';
 import { getArrayString } from '~/utils/trackMeta';
 
 import { TrackList } from '../TrackList';
@@ -19,30 +13,28 @@ import { AlbumList } from './AlbumList';
 import { ArtistList } from './ArtistList';
 
 export function Library() {
-  const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
   const [scrollToTrack, setScrollToTrack] = useState<string | number | null>(
     null,
   );
 
-  const filterKey = useAppSelector(librarySelectors.selectLibraryFilterKey);
-  const trackIDs = useAppSelector(librarySelectors.selectFilteredTrackIds);
-  const isInitialized = useAppSelector(
-    librarySelectors.selectLibraryInitialized,
-  );
-  const isLoading = useAppSelector(librarySelectors.selectLibraryLoading);
+  const queryParams = {
+    search: searchParams.get('q') || undefined,
+    sort: searchParams.get('sort') || undefined,
+    subkeyfilter: searchParams.get('subkeyfilter') || undefined,
+    albumId: searchParams.get('albumId')
+      ? Number(searchParams.get('albumId'))
+      : undefined,
+    artistId: searchParams.get('artistId')
+      ? Number(searchParams.get('artistId'))
+      : undefined,
+  };
+  const tracksQuery = useTracksQuery(queryParams);
+  const tracks = tracksQuery.data ?? [];
   const viewMode = searchParams.get('view') || 'tracks';
   const currentTrack = useCurrentTrack();
-  const play = bindActionCreators(playTrack, dispatch);
-  const filterByField = bindActionCreators(fetchFilteredLibrary, dispatch);
-  const setViewMode = bindActionCreators(libraryActions.setViewMode, dispatch);
-  const isLoadingRef = useRef(isLoading);
-  // Keep redux state in sync with URL params
-  useEffect(() => {
-    setViewMode(
-      viewMode === 'albums' || viewMode === 'artists' ? viewMode : 'tracks',
-    );
-  }, [viewMode, setViewMode]);
+  const play = usePlayerStore((state) => state.play);
+  const [, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const handleScrollToTrack = (e: CustomEvent<string | number>) => {
@@ -63,13 +55,7 @@ export function Library() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!isLoadingRef.current) {
-      dispatch(fetchLibrary({ fallback: true }));
-    }
-  }, [dispatch, filterKey]);
-
-  if (!isInitialized) return <WaveLoader />;
+  if (tracksQuery.isPending && viewMode === 'tracks') return <WaveLoader />;
 
   const title = currentTrack
     ? `${[currentTrack.name, getArrayString(currentTrack.artist)].join(
@@ -84,10 +70,30 @@ export function Library() {
       {viewMode === 'tracks' ? (
         <TrackList
           containerId="library-container"
-          trackIDs={trackIDs}
+          tracks={tracks}
           onPlayTrackId={play}
-          onFilterLibrary={(field, trackId) => {
-            filterByField({ field, trackId, resetFilter: true });
+          onFilterLibrary={(field, track) => {
+            setSearchParams({
+              view: 'tracks',
+              ...(field === 'album' && track.albumId != null
+                ? { albumId: track.albumId.toString() }
+                : {}),
+              ...(field === 'artist' && track.artistId != null
+                ? { artistId: track.artistId.toString() }
+                : {}),
+              ...(field === 'album' && track.albumId == null && track.album?.[0]
+                ? {
+                    subkeyfilter: `album-${encodeURIComponent(track.album[0])}`,
+                  }
+                : {}),
+              ...(field === 'artist' &&
+              track.artistId == null &&
+              track.artist?.[0]
+                ? {
+                    subkeyfilter: `artist-${encodeURIComponent(track.artist[0])}`,
+                  }
+                : {}),
+            });
           }}
           currentTrack={currentTrack}
           scrollToTrack={scrollToTrack}

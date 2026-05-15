@@ -71,6 +71,7 @@ export async function getArtists({ search }: { search?: string } = {}) {
 
 export const libraryApi = {
   get,
+  getStatus,
   getAlbums,
   getArtists,
 };

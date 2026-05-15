@@ -12,14 +12,12 @@ import {
   TransitionChild,
 } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { bindActionCreators, EntityId } from '@reduxjs/toolkit';
 import React, { useMemo, useState } from 'react';
 
 import { TrackList } from '~/components/molecules/TrackList';
-import { useAppDispatch, useAppSelector } from '~/hooks';
 import { useCurrentTrack } from '~/hooks/useCurrentTrack';
-import { librarySelectors } from '~/store/slices/library/selectors';
-import { playTrack } from '~/store/slices/player/player';
+import { usePlayerStore } from '~/store/playerStore';
+import type { Track } from '~/types/library';
 
 type PlayHistoryProps = {
   open: boolean;
@@ -27,28 +25,35 @@ type PlayHistoryProps = {
 };
 
 function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
-  const dispatch = useAppDispatch();
-  const play = bindActionCreators(playTrack, dispatch);
-  const historyTrackIds = useAppSelector(librarySelectors.selectLibraryHistory);
-  const queueTrackIds = useAppSelector(librarySelectors.selectLibraryQueue);
+  const play = usePlayerStore((state) => state.play);
+  const historyTracks = usePlayerStore((state) => state.history);
+  const queueTracks = usePlayerStore((state) => state.queue);
   const currentTrack = useCurrentTrack();
   const [selectedTab, setSelectedTab] = useState(0);
 
-  const queueTrackIdsFromCurrentTrack = useMemo(() => {
+  const queueTracksFromCurrentTrack = useMemo(() => {
     if (!currentTrack) {
-      return queueTrackIds;
+      return queueTracks;
     }
     // get the _last_ index of the current track in the queue
-    const currentTrackIndex = queueTrackIds.lastIndexOf(currentTrack.id);
-    return queueTrackIds.slice(currentTrackIndex);
-  }, [queueTrackIds, currentTrack]);
+    const currentTrackIndex = queueTracks.findLastIndex(
+      (track) => track.id === currentTrack.id,
+    );
+    return currentTrackIndex === -1
+      ? queueTracks
+      : queueTracks.slice(currentTrackIndex);
+  }, [queueTracks, currentTrack]);
 
-  const handlePlayTrackFromQueue = ({ trackId }: { trackId: EntityId }) => {
-    play({ trackId, requeue: true, context: 'queue' });
+  const handlePlayTrackFromQueue = ({ trackId }: { trackId: Track['id'] }) => {
+    play({ trackId, queue: queueTracks, requeue: true });
   };
 
-  const handlePlayTrackFromHistory = ({ trackId }: { trackId: EntityId }) => {
-    play({ trackId, requeue: true, context: 'history', addHistory: false });
+  const handlePlayTrackFromHistory = ({
+    trackId,
+  }: {
+    trackId: Track['id'];
+  }) => {
+    play({ trackId, queue: historyTracks, requeue: true, addHistory: false });
   };
 
   return (
@@ -133,7 +138,7 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                           <TrackList
                             context="library"
                             containerId="queue-container"
-                            trackIDs={queueTrackIdsFromCurrentTrack}
+                            tracks={queueTracksFromCurrentTrack}
                             onPlayTrackId={({ trackId }) =>
                               trackId != null &&
                               handlePlayTrackFromQueue({ trackId })
@@ -151,7 +156,7 @@ function PlayHistoryComponent({ open, setOpen }: PlayHistoryProps) {
                           <TrackList
                             context="history"
                             containerId="history-container"
-                            trackIDs={historyTrackIds}
+                            tracks={historyTracks}
                             onPlayTrackId={({ trackId }) =>
                               trackId != null &&
                               handlePlayTrackFromHistory({ trackId })

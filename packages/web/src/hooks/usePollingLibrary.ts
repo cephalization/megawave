@@ -1,39 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
-import { useAppDispatch } from '~/hooks/useAppDispatch';
-import { getStatus } from '~/queries/library';
-import { fetchLibrary } from '~/store/slices/library/thunks';
+import { libraryQueryKeys, useLibraryStatusQuery } from '~/queries/hooks';
 
 export const usePollingLibrary = () => {
-  const [loading, setLoading] = useState(true);
-  const dispatch = useAppDispatch();
-  // this is the worst
+  const queryClient = useQueryClient();
+  const { data: status, isLoading } = useLibraryStatusQuery();
+
   useEffect(() => {
-    async function init() {
-      try {
-        const status = await getStatus();
-        if (status.scanActive) {
-          // fetch status and library on 1 second timer until status is "idle"
-          async function check() {
-            const status = await getStatus();
-            if (status.scanActive) {
-              setTimeout(check, 2500);
-            } else {
-              setLoading(false);
-            }
-            dispatch(fetchLibrary());
-          }
-
-          check();
-        } else {
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error(error);
-      }
+    if (!status?.scanActive) {
+      return;
     }
-    init();
-  }, [dispatch]);
 
-  return { loading };
+    const refreshLibraryQueries = () => {
+      queryClient.invalidateQueries({ queryKey: ['library', 'tracks'] });
+      queryClient.invalidateQueries({ queryKey: ['library', 'albums'] });
+      queryClient.invalidateQueries({ queryKey: ['library', 'artists'] });
+    };
+
+    refreshLibraryQueries();
+    const intervalId = window.setInterval(refreshLibraryQueries, 2_500);
+    return () => window.clearInterval(intervalId);
+  }, [queryClient, status?.scanActive]);
+
+  return { loading: isLoading || !!status?.scanActive };
 };

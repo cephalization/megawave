@@ -1,11 +1,10 @@
 import { RefObject } from 'react';
 
-import { useAppSelector } from '~/hooks/useAppSelector';
-import { playerSelectors } from '~/store/slices/player/player';
+import { usePlayerStore } from '~/store/playerStore';
 
 export const usePlayerTime = (audioRef: RefObject<HTMLAudioElement | null>) => {
-  const seekTime = useAppSelector(playerSelectors.selectPlayerSeekTime);
-  const duration = useAppSelector(playerSelectors.selectPlayerDuration);
+  const seekTime = usePlayerStore((state) => state.seekTime);
+  const duration = usePlayerStore((state) => state.duration);
   const durationPercentage = isNaN(audioRef?.current?.duration ?? 0)
     ? 0
     : (seekTime / (audioRef?.current?.duration ?? 1)) * 100;

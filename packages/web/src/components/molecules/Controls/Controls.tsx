@@ -9,7 +9,7 @@ import { Seeker } from '~/components/molecules/Controls/Seeker';
 import { PlayHistory } from '~/components/molecules/PlayHistory';
 import { VolumeControl } from '~/components/molecules/VolumeControl';
 import { usePlayer } from '~/hooks/usePlayer';
-import { PLAYER_STATUS } from '~/store/slices/player/player';
+import { PLAYER_STATUS } from '~/store/playerStore';
 
 export function Controls() {
   const audioRef = useRef<HTMLAudioElement>(null);

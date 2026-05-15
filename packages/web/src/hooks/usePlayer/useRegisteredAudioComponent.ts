@@ -1,13 +1,9 @@
-import { bindActionCreators } from '@reduxjs/toolkit';
-import { RefObject, useEffect } from 'react';
+import { RefObject, useCallback, useEffect } from 'react';
 
-import { useAppDispatch } from '~/hooks/useAppDispatch';
 import { useCurrentTrack } from '~/hooks/useCurrentTrack';
-import { librarySelectors } from '~/store/slices/library/selectors';
-import { playerActions, playerSelectors } from '~/store/slices/player/player';
+import { usePlayerStore } from '~/store/playerStore';
 import { getArrayString } from '~/utils/trackMeta';
 
-import { useAppSelector } from '../useAppSelector';
 import { RegisteredPlayer, _Player } from './definitions';
 
 const updateVolume = (
@@ -29,15 +25,12 @@ export const useRegisteredAudioComponent = (
   audioRef: RefObject<HTMLAudioElement | null>,
   _player: _Player,
 ): RegisteredPlayer => {
-  const dispatch = useAppDispatch();
-  const activeTrackId = useAppSelector(
-    librarySelectors.selectLibraryActiveTrackId,
-  );
   const track = useCurrentTrack();
-  const duration = useAppSelector(playerSelectors.selectPlayerDuration);
-  const volume = useAppSelector(playerSelectors.selectPlayerVolume);
-  const setSeekTime = bindActionCreators(playerActions.setSeekTime, dispatch);
-  const setDuration = bindActionCreators(playerActions.setDuration, dispatch);
+  const activeTrackId = usePlayerStore((state) => state.currentTrackId);
+  const duration = usePlayerStore((state) => state.duration);
+  const volume = usePlayerStore((state) => state.volume);
+  const setSeekTime = usePlayerStore((state) => state.setSeekTime);
+  const setDuration = usePlayerStore((state) => state.setDuration);
   const trackLink = track?.link ?? null;
 
   // sync volume with audio element
@@ -45,29 +38,32 @@ export const useRegisteredAudioComponent = (
     updateVolume(audioRef, volume);
   }, [audioRef, volume]);
 
-  const handleScrub: RegisteredPlayer['scrub'] = (e) => {
-    if (audioRef?.current !== null) {
-      const audio = audioRef?.current;
-      if (audio.duration) {
-        const progress = e / 100;
-        const clickTime = Math.floor(progress * audio.duration);
+  const handleScrub: RegisteredPlayer['scrub'] = useCallback(
+    (e) => {
+      if (audioRef?.current !== null) {
+        const audio = audioRef?.current;
+        if (audio.duration) {
+          const progress = e / 100;
+          const clickTime = Math.floor(progress * audio.duration);
 
-        setSeekTime(clickTime);
-        scrub(audioRef, clickTime);
+          setSeekTime(clickTime);
+          scrub(audioRef, clickTime);
+        }
       }
-    }
-  };
+    },
+    [audioRef, setSeekTime],
+  );
 
-  const handlePause = () => {
+  const handlePause = useCallback(() => {
     if (audioRef?.current !== null) {
       const audio = audioRef.current;
 
       audio.pause();
       _player._pause();
     }
-  };
+  }, [_player, audioRef]);
 
-  const handlePlay = () => {
+  const handlePlay = useCallback(() => {
     if (audioRef?.current !== null) {
       const audio = audioRef?.current;
 
@@ -77,33 +73,35 @@ export const useRegisteredAudioComponent = (
         audio.play();
       }
     }
-  };
-
-  const updateMediaSession = () => {
-    if ('mediaSession' in navigator) {
-      const title = track?.name;
-      const artist = track?.artist ? getArrayString(track?.artist) : undefined;
-      const album = track?.album ? getArrayString(track?.album) : undefined;
-      const artwork = track?.art?.[0]
-        ? [
-            {
-              src: track?.art?.[0],
-              sizes: '512x512',
-              type: 'image/png',
-            },
-          ]
-        : undefined;
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title,
-        artist,
-        album,
-        artwork,
-      });
-    }
-  };
+  }, [_player, activeTrackId, audioRef]);
 
   // register new audio element handlers when track changes
   useEffect(() => {
+    const updateMediaSession = () => {
+      if ('mediaSession' in navigator) {
+        const title = track?.name;
+        const artist = track?.artist
+          ? getArrayString(track?.artist)
+          : undefined;
+        const album = track?.album ? getArrayString(track?.album) : undefined;
+        const artwork = track?.art?.[0]
+          ? [
+              {
+                src: track?.art?.[0],
+                sizes: '512x512',
+                type: 'image/png',
+              },
+            ]
+          : undefined;
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title,
+          artist,
+          album,
+          artwork,
+        });
+      }
+    };
+
     if (trackLink != null) {
       const handleCurrentTimeChange = () => {
         if (audioRef?.current !== null) {
@@ -224,7 +222,16 @@ export const useRegisteredAudioComponent = (
       audio.setAttribute('src', '');
       audio.load();
     }
-  }, [trackLink]);
+  }, [
+    _player,
+    activeTrackId,
+    audioRef,
+    handlePause,
+    setDuration,
+    setSeekTime,
+    track,
+    trackLink,
+  ]);
 
   return {
     play: handlePlay,

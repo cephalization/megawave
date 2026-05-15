@@ -1,11 +1,7 @@
-import React, { Ref, RefObject, useCallback } from 'react';
+import React, { Ref, RefObject, useCallback, useMemo } from 'react';
 
-import { useAppDispatch } from '~/hooks/useAppDispatch';
-import { useAppSelector } from '~/hooks/useAppSelector';
 import { useCurrentTrack } from '~/hooks/useCurrentTrack';
-import { playerActions } from '~/store/slices';
-import { librarySelectors } from '~/store/slices/library/selectors';
-import { playerSelectors, playTrack } from '~/store/slices/player/player';
+import { PLAYER_STATUS, usePlayerStore } from '~/store/playerStore';
 
 import { _Player } from './definitions';
 import { useRegisteredAudioComponent } from './useRegisteredAudioComponent';
@@ -20,79 +16,79 @@ const handleVolume = (
 };
 
 export const usePlayer = (audioRef: RefObject<HTMLAudioElement | null>) => {
-  const dispatch = useAppDispatch();
-  const queue = useAppSelector(librarySelectors.selectLibraryQueue);
-  const activeTrackIndex = useAppSelector(
-    librarySelectors.selectLibraryActiveTrackIndex,
-  );
-  const status = useAppSelector(playerSelectors.selectPlayerStatus);
+  const queue = usePlayerStore((state) => state.queue);
+  const currentTrackId = usePlayerStore((state) => state.currentTrackId);
+  const status = usePlayerStore((state) => state.status);
   const track = useCurrentTrack();
-  const volume = useAppSelector(playerSelectors.selectPlayerVolume);
+  const volume = usePlayerStore((state) => state.volume);
+  const play = usePlayerStore((state) => state.play);
+  const pause = usePlayerStore((state) => state.pause);
+  const stop = usePlayerStore((state) => state.stop);
+  const updateVolume = usePlayerStore((state) => state.setVolume);
+
+  const activeTrackIndex =
+    currentTrackId == null
+      ? -1
+      : queue.findIndex((queuedTrack) => queuedTrack.id === currentTrackId);
 
   const prevTrackId =
-    activeTrackIndex !== null ? queue[activeTrackIndex - 1] : null;
+    activeTrackIndex > 0 ? queue[activeTrackIndex - 1]?.id : null;
   const nextTrackId =
-    activeTrackIndex !== null ? queue[activeTrackIndex + 1] : null;
+    activeTrackIndex >= 0 ? queue[activeTrackIndex + 1]?.id : null;
 
-  // Create internal handlers into redux
+  // Create internal player handlers
   const _play = useCallback<_Player['_play']>(
     (arg) => {
-      dispatch(playTrack(arg));
+      play(arg);
     },
-    [dispatch],
+    [play],
   );
   const _pause = useCallback<_Player['_stop']>(() => {
-    dispatch(playerActions.pause());
-  }, [dispatch]);
+    pause();
+  }, [pause]);
   const _stop = useCallback<_Player['_stop']>(() => {
-    dispatch(playerActions.stop());
-  }, [dispatch]);
+    stop();
+  }, [stop]);
 
   const setVolume = useCallback(
     (newVolume: number) => {
       if (audioRef.current) {
         handleVolume(audioRef, newVolume);
       }
-      dispatch(playerActions.setVolume(newVolume));
+      updateVolume(newVolume);
     },
-    [dispatch, audioRef],
+    [audioRef, updateVolume],
   );
 
-  // create external handlers into redux
+  // Create external player handlers
   const playNext = useCallback<_Player['playNext']>(() => {
     if (nextTrackId) {
-      dispatch(playTrack({ trackId: nextTrackId }));
+      play({ trackId: nextTrackId });
     } else {
-      dispatch(playerActions.stop());
+      stop();
     }
-  }, [dispatch, nextTrackId]);
-  // TODO:
-  // You were trying to fix forward/back buttons
-  // The issue is that you want to requeue from history[last] + queue when you hit back
-  // but when you do that, it doesn't work due to assumptions made in the library slice handling of playTrack
+  }, [nextTrackId, play, stop]);
   const playPrev = useCallback<_Player['playPrev']>(() => {
     if (prevTrackId) {
-      dispatch(
-        playTrack({
-          trackId: prevTrackId,
-          requeueIndex: activeTrackIndex ?? undefined,
-        }),
-      );
+      play({ trackId: prevTrackId });
     } else {
-      dispatch(playerActions.stop());
+      stop();
     }
-  }, [dispatch, prevTrackId, activeTrackIndex]);
+  }, [prevTrackId, play, stop]);
 
-  // prep handlers into redux for consumption by audio ref
-  const _player: _Player = {
-    _play,
-    _pause,
-    _stop,
-    playNext,
-    playPrev,
-  };
+  // Prep handlers for consumption by audio ref
+  const _player: _Player = useMemo(
+    () => ({
+      _play,
+      _pause,
+      _stop,
+      playNext,
+      playPrev,
+    }),
+    [_pause, _play, _stop, playNext, playPrev],
+  );
 
-  // bind redux handlers to audio ref event handlers
+  // Bind player handlers to audio ref event handlers
   const registeredPlayer = useRegisteredAudioComponent(audioRef, _player);
 
   return {

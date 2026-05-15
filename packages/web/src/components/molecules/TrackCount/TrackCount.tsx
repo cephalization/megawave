@@ -5,18 +5,14 @@ import {
   RectangleStackIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import debounce from 'lodash.debounce';
-import React, { useEffect, useMemo } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router';
 
-import { useAppDispatch, useAppSelector } from '~/hooks';
-import { libraryActions } from '~/store/slices/library/library';
-import { librarySelectors } from '~/store/slices/library/selectors';
 import {
-  fetchAlbums,
-  fetchArtists,
-  fetchLibrary,
-} from '~/store/slices/library/thunks';
+  useAlbumsQuery,
+  useArtistsQuery,
+  useTracksQuery,
+} from '~/queries/hooks';
 
 type Filter = {
   field: string;
@@ -24,13 +20,7 @@ type Filter = {
 };
 
 export const TrackCount = ({ loading }: { loading?: boolean }) => {
-  const dispatch = useAppDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const trackCount = useAppSelector(
-    librarySelectors.selectFilteredTrackIdCount,
-  );
-  const albumCount = useAppSelector(librarySelectors.selectAlbums).length;
-  const artistCount = useAppSelector(librarySelectors.selectArtists).length;
 
   // Pull filters from URL
   const subkeyfilter = searchParams.get('subkeyfilter');
@@ -39,50 +29,19 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
   const viewMode = searchParams.get('view') || 'tracks';
   const albumId = searchParams.get('albumId');
   const artistId = searchParams.get('artistId');
-
-  const debouncedFetchLibrary = useMemo(
-    () =>
-      debounce((view: string) => {
-        if (view === 'albums') dispatch(fetchAlbums({ fallback: true }));
-        else if (view === 'artists') dispatch(fetchArtists({ fallback: true }));
-        else dispatch(fetchLibrary({ fallback: true }));
-      }, 300),
-    [dispatch],
-  );
-
-  // Sync URL filters with Redux state, and fetch library
-  useEffect(() => {
-    dispatch(libraryActions.setLibraryFilter({ search: searchQuery ?? '' }));
-    dispatch(
-      libraryActions.setLibraryFilter({ subkeyfilter: subkeyfilter ?? '' }),
-    );
-    dispatch(
-      libraryActions.setLibraryFilter({
-        albumId: albumId == null ? null : Number(albumId),
-      }),
-    );
-    dispatch(
-      libraryActions.setLibraryFilter({
-        artistId: artistId == null ? null : Number(artistId),
-      }),
-    );
-    dispatch(libraryActions.setLibraryFilter({ sort: sort ?? '' }));
-    dispatch(
-      libraryActions.setViewMode(
-        viewMode === 'albums' || viewMode === 'artists' ? viewMode : 'tracks',
-      ),
-    );
-    debouncedFetchLibrary(viewMode);
-  }, [
-    albumId,
-    artistId,
-    subkeyfilter,
-    searchQuery,
-    sort,
-    viewMode,
-    dispatch,
-    debouncedFetchLibrary,
-  ]);
+  const search = searchQuery ?? undefined;
+  const tracksQuery = useTracksQuery({
+    search,
+    sort: sort ?? undefined,
+    subkeyfilter: subkeyfilter ?? undefined,
+    albumId: albumId == null ? undefined : Number(albumId),
+    artistId: artistId == null ? undefined : Number(artistId),
+  });
+  const albumsQuery = useAlbumsQuery(search);
+  const artistsQuery = useArtistsQuery(search);
+  const trackCount = tracksQuery.data?.length ?? 0;
+  const albumCount = albumsQuery.data?.length ?? 0;
+  const artistCount = artistsQuery.data?.length ?? 0;
 
   // only clear the filter based on the filter field
   const clearFilter = (e: React.MouseEvent, filter: Filter) => {
@@ -100,10 +59,10 @@ export const TrackCount = ({ loading }: { loading?: boolean }) => {
       });
     } else {
       setSearchParams((p) => {
-      p.delete('subkeyfilter');
-      p.delete('albumId');
-      p.delete('artistId');
-      return p;
+        p.delete('subkeyfilter');
+        p.delete('albumId');
+        p.delete('artistId');
+        return p;
       });
     }
   };

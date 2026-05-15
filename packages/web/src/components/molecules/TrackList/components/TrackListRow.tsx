@@ -1,11 +1,8 @@
-import { EntityId } from '@reduxjs/toolkit';
 import clsx from 'clsx';
 import React from 'react';
 import { useSearchParams } from 'react-router';
 
 import { AlbumArt } from '~/components/atoms/AlbumArt/AlbumArt';
-import { useAppSelector } from '~/hooks';
-import { librarySelectors } from '~/store/slices/library/selectors';
 import { Track } from '~/types/library';
 import { formatTime } from '~/utils/formatTime';
 import { getArrayString } from '~/utils/trackMeta';
@@ -19,14 +16,15 @@ const styles = {
 } as const;
 
 type TrackListRowProps = {
-  trackId: EntityId;
+  trackId: Track['id'];
+  track: Track;
   style: React.CSSProperties;
   isActive?: boolean;
   isSelected?: boolean;
   onClickTrack: () => void;
   onClickField: (arg0: keyof Track) => void;
   onSelect?: (
-    trackId: EntityId,
+    trackId: Track['id'],
     multiSelect: boolean,
     cmdSelect: boolean,
   ) => void;
@@ -34,6 +32,7 @@ type TrackListRowProps = {
 
 export function TrackListRow({
   trackId,
+  track,
   style,
   isActive,
   isSelected,
@@ -41,12 +40,7 @@ export function TrackListRow({
   onClickField,
   onSelect,
 }: TrackListRowProps) {
-  const track = useAppSelector((s) =>
-    librarySelectors.selectTrackById(s, trackId),
-  );
   const [, setSearchParams] = useSearchParams();
-
-  if (track === undefined) return null;
 
   const { name, artist, album } = track;
   const duration = formatTime(parseInt(track.length, 10));
@@ -79,7 +73,9 @@ export function TrackListRow({
     setSearchParams({
       view: 'tracks',
       ...(track.artistId == null
-        ? { subkeyfilter: `artist-${encodeURIComponent(getArrayString(artist))}` }
+        ? {
+            subkeyfilter: `artist-${encodeURIComponent(getArrayString(artist))}`,
+          }
         : { artistId: track.artistId.toString() }),
     });
     onClickField('artist');

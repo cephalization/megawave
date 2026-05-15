@@ -2,9 +2,8 @@ import { useRef } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { AlbumArt } from '~/components/atoms/AlbumArt/AlbumArt';
-import { useAppSelector } from '~/hooks';
 import { useAvailableDimensions } from '~/hooks';
-import { librarySelectors } from '~/store/slices/library/selectors';
+import { useAlbumsQuery } from '~/queries/hooks';
 import type { Album } from '~/types/library';
 import { getArrayString } from '~/utils/trackMeta';
 
@@ -15,7 +14,9 @@ type AlbumListProps = {
 export function AlbumList({
   containerId = 'library-container',
 }: AlbumListProps) {
-  const albums = useAppSelector(librarySelectors.selectAlbums);
+  const [searchParams] = useSearchParams();
+  const albumsQuery = useAlbumsQuery(searchParams.get('q') || undefined);
+  const albums = albumsQuery.data ?? [];
   const { refToMeasure: libraryRef, height } =
     useAvailableDimensions(containerId);
   const [, setSearchParams] = useSearchParams();
@@ -37,7 +38,10 @@ export function AlbumList({
     if (!album.artist?.[0]) return;
     setSearchParams((params) => {
       params.set('view', 'tracks');
-      params.set('subkeyfilter', `artist-${encodeURIComponent(album.artist![0])}`);
+      params.set(
+        'subkeyfilter',
+        `artist-${encodeURIComponent(album.artist![0])}`,
+      );
       params.delete('albumId');
       params.delete('artistId');
       return params;
@@ -92,7 +96,7 @@ export function AlbumList({
               </div>
               <h3
                 className="text-foreground font-medium text-center line-clamp-1 w-full hover:text-primary cursor-pointer"
-                 onClick={(e) => handleAlbumClick(e, album)}
+                onClick={(e) => handleAlbumClick(e, album)}
               >
                 {album.name}
               </h3>

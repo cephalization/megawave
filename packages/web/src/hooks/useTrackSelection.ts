@@ -1,17 +1,20 @@
-import { EntityId } from '@reduxjs/toolkit';
 import { useRef } from 'react';
 
-import { useAppDispatch, useAppSelector } from '~/hooks';
-import { libraryActions } from '~/store/slices/library/library';
-import { librarySelectors } from '~/store/slices/library/selectors';
+import { usePlayerStore } from '~/store/playerStore';
+import type { Track } from '~/types/library';
 
-export function useTrackSelection(trackIDs: EntityId[]) {
-  const dispatch = useAppDispatch();
-  const selectedTracks = useAppSelector(librarySelectors.selectSelectedTracks);
-  const lastSelectedRef = useRef<EntityId | null>(null);
+export function useTrackSelection(trackIDs: Track['id'][]) {
+  const selectedTracks = usePlayerStore((state) => state.selectedTrackIds);
+  const setSelectedTracks = usePlayerStore(
+    (state) => state.setSelectedTrackIds,
+  );
+  const clearSelectedTracks = usePlayerStore(
+    (state) => state.clearSelectedTrackIds,
+  );
+  const lastSelectedRef = useRef<Track['id'] | null>(null);
 
   const handleTrackSelection = (
-    trackId: EntityId,
+    trackId: Track['id'],
     multiSelect: boolean,
     cmdSelect: boolean,
   ) => {
@@ -34,33 +37,21 @@ export function useTrackSelection(trackIDs: EntityId[]) {
           new Set([...selectedTracks, ...rangeSelection]),
         );
 
-        dispatch(libraryActions.setSelectedTracks({ trackIds: newSelection }));
+        setSelectedTracks(newSelection);
       } else {
         // If no previous selection, treat as single selection
-        dispatch(libraryActions.setSelectedTracks({ trackIds: [trackId] }));
+        setSelectedTracks([trackId]);
       }
     } else if (cmdSelect) {
       // Handle cmd/ctrl+click to toggle individual tracks while maintaining existing selection
       if (selectedTracks.includes(trackId)) {
-        dispatch(
-          libraryActions.setSelectedTracks({
-            trackIds: selectedTracks.filter((id) => id !== trackId),
-          }),
-        );
+        setSelectedTracks(selectedTracks.filter((id) => id !== trackId));
       } else {
-        dispatch(
-          libraryActions.setSelectedTracks({
-            trackIds: [...selectedTracks, trackId],
-          }),
-        );
+        setSelectedTracks([...selectedTracks, trackId]);
       }
     } else {
       // Single click selection
-      dispatch(
-        libraryActions.setSelectedTracks({
-          trackIds: lastSelectedRef.current === trackId ? [] : [trackId],
-        }),
-      );
+      setSelectedTracks(lastSelectedRef.current === trackId ? [] : [trackId]);
     }
 
     // Update last selected track reference
@@ -72,7 +63,7 @@ export function useTrackSelection(trackIDs: EntityId[]) {
   };
 
   const clearSelection = () => {
-    dispatch(libraryActions.clearTrackSelection());
+    clearSelectedTracks();
     lastSelectedRef.current = null;
   };
 
