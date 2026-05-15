@@ -7,6 +7,8 @@ export type Track = {
   lastPlayed?: string;
   length: string;
   art: string[] | null;
+  fileType: string;
+  status: 'active' | 'missing';
   track?: {
     no: number;
   };

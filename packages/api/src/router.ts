@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { describeRoute } from 'hono-openapi';
 import { resolver, validator } from 'hono-openapi/zod';
 
-import { getArtFromCache, AudioTrack } from './audio.js';
 import { audioLibraryStatusSchema } from './library.js';
 import { getNextUrl, getPreviousUrl } from './pagination.js';
 import {
@@ -35,7 +34,40 @@ export const statusRouter = new Hono().basePath('/status').get(
   }),
   async (c) => {
     const library = c.get('library');
-    return strictJSONResponse(c, audioLibraryStatusSchema, library.status);
+    return strictJSONResponse(
+      c,
+      audioLibraryStatusSchema,
+      library.getLoadProgress(),
+    );
+  },
+);
+
+export const rescanRouter = new Hono().basePath('/rescan').post(
+  '/',
+  describeRoute({
+    tags: ['library'],
+    summary: 'Rescan library',
+    description:
+      'Start a library rescan. If a scan is already active, returns current scan progress.',
+    responses: {
+      200: {
+        description: 'Scan progress',
+        content: {
+          'application/json': {
+            schema: resolver(audioLibraryStatusSchema),
+          },
+        },
+      },
+    },
+  }),
+  async (c) => {
+    const library = c.get('library');
+    const musicLibraryPaths = c.get('musicLibraryPaths');
+    return strictJSONResponse(
+      c,
+      audioLibraryStatusSchema,
+      await library.rescan(musicLibraryPaths),
+    );
   },
 );
 
@@ -86,7 +118,7 @@ export const songsRouter = new Hono()
     async (c) => {
       const library = c.get('library');
       const query = c.req.valid('query');
-      let tracks = library.getEntries({
+      let tracks = await library.getEntries({
         limit: query.limit,
         offset: query.offset,
         filter: query.filter,
@@ -138,15 +170,20 @@ export const songsRouter = new Hono()
     validator('param', z.object({ id: z.string() })),
     validator('header', z.object({ range: z.string() })),
     async (c) => {
-      const id = c.req.valid('param').id;
+      const id = Number(c.req.valid('param').id);
       const range = c.req.valid('header').range;
       const library = c.get('library');
-      const song = library.getById(id);
+      const song = await library.getById(id);
       if (!song) {
         return c.json({ error: 'Song not found' }, 404);
       }
 
-      const totalSize = statSync(song.filePath).size;
+      let totalSize: number;
+      try {
+        totalSize = statSync(song.filePath).size;
+      } catch {
+        return c.json({ error: 'Song not found' }, 404);
+      }
       const [start, end, chunksize] = getByteRangeBounds(range, totalSize);
       const songStream = createReadStream(song.filePath, {
         start,
@@ -196,15 +233,16 @@ export const artRouter = new Hono().basePath('/art').get(
       },
     },
   }),
-  validator('param', z.object({ id: z.string() })),
+  validator('param', z.object({ id: z.coerce.number() })),
   async (c) => {
     const id = c.req.valid('param').id;
-    const art = getArtFromCache(id);
+    const library = c.get('library');
+    const art = await library.getArtById(id);
     if (!art) {
       return c.json({ error: 'Art not found' }, 404);
     }
 
-    return c.body(art.buffer, 200, {
+    return c.body(art.data, 200, {
       'Content-Type': art.mime,
       'Cache-Control': 'max-age=31536000',
     });

@@ -1,111 +1,109 @@
 import * as fs from 'fs/promises';
+import * as mm from 'music-metadata';
 import * as path from 'path';
 import { z } from 'zod';
 
-import type { DB, makeDb } from 'db';
+import {
+  AlbumRepository,
+  ArtRepository,
+  ArtistRepository,
+  GenreRepository,
+  ScanRepository,
+  TrackRepository,
+  type TrackInsert,
+} from 'db/repositories';
+import type { DB } from 'db';
 
-import { AudioTrack, hasAudioFileExtension } from './audio.js';
+import { AudioTrack, generateContentHash, hasAudioFileExtension } from './audio.js';
 import type { PaginationMeta, Track } from './schemas.js';
 
-export const audioLibraryStatusSchema = z.enum(['loading', 'idle', 'error']);
-export type AudioLibraryStatus = z.infer<typeof audioLibraryStatusSchema>;
+export const scanProgressSchema = z.object({
+  status: z.enum(['idle', 'loading', 'error']),
+  scanActive: z.boolean(),
+  filesDiscovered: z.number(),
+  filesProcessed: z.number(),
+  tracksAdded: z.number(),
+  tracksUpdated: z.number(),
+  tracksMissing: z.number(),
+  tracksErrored: z.number(),
+  lastError: z.string().optional(),
+  startedAt: z.number().nullable(),
+  finishedAt: z.number().nullable(),
+});
 
-/**
- * Tracks the status of a library scan operation
- *
- * This provides clients with detailed information about the progress
- * of an ongoing library load operation, enabling UI feedback.
- */
-export interface LoadProgress {
-  totalPaths: number; // Total directories being scanned
-  currentPathIndex: number; // Current directory index being processed
-  currentPath: string; // Path currently being scanned
-  filesDiscovered: number; // Total audio files found so far
-  filesProcessed: number; // Number of files that have been processed
-  trackCount: number; // Number of valid tracks added to the library
-  percentage: number; // Overall completion percentage (0-100)
-  error?: string; // Error message if scan failed
-}
+export const audioLibraryStatusSchema = scanProgressSchema;
+export type AudioLibraryStatus = z.infer<typeof scanProgressSchema>['status'];
+export type LoadProgress = z.infer<typeof scanProgressSchema>;
 
-/**
- * Music library manager that handles discovery and indexing of audio files
- *
- * The Library class provides methods to scan directories for audio files,
- * process their metadata, and query the indexed tracks with filtering and sorting.
- * It supports asynchronous loading with progress tracking and graceful cancellation.
- */
+type TrackWithPath = Track & {
+  filePath: string;
+  fileType: string;
+};
+
+type SerializedRow = {
+  track: Awaited<ReturnType<TrackRepository['allWithArtIds']>>[number]['track'];
+  artIds: number[];
+};
+
 export class Library {
-  public status: AudioLibraryStatus;
-  private tracks: Map<string, AudioTrack>; // Map of track ID to AudioTrack objects
-  private trackIds: string[]; // Ordered list of track IDs for consistent retrieval
-  private _currentLoadPromise: Promise<void> | null;
-  private _cancelRequested: boolean;
-  private _loadProgress: LoadProgress | null;
-  private _db: DB;
+  public status: AudioLibraryStatus = 'idle';
+  private readonly trackRepo: TrackRepository;
+  private readonly artistRepo: ArtistRepository;
+  private readonly albumRepo: AlbumRepository;
+  private readonly genreRepo: GenreRepository;
+  private readonly artRepo: ArtRepository;
+  private readonly scanRepo: ScanRepository;
+  private currentScan: Promise<LoadProgress> | null = null;
+  private progress: LoadProgress = this.emptyProgress();
 
   constructor(db: DB) {
-    this.status = 'idle';
-    this.tracks = new Map();
-    this.trackIds = [];
-    this._currentLoadPromise = null;
-    this._cancelRequested = false;
-    this._loadProgress = null;
-    this._db = db;
+    this.trackRepo = new TrackRepository(db);
+    this.artistRepo = new ArtistRepository(db);
+    this.albumRepo = new AlbumRepository(db);
+    this.genreRepo = new GenreRepository(db);
+    this.artRepo = new ArtRepository(db);
+    this.scanRepo = new ScanRepository(db);
   }
 
-  /**
-   * Clears the library and resets all internal state
-   *
-   * This will cancel any ongoing load operation and remove all tracks.
-   */
-  public reset(): void {
-    this.tracks.clear();
-    this.trackIds = [];
-    this.status = 'idle';
-    this._cancelRequested = true;
-    this._currentLoadPromise = null;
-    this._loadProgress = null;
-  }
-
-  /**
-   * Retrieves a track by its unique ID
-   *
-   * @param id - Unique identifier for the track
-   * @returns The AudioTrack if found and valid, undefined otherwise
-   */
-  public getById(id: string): AudioTrack | undefined {
-    const track = this.tracks.get(id);
-    return track && track.ok ? track : undefined;
-  }
-
-  /**
-   * Adds a track to the library if it's valid and not already present
-   *
-   * @param audioTrack - The track to add to the library
-   */
-  private append(audioTrack: AudioTrack): void {
-    if (audioTrack.ok && !this.tracks.has(audioTrack.id)) {
-      this.tracks.set(audioTrack.id, audioTrack);
-      this.trackIds.push(audioTrack.id);
+  public async initialize(pathsToScan: string[]) {
+    if ((await this.trackRepo.count()) === 0) {
+      void this.load(pathsToScan);
+      return;
     }
+
+    this.status = 'idle';
+    void this.load(pathsToScan);
   }
 
-  /**
-   * Retrieves the current progress of an ongoing library load operation
-   *
-   * @returns LoadProgress object or null if no load is in progress
-   */
-  public getLoadProgress(): LoadProgress | null {
-    return this._loadProgress;
+  public getLoadProgress(): LoadProgress {
+    return this.progress;
   }
 
-  /**
-   * Queries the library with optional filtering, sorting, and pagination
-   *
-   * @param options - Query parameters including filters, sorting, and pagination
-   * @returns Paginated track data with metadata
-   */
-  public getEntries({
+  public async rescan(pathsToScan: string[]) {
+    if (this.currentScan) return this.progress;
+    void this.load(pathsToScan);
+    return this.progress;
+  }
+
+  public async getById(id: number): Promise<TrackWithPath | null> {
+    const row = await this.trackRepo.findById(id);
+    if (!row || row.status === 'missing') return null;
+
+    const { hasExt, ext } = hasAudioFileExtension(row.fileName);
+    if (!hasExt || !ext) return null;
+
+    return {
+      ...this.serializeRow({ track: row, artIds: [] }),
+      filePath: row.filePath,
+      fileType: ext,
+    };
+  }
+
+  public async getArtById(id: number) {
+    return this.artRepo.findById(id);
+  }
+
+  public async getEntries({
     limit,
     offset,
     filter,
@@ -117,40 +115,28 @@ export class Library {
     filter?: string;
     sort?: string;
     subkeyfilter?: string;
-  }): {
+  }): Promise<{
     data: Track[];
     meta: PaginationMeta;
-  } {
-    // Get all valid tracks as serialized Track objects
-    let allTracks = this.trackIds
-      .map((id) => this.tracks.get(id)?.serialize())
-      .filter((track) => track) as Track[];
+  }> {
+    let allTracks = this.serializeRows(await this.getRowsWithArt());
 
-    // Apply text-based filtering across artist/name/album fields
     if (filter) {
       const sanitizedFilterQuery = filter.toLowerCase();
       const groupedByMatchingKey: {
         artist: Track[];
         name: Track[];
         album: Track[];
-      } = {
-        artist: [],
-        name: [],
-        album: [],
-      };
+      } = { artist: [], name: [], album: [] };
 
       for (const track of allTracks) {
         const { match, key } = AudioTrack.matchesFilter(
           track,
           sanitizedFilterQuery,
         );
-        if (match && key) {
-          if (key === 'artist') groupedByMatchingKey.artist.push(track);
-          else if (key === 'name') groupedByMatchingKey.name.push(track);
-          else if (key === 'album') groupedByMatchingKey.album.push(track);
-        }
+        if (match && key) groupedByMatchingKey[key].push(track);
       }
-      // Combine results with priority: artist > name > album
+
       allTracks = [
         ...groupedByMatchingKey.artist,
         ...groupedByMatchingKey.name,
@@ -158,7 +144,6 @@ export class Library {
       ];
     }
 
-    // Apply field-specific filtering with format: field-value (e.g., artist-beatles)
     if (subkeyfilter) {
       const parts = subkeyfilter.split('-');
       if (parts.length >= 2) {
@@ -172,7 +157,8 @@ export class Library {
               return trackValue.some((val) =>
                 val.toLocaleLowerCase().includes(term),
               );
-            } else if (typeof trackValue === 'string') {
+            }
+            if (typeof trackValue === 'string') {
               return trackValue.toLocaleLowerCase().includes(term);
             }
             return false;
@@ -181,10 +167,8 @@ export class Library {
       }
     }
 
-    // Helper for track number sorting
     const getTrackNo = (track: Track): number => track.track?.no ?? Infinity;
 
-    // Apply sorting if specified, or use default sort
     if (sort) {
       const reverse = sort.startsWith('-');
       const sortKeyString = (reverse ? sort.substring(1) : sort).toLowerCase();
@@ -196,37 +180,24 @@ export class Library {
       ) {
         const sortKey = sortKeyString as 'name' | 'artist' | 'album';
         allTracks.sort((a, b) => {
-          let valA_primary = AudioTrack.getAudioFileSortValue(a, sortKey);
-          let valB_primary = AudioTrack.getAudioFileSortValue(b, sortKey);
+          let valA = AudioTrack.getAudioFileSortValue(a, sortKey);
+          let valB = AudioTrack.getAudioFileSortValue(b, sortKey);
 
           if (reverse) {
-            if (valA_primary === 'zzzzz') valA_primary = '';
-            if (valB_primary === 'zzzzz') valB_primary = '';
+            if (valA === 'zzzzz') valA = '';
+            if (valB === 'zzzzz') valB = '';
           }
 
-          let comparison = 0;
-          if (valA_primary < valB_primary) {
-            comparison = -1;
-          } else if (valA_primary > valB_primary) {
-            comparison = 1;
-          }
-
-          // Secondary sort by track number for equal primary values
+          let comparison = valA.localeCompare(valB);
           if (comparison === 0) {
             const trackNoA = getTrackNo(a);
             const trackNoB = getTrackNo(b);
-
             if (sortKey === 'album') {
-              const subkeyFilterIsAlbum = subkeyfilter
-                ?.toLocaleLowerCase()
-                .startsWith('album-');
-              const shouldReverseTracks = reverse && subkeyFilterIsAlbum;
-
-              if (shouldReverseTracks) {
-                comparison = trackNoB - trackNoA;
-              } else {
-                comparison = trackNoA - trackNoB;
-              }
+              const shouldReverseTracks =
+                reverse && subkeyfilter?.toLocaleLowerCase().startsWith('album-');
+              comparison = shouldReverseTracks
+                ? trackNoB - trackNoA
+                : trackNoA - trackNoB;
             } else {
               comparison = trackNoA - trackNoB;
             }
@@ -235,37 +206,20 @@ export class Library {
         });
       }
     } else {
-      // Default sort: album name (asc), then track number (asc)
       allTracks.sort((a, b) => {
         const albumA = AudioTrack.getAudioFileSortValue(a, 'album');
         const albumB = AudioTrack.getAudioFileSortValue(b, 'album');
-
-        let comparison = 0;
-        if (albumA < albumB) {
-          comparison = -1;
-        } else if (albumA > albumB) {
-          comparison = 1;
-        }
-
-        if (comparison === 0) {
-          comparison = getTrackNo(a) - getTrackNo(b);
-        }
-        return comparison;
+        const comparison = albumA.localeCompare(albumB);
+        return comparison === 0 ? getTrackNo(a) - getTrackNo(b) : comparison;
       });
     }
 
-    // Apply pagination to results
     const totalFilteredTracks = allTracks.length;
     const actualOffset = offset ?? 0;
     const actualLimit = limit ?? totalFilteredTracks;
 
-    const paginatedTracks = allTracks.slice(
-      actualOffset,
-      actualOffset + actualLimit,
-    );
-
     return {
-      data: paginatedTracks,
+      data: allTracks.slice(actualOffset, actualOffset + actualLimit),
       meta: {
         total: totalFilteredTracks,
         limit: actualLimit,
@@ -276,275 +230,217 @@ export class Library {
     };
   }
 
-  /**
-   * Serializes the entire library to an array of Track objects
-   *
-   * @returns Array of serialized track objects
-   */
-  public serialize(): Track[] {
-    const output: Track[] = [];
-    for (const trackId of this.trackIds) {
-      const track = this.tracks.get(trackId);
-      if (track && track.ok) {
-        const serializedTrack = track.serialize();
-        if (serializedTrack) {
-          output.push(serializedTrack);
-        }
+  public async load(pathsToScan: string[]): Promise<LoadProgress> {
+    if (this.currentScan) return this.currentScan;
+
+    this.progress = this.emptyProgress();
+    this.progress.status = 'loading';
+    this.progress.scanActive = true;
+    this.progress.startedAt = Date.now();
+    this.status = 'loading';
+
+    this.currentScan = this.scan(pathsToScan).finally(() => {
+      this.currentScan = null;
+    });
+
+    return this.currentScan;
+  }
+
+  private async scan(pathsToScan: string[]): Promise<LoadProgress> {
+    const session = await this.scanRepo.startSession(pathsToScan);
+
+    try {
+      const files = await this.findAudioFiles(pathsToScan);
+      this.progress.filesDiscovered = files.length;
+
+      for (const filePath of files) {
+        await this.processFile(filePath, session.id);
+        this.progress.filesProcessed++;
       }
+
+      const missingIds = await this.scanRepo.getTracksNotInScan(session.id);
+      await this.trackRepo.markMissing(missingIds);
+      this.progress.tracksMissing = missingIds.length;
+
+      this.progress.status = 'idle';
+      this.status = 'idle';
+      await this.scanRepo.endSession(session.id, {
+        tracksFound: this.progress.filesDiscovered,
+        tracksAdded: this.progress.tracksAdded,
+        tracksUpdated: this.progress.tracksUpdated,
+        tracksMissing: this.progress.tracksMissing,
+        tracksErrored: this.progress.tracksErrored,
+        lastError: this.progress.lastError,
+        status: 'completed',
+      });
+    } catch (error) {
+      this.progress.status = 'error';
+      this.status = 'error';
+      this.progress.lastError = error instanceof Error ? error.message : String(error);
+      await this.scanRepo.endSession(session.id, {
+        tracksFound: this.progress.filesDiscovered,
+        tracksAdded: this.progress.tracksAdded,
+        tracksUpdated: this.progress.tracksUpdated,
+        tracksMissing: this.progress.tracksMissing,
+        tracksErrored: this.progress.tracksErrored,
+        lastError: this.progress.lastError,
+        status: 'failed',
+      });
+    } finally {
+      this.progress.scanActive = false;
+      this.progress.finishedAt = Date.now();
     }
-    return output;
+
+    return this.progress;
   }
 
-  /**
-   * Requests cancellation of an ongoing library load operation
-   *
-   * The load will complete gracefully at the next cancellation check point.
-   */
-  public cancelLoad(): void {
-    if (this.status === 'loading') {
-      this._cancelRequested = true;
-      console.log('Library load cancellation requested');
-    }
-  }
-
-  /**
-   * Finds all audio files in a directory and its subdirectories
-   *
-   * Uses a non-recursive approach with a queue to avoid stack overflow
-   * with deep directory structures. Regularly yields to the main thread
-   * to avoid blocking the event loop.
-   *
-   * @param dirPath - Root directory to scan for audio files
-   * @returns Promise resolving to a list of audio file paths
-   */
-  private async findAudioFiles(dirPath: string): Promise<string[]> {
+  private async findAudioFiles(pathsToScan: string[]) {
     const audioFiles: string[] = [];
+    const queue = [...pathsToScan];
 
-    // Use a queue-based approach instead of recursion
-    const queue: string[] = [dirPath];
-    let processedFiles = 0;
-
-    while (queue.length > 0 && !this._cancelRequested) {
-      const currentDir = queue.shift()!;
-
+    while (queue.length > 0) {
+      const current = queue.shift()!;
       try {
-        const entries = await fs.readdir(currentDir, { withFileTypes: true });
-
+        const entries = await fs.readdir(current, { withFileTypes: true });
         for (const entry of entries) {
-          if (this._cancelRequested) break;
-
-          const fullPath = path.resolve(currentDir, entry.name);
-
+          const fullPath = path.resolve(current, entry.name);
           if (entry.isDirectory()) {
             queue.push(fullPath);
-          } else {
-            const { hasExt } = hasAudioFileExtension(entry.name);
-            if (hasExt) {
-              audioFiles.push(fullPath);
-            }
-            processedFiles++;
-
-            if (this._loadProgress) {
-              this._loadProgress.filesDiscovered = processedFiles;
-            }
-
-            // Yield to main thread periodically to avoid blocking
-            if (processedFiles % 100 === 0) {
-              await new Promise((resolve) => setTimeout(resolve, 0));
-            }
+          } else if (hasAudioFileExtension(entry.name).hasExt) {
+            audioFiles.push(fullPath);
           }
         }
-      } catch (err) {
-        console.error(`Error scanning directory ${currentDir}:`, err);
+      } catch (error) {
+        this.progress.tracksErrored++;
+        this.progress.lastError = error instanceof Error ? error.message : String(error);
       }
     }
 
     return audioFiles;
   }
 
-  /**
-   * Processes a list of audio files in batches
-   *
-   * This divides the work into manageable chunks and updates progress
-   * as each batch completes. Yields to the main thread between batches
-   * to avoid blocking the event loop.
-   *
-   * @param files - List of audio file paths to process
-   * @param batchSize - Number of files to process in each batch
-   * @returns Promise with statistics about processed files
-   */
-  private async processFiles(
-    files: string[],
-    batchSize: number = 50,
-  ): Promise<{ added: number; skipped: number }> {
-    let added = 0;
-    let skipped = 0;
-    let processed = 0;
+  private async processFile(filePath: string, scanSessionId: number) {
+    try {
+      const metadata = await mm.parseFile(filePath);
+      const stats = await fs.stat(filePath);
+      const fileName = path.basename(filePath);
+      const { ext } = hasAudioFileExtension(fileName);
+      const common = metadata.common;
+      const primaryArtistName = common.artists?.[0] ?? common.artist;
+      const genreName = common.genre?.[0];
+      const artist = primaryArtistName
+        ? await this.artistRepo.findOrCreate(primaryArtistName)
+        : null;
+      const album = common.album
+        ? await this.albumRepo.findOrCreate(common.album, artist?.id, common.year)
+        : null;
+      const genre = genreName ? await this.genreRepo.findOrCreate(genreName) : null;
+      const contentHash = await generateContentHash(filePath);
+      const now = Date.now();
 
-    for (let i = 0; i < files.length; i += batchSize) {
-      if (this._cancelRequested) break;
+      const values: TrackInsert = {
+        contentHash,
+        filePath: path.resolve(filePath),
+        fileName,
+        fileSize: stats.size,
+        lastModified: stats.mtimeMs,
+        title: common.title || fileName,
+        trackNumber: common.track.no ?? undefined,
+        totalTracks: common.track.of ?? undefined,
+        discNumber: common.disk.no ?? undefined,
+        totalDiscs: common.disk.of ?? undefined,
+        duration: metadata.format.duration,
+        albumId: album?.id,
+        primaryArtistId: artist?.id,
+        genreId: genre?.id,
+        albumTitle: common.album,
+        primaryArtistName,
+        genreName,
+        bitrate: metadata.format.bitrate,
+        sampleRate: metadata.format.sampleRate,
+        channels: metadata.format.numberOfChannels,
+        codec: metadata.format.codec,
+        dateAdded: now,
+        dateModified: now,
+      };
 
-      const batch = files.slice(i, i + batchSize);
-      const batchResults = await this.processBatch(batch);
+      const { track, created } = await this.trackRepo.upsertByContentHash(values);
+      await this.scanRepo.recordTrackSeen(scanSessionId, track.id, filePath);
+      if (created) this.progress.tracksAdded++;
+      else this.progress.tracksUpdated++;
 
-      added += batchResults.added;
-      skipped += batchResults.skipped;
-      processed += batch.length;
+      const pictures = common.picture ?? [];
+      await this.artRepo.replaceForTrack(
+        track.id,
+        pictures.map((picture) => ({
+          mime: picture.format,
+          data: Buffer.from(picture.data),
+          description: picture.description,
+        })),
+      );
 
-      // Update progress tracking for UI feedback
-      if (this._loadProgress) {
-        this._loadProgress.filesProcessed = processed;
-        this._loadProgress.trackCount = this.tracks.size;
-        this._loadProgress.percentage = Math.floor(
-          (processed / files.length) * 100,
-        );
-      }
-
-      // Yield to main thread between batches
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      if (!ext) throw new Error(`Unsupported audio extension for ${filePath}`);
+    } catch (error) {
+      this.progress.tracksErrored++;
+      this.progress.lastError = error instanceof Error ? error.message : String(error);
     }
-
-    return { added, skipped };
   }
 
-  /**
-   * Processes a batch of audio files by reading their metadata
-   *
-   * @param filesToProcess - Batch of file paths to process
-   * @returns Promise with counts of added and skipped files
-   */
-  private async processBatch(
-    filesToProcess: string[],
-  ): Promise<{ added: number; skipped: number }> {
-    let added = 0;
-    let skipped = 0;
+  private async getRowsWithArt(): Promise<SerializedRow[]> {
+    const rows = await this.trackRepo.allWithArtIds();
+    const byId = new Map<number, SerializedRow>();
 
-    for (const filePath of filesToProcess) {
-      if (this._cancelRequested) break;
-
-      const audioTrack = new AudioTrack(filePath, this._db);
-      await audioTrack.initialize();
-
-      if (audioTrack.ok) {
-        this.append(audioTrack);
-        added++;
+    for (const row of rows) {
+      const existing = byId.get(row.track.id);
+      if (existing) {
+        if (row.artId != null) existing.artIds.push(row.artId);
       } else {
-        skipped++;
+        byId.set(row.track.id, {
+          track: row.track,
+          artIds: row.artId == null ? [] : [row.artId],
+        });
       }
     }
 
-    return { added, skipped };
+    return [...byId.values()];
   }
 
-  /**
-   * Scans directories for audio files and loads them into the library
-   *
-   * This is the main entry point for library scanning. It handles:
-   * - Cancelling previous scans if needed
-   * - Discovering audio files non-recursively
-   * - Processing files in batches
-   * - Tracking progress for UI feedback
-   * - Error handling and recovery
-   *
-   * @param pathsToScan - Array of directory paths to scan for audio files
-   * @returns Promise that resolves when scanning is complete
-   */
-  public async load(pathsToScan: string[]): Promise<void> {
-    // Cancel any ongoing load operation
-    if (this.status === 'loading' && this._currentLoadPromise) {
-      console.log('Cancelling previous library load operation');
-      this.cancelLoad();
-      try {
-        await this._currentLoadPromise;
-      } catch (e) {
-        console.log('Previous load operation completed or cancelled');
-      }
-    }
+  private serializeRows(rows: SerializedRow[]): Track[] {
+    return rows.map((row) => this.serializeRow(row));
+  }
 
-    // Reset state and prepare for new load
-    this.reset();
-    this._cancelRequested = false;
-    this.status = 'loading';
+  private serializeRow(row: SerializedRow): Track {
+    const { track } = row;
+    const { ext } = hasAudioFileExtension(track.fileName);
 
-    // Initialize progress tracking
-    this._loadProgress = {
-      totalPaths: pathsToScan.length,
-      currentPathIndex: 0,
-      currentPath: '',
+    return {
+      id: track.id,
+      name: track.title || track.fileName,
+      album: track.albumTitle ? [track.albumTitle] : null,
+      artist: track.primaryArtistName ? [track.primaryArtistName] : null,
+      art: row.artIds.length
+        ? row.artIds.map((id) => `/api/library/art/${id}`)
+        : null,
+      length: track.duration != null ? track.duration.toString() : '',
+      link: `/api/library/songs/${track.id}`,
+      fileType: ext ?? '',
+      status: track.status as Track['status'],
+      track: track.trackNumber != null ? { no: track.trackNumber } : undefined,
+    };
+  }
+
+  private emptyProgress(): LoadProgress {
+    return {
+      status: 'idle',
+      scanActive: false,
       filesDiscovered: 0,
       filesProcessed: 0,
-      trackCount: 0,
-      percentage: 0,
+      tracksAdded: 0,
+      tracksUpdated: 0,
+      tracksMissing: 0,
+      tracksErrored: 0,
+      startedAt: null,
+      finishedAt: null,
     };
-
-    console.log(`Starting library scan (${pathsToScan.length} paths)`);
-
-    const loadOperation = async () => {
-      try {
-        // Process each directory path
-        for (let i = 0; i < pathsToScan.length; i++) {
-          if (this._cancelRequested) break;
-
-          const currentPath = pathsToScan[i];
-          console.log(
-            `Scanning path ${i + 1}/${pathsToScan.length}: ${currentPath}`,
-          );
-
-          // Update progress for current path
-          if (this._loadProgress) {
-            this._loadProgress.currentPathIndex = i;
-            this._loadProgress.currentPath = currentPath;
-            this._loadProgress.filesProcessed = 0;
-            this._loadProgress.percentage = 0;
-          }
-
-          // First discover all audio files in the path
-          const audioFiles = await this.findAudioFiles(currentPath);
-
-          if (this._cancelRequested) break;
-
-          console.log(
-            `Found ${audioFiles.length} audio files in ${currentPath}`,
-          );
-
-          // Then process them in batches
-          const { added, skipped } = await this.processFiles(audioFiles);
-
-          if (this._cancelRequested) {
-            console.log(`Load cancelled during processing of ${currentPath}`);
-            break;
-          }
-
-          console.log(
-            `Processed ${currentPath}: Added ${added}, Skipped ${skipped} files`,
-          );
-        }
-
-        if (!this._cancelRequested) {
-          console.log(
-            `Library load complete: ${this.tracks.size} tracks loaded`,
-          );
-        }
-      } catch (error) {
-        console.error('Error during library load:', error);
-        this.status = 'error';
-
-        // Capture error for UI display
-        if (this._loadProgress) {
-          this._loadProgress.error =
-            error instanceof Error ? error.message : String(error);
-        }
-      } finally {
-        // Clean up regardless of success or failure
-        if (this.status === 'loading' || this._cancelRequested) {
-          this.status = 'idle';
-        }
-        this._cancelRequested = false;
-        this._currentLoadPromise = null;
-      }
-    };
-
-    this._currentLoadPromise = loadOperation();
-    await this._currentLoadPromise;
   }
 }

@@ -8,6 +8,7 @@
   },
   "exports": {
     ".": "./dist/src/index.js",
+    "./repositories": "./dist/src/repositories/index.js",
     "./schema": "./dist/src/schema.js",
     "./drizzle": "./dist/src/drizzle.js"
   },

@@ -23,7 +23,7 @@ export type PaginatedResponse<T> = {
 };
 
 export const trackSchema = z.object({
-  id: z.union([z.string(), z.number()]),
+  id: z.number(),
   name: z.string(),
   link: z.string(),
   artist: z.array(z.string()).nullable(),
@@ -37,6 +37,7 @@ export const trackSchema = z.object({
     })
     .optional(),
   fileType: z.string(),
+  status: z.enum(['active', 'missing']),
   meta: z.any().optional(),
 });
 

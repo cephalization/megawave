@@ -4,39 +4,67 @@
 
 ## Development
 
-Development is tested and supported on Linux, Mac OS, and WSL 2
+Development is tested and supported on Linux, Mac OS, and WSL 2.
 
-- (optional) Copy default vscode workspace setup for proper autocomplete and linting in Typescript, particularly for tailwindcss
+1. Install dependencies from the root directory:
 
-  - `cp .vscode.default .vscode`
+   ```sh
+   pnpm install
+   ```
 
-  - Install recommended extensions when prompted by vscode
+2. Create local environment config:
 
-- `cp .env.example .env`
+   ```sh
+   cp .env.example .env
+   ```
 
-- Configure music library path in `.env`
+3. Configure `.env`:
 
-- Install dependencies from the root directory
+   ```sh
+   MUSIC_LIBRARY_PATH="/path/to/music"
+   DATABASE_PATH="./db"
+   ```
 
-  - `pnpm install`
+   `DATABASE_PATH` is a directory. Megawave creates/uses `megawave.db` inside it and runs pending Drizzle migrations automatically on API startup.
 
-- Run the development server and frontend
+4. Start the API and web app:
 
-  - `pnpm dev`
+   ```sh
+   pnpm dev
+   ```
 
-- (optional) Run each app separately
+Optional commands:
 
-  - `pnpm dev --filter=api`
-  - `pnpm dev --filter=web`
+```sh
+pnpm typecheck
+pnpm build
+pnpm db:generate
+pnpm db:clean
+```
 
-## Deployment
+## Production
 
-- Install Docker
+Megawave is designed for a simple Docker Compose deploy with a mounted music library and persistent SQLite database directory.
 
-- `cp .env.example .env`
+1. Create environment config:
 
-- Configure music library path in `.env`
+   ```sh
+   cp .env.example .env
+   ```
 
-- `docker-compose up --build`
+2. Configure `.env` with host paths:
 
-- Go to [localhost](http://localhost) or serve behind a reverse proxy
+   ```sh
+   MUSIC_LIBRARY_PATH="/path/to/music"
+   DATABASE_PATH="/path/to/megawave-db"
+   ```
+
+3. Start the stack:
+
+   ```sh
+   docker compose up --build -d
+   ```
+
+The API container mounts the music library at `/musiclibrary` and the database directory at `/db`. The SQLite file lives at `/db/megawave.db`, and pending Drizzle migrations run automatically on API startup.
+
+Open [localhost](http://localhost) or serve behind a reverse proxy.

@@ -200,7 +200,8 @@ export class AudioTrack {
   public fileName: string;
   public fileDir: string;
   public fileType: string = '';
-  public id: string;
+  public id: number = -1;
+  public contentHash: string;
   public metadata?: mm.IAudioMetadata;
   public artCacheIds: string[] = [];
 
@@ -215,7 +216,7 @@ export class AudioTrack {
     this.filePath = path.resolve(filePath);
     this.fileName = path.basename(this.filePath);
     this.fileDir = path.dirname(this.filePath);
-    this.id = audioFileHash(this.filePath);
+    this.contentHash = audioFileHash(this.filePath);
     this._db = db;
 
     const { hasExt, ext } = hasAudioFileExtension(this.fileName);
@@ -325,6 +326,7 @@ export class AudioTrack {
         this.lengthSeconds !== undefined ? this.lengthSeconds.toString() : '',
       link: `/api/library/songs/${this.id}`,
       fileType: this.fileType,
+      status: 'active',
       track: this.trackInfo,
     };
   }

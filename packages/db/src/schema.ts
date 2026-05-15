@@ -3,6 +3,7 @@ import {
   integer,
   text,
   real,
+  blob,
   index,
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
@@ -64,6 +65,7 @@ export const tracks = sqliteTable(
     fileName: text().notNull(),
     fileSize: integer(),
     lastModified: integer(), // Unix timestamp
+    status: text().notNull().default('active'), // 'active' | 'missing'
 
     // Basic metadata
     title: text().notNull(),
@@ -98,6 +100,7 @@ export const tracks = sqliteTable(
     // Critical indexes for performance
     uniqueIndex('tracks_content_hash_idx').on(table.contentHash),
     index('tracks_file_path_idx').on(table.filePath),
+    index('tracks_status_idx').on(table.status),
     index('tracks_album_idx').on(table.albumId),
     index('tracks_artist_idx').on(table.primaryArtistId),
     index('tracks_title_idx').on(table.title),
@@ -110,6 +113,22 @@ export const tracks = sqliteTable(
     ),
     index('tracks_artist_album_idx').on(table.primaryArtistId, table.albumId),
   ],
+);
+
+export const trackArt = sqliteTable(
+  'track_art',
+  {
+    id: integer().primaryKey(),
+    trackId: integer()
+      .notNull()
+      .references(() => tracks.id, { onDelete: 'cascade' }),
+    mime: text().notNull(),
+    data: blob({ mode: 'buffer' }).notNull(),
+    description: text(),
+    width: integer(),
+    height: integer(),
+  },
+  (table) => [index('track_art_track_idx').on(table.trackId)],
 );
 
 // Many-to-many relationships
@@ -167,6 +186,9 @@ export const scanSessions = sqliteTable('scan_sessions', {
   tracksFound: integer(),
   tracksAdded: integer(),
   tracksUpdated: integer(),
+  tracksMissing: integer(),
+  tracksErrored: integer(),
+  lastError: text(),
   status: text(), // 'running', 'completed', 'failed', 'cancelled'
 });
 

@@ -4,23 +4,26 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 
 import { Scalar } from '@scalar/hono-api-reference';
-import { makeDb } from 'db';
+import { makeDb, migrateDb } from 'db';
 import { openAPISpecs } from 'hono-openapi';
 
 import { HOST, MUSIC_LIBRARY_PATH, PORT, DATABASE_PATH } from './env.js';
 import { Library } from './library.js';
-import { artRouter, statusRouter, songsRouter } from './router.js';
+import { artRouter, rescanRouter, statusRouter, songsRouter } from './router.js';
 import { getServerUrl } from './util.js';
 
 declare module 'hono' {
   interface ContextVariableMap {
     library: Library;
     db: ReturnType<typeof makeDb>;
+    musicLibraryPaths: string[];
   }
 }
 
 const db = makeDb(DATABASE_PATH);
+await migrateDb(db);
 const library = new Library(db);
+const musicLibraryPaths = MUSIC_LIBRARY_PATH.split(',');
 
 const app = new Hono().basePath('/api');
 app.use(cors());
@@ -28,6 +31,7 @@ app.use(logger());
 app.use(async (c, next) => {
   c.set('library', library);
   c.set('db', db);
+  c.set('musicLibraryPaths', musicLibraryPaths);
   await next();
 });
 
@@ -37,6 +41,7 @@ const router = app.route(
   '/',
   libraryRouter
     .route('/', statusRouter)
+    .route('/', rescanRouter)
     .route('/', songsRouter)
     .route('/', artRouter),
 );
@@ -77,6 +82,6 @@ serve(
     console.log(`API Reference:       ${getServerUrl('/api/docs')}`);
     console.log(`OpenAPI Schema:      ${getServerUrl('/api/openapi')}`);
     console.log('');
-    library.load(MUSIC_LIBRARY_PATH.split(','));
+    void library.initialize(musicLibraryPaths);
   },
 );
