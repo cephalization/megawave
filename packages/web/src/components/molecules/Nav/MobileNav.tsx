@@ -2,6 +2,7 @@ import { Transition, TransitionChild } from '@headlessui/react';
 import { Link, useLocation } from 'react-router';
 
 import logo from '~/assets/logo.svg';
+import { useAuthMeQuery, useAuthSettingsQuery } from '~/queries/hooks';
 
 import { NavProps } from './Nav';
 
@@ -153,6 +154,7 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
                   </svg>
                   Recent
                 </Link>
+                <MobileAdminNavLink active={location.pathname === '/admin'} />
               </div>
             </nav>
           </div>
@@ -162,5 +164,36 @@ export function MobileNav({ open = false, toggleNav }: MobileNavProps) {
         </div>
       </div>
     </Transition>
+  );
+}
+
+function MobileAdminNavLink({ active }: { active: boolean }) {
+  const { data: settings } = useAuthSettingsQuery();
+
+  if (!settings?.enabled) {
+    return null;
+  }
+
+  return <AuthenticatedMobileAdminNavLink active={active} />;
+}
+
+function AuthenticatedMobileAdminNavLink({ active }: { active: boolean }) {
+  const { data: me } = useAuthMeQuery(true);
+
+  if (!me?.isAdmin) {
+    return null;
+  }
+
+  return (
+    <Link
+      to="/admin"
+      className={`${
+        active
+          ? 'bg-card text-foreground'
+          : 'text-muted-foreground hover:text-foreground hover:bg-accent/[0.12]'
+      } group flex items-center px-2 py-2 text-base leading-5 font-medium rounded-md`}
+    >
+      Admin
+    </Link>
   );
 }

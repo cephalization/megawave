@@ -1,6 +1,9 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
 
+import { AuthGate } from '~/components/auth/AuthGate';
+import { Admin } from '~/components/views/Admin';
 import { Home } from '~/components/views/Home';
+import { Login } from '~/components/views/Login';
 
 // const router = createBrowserRouter([
 //   {
@@ -29,7 +32,23 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <AuthGate>
+              <Home />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AuthGate>
+              <Admin />
+            </AuthGate>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

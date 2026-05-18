@@ -8,7 +8,10 @@ export class AlbumRepository {
 
   async findOrCreate(title: string, primaryArtistId?: number, year?: number) {
     const where = primaryArtistId
-      ? and(eq(albums.title, title), eq(albums.primaryArtistId, primaryArtistId))
+      ? and(
+          eq(albums.title, title),
+          eq(albums.primaryArtistId, primaryArtistId),
+        )
       : and(eq(albums.title, title), isNull(albums.primaryArtistId));
     const existing = await this.db.select().from(albums).where(where).limit(1);
 

@@ -33,8 +33,14 @@ export class ScanRepository {
     return inserted[0];
   }
 
-  async recordTrackSeen(scanSessionId: number, trackId: number, filePath: string) {
-    await this.db.insert(trackScans).values({ scanSessionId, trackId, filePath });
+  async recordTrackSeen(
+    scanSessionId: number,
+    trackId: number,
+    filePath: string,
+  ) {
+    await this.db
+      .insert(trackScans)
+      .values({ scanSessionId, trackId, filePath });
   }
 
   async getTracksNotInScan(scanSessionId: number) {

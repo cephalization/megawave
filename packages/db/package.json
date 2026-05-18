@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "auth:reset": "tsx src/scripts/reset-auth.ts",
     "typecheck": "tsc --noEmit"
   },
   "exports": {

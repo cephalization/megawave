@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { authApi } from './auth';
 import { libraryApi } from './library';
 
 export type TrackQueryParams = {
@@ -16,6 +17,44 @@ export const libraryQueryKeys = {
   albums: (search?: string) => ['library', 'albums', { search }] as const,
   artists: (search?: string) => ['library', 'artists', { search }] as const,
 };
+
+export const authQueryKeys = {
+  settings: ['auth', 'settings'] as const,
+  me: ['auth', 'me'] as const,
+  signupWhitelist: ['auth', 'signupWhitelist'] as const,
+  users: ['auth', 'users'] as const,
+};
+
+export function useAuthSettingsQuery() {
+  return useQuery({
+    queryKey: authQueryKeys.settings,
+    queryFn: authApi.getAuthSettings,
+  });
+}
+
+export function useAuthMeQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: authQueryKeys.me,
+    queryFn: authApi.getAuthMe,
+    enabled,
+  });
+}
+
+export function useSignupWhitelistQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: authQueryKeys.signupWhitelist,
+    queryFn: authApi.getSignupWhitelist,
+    enabled,
+  });
+}
+
+export function useAdminUsersQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: authQueryKeys.users,
+    queryFn: authApi.getAdminUsers,
+    enabled,
+  });
+}
 
 export function useLibraryStatusQuery() {
   return useQuery({

@@ -3,6 +3,7 @@ import * as mm from 'music-metadata';
 import * as path from 'path';
 import { z } from 'zod';
 
+import type { DB } from 'db';
 import {
   AlbumRepository,
   ArtRepository,
@@ -12,9 +13,12 @@ import {
   TrackRepository,
   type TrackInsert,
 } from 'db/repositories';
-import type { DB } from 'db';
 
-import { AudioTrack, generateContentHash, hasAudioFileExtension } from './audio.js';
+import {
+  AudioTrack,
+  generateContentHash,
+  hasAudioFileExtension,
+} from './audio.js';
 import type { Album, Artist, PaginationMeta, Track } from './schemas.js';
 
 export const scanProgressSchema = z.object({
@@ -200,7 +204,8 @@ export class Library {
             const trackNoB = getTrackNo(b);
             if (sortKey === 'album') {
               const shouldReverseTracks =
-                reverse && subkeyfilter?.toLocaleLowerCase().startsWith('album-');
+                reverse &&
+                subkeyfilter?.toLocaleLowerCase().startsWith('album-');
               comparison = shouldReverseTracks
                 ? trackNoB - trackNoA
                 : trackNoA - trackNoB;
@@ -246,7 +251,9 @@ export class Library {
       const album = existing ?? {
         id: row.track.albumId,
         name: row.track.albumTitle,
-        artist: row.track.primaryArtistName ? [row.track.primaryArtistName] : null,
+        artist: row.track.primaryArtistName
+          ? [row.track.primaryArtistName]
+          : null,
         art: null,
         trackCount: 0,
         trackIds: new Set<number>(),
@@ -260,7 +267,10 @@ export class Library {
     }
 
     return [...albums.values()]
-      .map(({ trackIds, ...album }) => ({ ...album, trackCount: trackIds.size }))
+      .map(({ trackIds, ...album }) => ({
+        ...album,
+        trackCount: trackIds.size,
+      }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -272,7 +282,10 @@ export class Library {
     >();
 
     for (const row of rows) {
-      if (row.track.primaryArtistId == null || row.track.primaryArtistName == null) {
+      if (
+        row.track.primaryArtistId == null ||
+        row.track.primaryArtistName == null
+      ) {
         continue;
       }
       const existing = artists.get(row.track.primaryArtistId);
@@ -349,7 +362,8 @@ export class Library {
     } catch (error) {
       this.progress.status = 'error';
       this.status = 'error';
-      this.progress.lastError = error instanceof Error ? error.message : String(error);
+      this.progress.lastError =
+        error instanceof Error ? error.message : String(error);
       await this.scanRepo.endSession(session.id, {
         tracksFound: this.progress.filesDiscovered,
         tracksAdded: this.progress.tracksAdded,
@@ -385,7 +399,8 @@ export class Library {
         }
       } catch (error) {
         this.progress.tracksErrored++;
-        this.progress.lastError = error instanceof Error ? error.message : String(error);
+        this.progress.lastError =
+          error instanceof Error ? error.message : String(error);
       }
     }
 
@@ -405,9 +420,15 @@ export class Library {
         ? await this.artistRepo.findOrCreate(primaryArtistName)
         : null;
       const album = common.album
-        ? await this.albumRepo.findOrCreate(common.album, artist?.id, common.year)
+        ? await this.albumRepo.findOrCreate(
+            common.album,
+            artist?.id,
+            common.year,
+          )
         : null;
-      const genre = genreName ? await this.genreRepo.findOrCreate(genreName) : null;
+      const genre = genreName
+        ? await this.genreRepo.findOrCreate(genreName)
+        : null;
       const contentHash = await generateContentHash(filePath);
       const now = Date.now();
 
@@ -437,7 +458,8 @@ export class Library {
         dateModified: now,
       };
 
-      const { track, created } = await this.trackRepo.upsertByContentHash(values);
+      const { track, created } =
+        await this.trackRepo.upsertByContentHash(values);
       await this.scanRepo.recordTrackSeen(scanSessionId, track.id, filePath);
       if (created) this.progress.tracksAdded++;
       else this.progress.tracksUpdated++;
@@ -455,11 +477,14 @@ export class Library {
       if (!ext) throw new Error(`Unsupported audio extension for ${filePath}`);
     } catch (error) {
       this.progress.tracksErrored++;
-      this.progress.lastError = error instanceof Error ? error.message : String(error);
+      this.progress.lastError =
+        error instanceof Error ? error.message : String(error);
     }
   }
 
-  private async getRowsWithArt(options?: Parameters<TrackRepository['allWithArtIds']>[0]): Promise<SerializedRow[]> {
+  private async getRowsWithArt(
+    options?: Parameters<TrackRepository['allWithArtIds']>[0],
+  ): Promise<SerializedRow[]> {
     const rows = await this.trackRepo.allWithArtIds(options);
     const byId = new Map<number, SerializedRow>();
 

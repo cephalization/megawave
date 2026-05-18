@@ -233,10 +233,97 @@ Use this checklist:
 Useful browser state checks:
 
 ```js
-localStorage.getItem('megawave-player')
+localStorage.getItem('megawave-player');
 ```
 
 The persisted value should contain a `volume` value between `0` and `1`.
+
+## Optional Auth Tests
+
+Use a separate database directory so auth tables and seeded users do not affect the unauthenticated smoke tests:
+
+```sh
+TEST_ROOT=/tmp/megawave-auth-test
+rm -rf "$TEST_ROOT"
+mkdir -p "$TEST_ROOT/music" "$TEST_ROOT/db"
+
+ffmpeg -y -f lavfi -i sine=frequency=440:duration=2 \
+  -metadata title="Auth Track" \
+  -metadata artist="Auth Artist" \
+  -metadata album="Auth Album" \
+  "$TEST_ROOT/music/auth-track.mp3"
+
+MEGAWAVE_AUTH=true \
+MEGAWAVE_SECRET="12345678901234567890123456789012" \
+MEGAWAVE_AUTH_SEED_EMAIL="admin@example.com" \
+MEGAWAVE_AUTH_SEED_PASSWORD="password123" \
+MEGAWAVE_AUTH_SIGNUP_WHITELIST=true \
+MUSIC_LIBRARY_PATH="$TEST_ROOT/music" \
+DATABASE_PATH="$TEST_ROOT/db" \
+pnpm --filter api dev > "$TEST_ROOT/api.log" 2>&1 &
+echo $! > "$TEST_ROOT/api.pid"
+
+until curl -fsS http://localhost:5001/api/health >/dev/null; do sleep 1; done
+```
+
+Verify library routes are guarded:
+
+```sh
+curl -i -s http://localhost:5001/api/library/status
+```
+
+Expected result:
+
+- status is `401 Unauthorized`
+
+Sign in with the seeded admin and access a guarded route:
+
+```sh
+curl -fsS -c "$TEST_ROOT/cookies.txt" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@example.com","password":"password123"}' \
+  http://localhost:5001/api/auth/sign-in/email >/dev/null
+
+curl -fsS -b "$TEST_ROOT/cookies.txt" http://localhost:5001/api/library/status | jq '{scanActive, tracksErrored}'
+```
+
+Verify admin whitelist controls:
+
+```sh
+curl -fsS -b "$TEST_ROOT/cookies.txt" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"allowed@example.com"}' \
+  http://localhost:5001/api/admin/signup-whitelist >/dev/null
+
+curl -fsS -b "$TEST_ROOT/cookies.txt" http://localhost:5001/api/admin/signup-whitelist \
+  | jq -e '.entries | any(.email == "allowed@example.com")' >/dev/null
+
+curl -fsS -b "$TEST_ROOT/cookies.txt" \
+  -X DELETE \
+  http://localhost:5001/api/admin/signup-whitelist/allowed%40example.com >/dev/null
+```
+
+Verify auth reset clears auth data without deleting library data:
+
+```sh
+DATABASE_PATH="$TEST_ROOT/db" pnpm auth:reset -- --yes
+curl -i -s http://localhost:5001/api/library/status
+```
+
+Expected result after restarting the API with the same auth env:
+
+- seeded admin can be recreated from env vars
+- library data remains in the same database
+- existing sessions are gone
+
+For UI auth tests with agent-browser:
+
+- Open `http://localhost:5173/login` after starting the web server against the auth-enabled API.
+- Sign in with `admin@example.com` and `password123`.
+- Confirm `/` loads after sign-in.
+- Confirm `/admin` loads for the seeded admin.
+- Add and remove a signup whitelist email from `/admin`.
+- Sign out and confirm guarded pages redirect to `/login`.
 
 ## Cleanup
 

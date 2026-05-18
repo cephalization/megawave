@@ -41,7 +41,8 @@ export class TrackRepository {
   async allWithArtIds(options: TrackListOptions = {}) {
     const conditions = [];
 
-    if (options.albumId != null) conditions.push(eq(tracks.albumId, options.albumId));
+    if (options.albumId != null)
+      conditions.push(eq(tracks.albumId, options.albumId));
     if (options.artistId != null)
       conditions.push(eq(tracks.primaryArtistId, options.artistId));
     if (options.filter) {

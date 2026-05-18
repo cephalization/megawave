@@ -232,7 +232,11 @@ export const albumsRouter = new Hono()
     async (c) => {
       const library = c.get('library');
       const query = c.req.valid('query');
-      return strictJSONResponse(c, z.array(albumSchema), await library.getAlbums(query.filter));
+      return strictJSONResponse(
+        c,
+        z.array(albumSchema),
+        await library.getAlbums(query.filter),
+      );
     },
   )
   .get(
@@ -284,7 +288,11 @@ export const artistsRouter = new Hono()
     async (c) => {
       const library = c.get('library');
       const query = c.req.valid('query');
-      return strictJSONResponse(c, z.array(artistSchema), await library.getArtists(query.filter));
+      return strictJSONResponse(
+        c,
+        z.array(artistSchema),
+        await library.getArtists(query.filter),
+      );
     },
   )
   .get(

@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router';
 
 import logo from '~/assets/logo.svg';
 import { ThemeToggle } from '~/components/atoms/ThemeToggle';
+import { useAuthMeQuery, useAuthSettingsQuery } from '~/queries/hooks';
 
 import { MobileNav } from './MobileNav';
 
@@ -106,6 +107,7 @@ export function Nav({ open = false, toggleNav }: NavProps) {
                   </svg>
                   Recent
                 </Link>
+                <AdminNavLink active={location.pathname === '/admin'} />
               </div>
             </nav>
             <ThemeToggle />
@@ -113,5 +115,51 @@ export function Nav({ open = false, toggleNav }: NavProps) {
         </div>
       </div>
     </>
+  );
+}
+
+function AdminNavLink({ active }: { active: boolean }) {
+  const { data: settings } = useAuthSettingsQuery();
+
+  if (!settings?.enabled) {
+    return null;
+  }
+
+  return <AuthenticatedAdminNavLink active={active} />;
+}
+
+function AuthenticatedAdminNavLink({ active }: { active: boolean }) {
+  const { data: me } = useAuthMeQuery(true);
+
+  if (!me?.isAdmin) {
+    return null;
+  }
+
+  return (
+    <Link
+      to="/admin"
+      className={`${
+        active
+          ? 'bg-accent text-accent-foreground'
+          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+      } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
+    >
+      <svg
+        className="text-muted-foreground group-hover:text-foreground mr-3 h-6 w-6"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 6V4m0 16v-2m8-6h-2M6 12H4m13.657-5.657l-1.414 1.414M7.757 16.243l-1.414 1.414m11.314 0l-1.414-1.414M7.757 7.757L6.343 6.343"
+        />
+      </svg>
+      Admin
+    </Link>
   );
 }

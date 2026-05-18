@@ -1,7 +1,7 @@
 import { createClient } from '@libsql/client';
-import { existsSync } from 'node:fs';
 import { drizzle } from 'drizzle-orm/libsql';
 import { migrate } from 'drizzle-orm/libsql/migrator';
+import { existsSync } from 'node:fs';
 
 import * as schema from './schema.js';
 

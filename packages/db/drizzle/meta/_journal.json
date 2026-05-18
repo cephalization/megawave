@@ -15,6 +15,13 @@
       "when": 1778807952063,
       "tag": "0001_clever_silver_centurion",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1779110928522,
+      "tag": "0002_clear_jack_power",
+      "breakpoints": true
     }
   ]
 }

@@ -1,24 +1,42 @@
+import { useNavigate } from 'react-router';
+
+import { authClient } from '~/auth/client';
+import { useAuthSettingsQuery } from '~/queries/hooks';
+
 export const ProfileMenu = () => {
+  const { data: settings } = useAuthSettingsQuery();
+
+  if (!settings?.enabled) {
+    return null;
+  }
+
+  return <AuthenticatedProfileMenu />;
+};
+
+const AuthenticatedProfileMenu = () => {
+  const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
+
+  if (!session) {
+    return null;
+  }
+
   return (
-    <div className="ml-3 relative">
-      <div>
-        <button
-          className="max-w-xs bg-card flex items-center text-sm rounded-full focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-          id="user-menu"
-          aria-haspopup="true"
-        >
-          <span className="sr-only">Open user menu</span>
-          <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-card">
-            <svg
-              className="h-full w-full text-muted-foreground"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          </span>
-        </button>
-      </div>
+    <div className="ml-3 flex items-center gap-3 text-sm">
+      <span className="hidden sm:inline text-muted-foreground">
+        {session.user.email}
+      </span>
+      <button
+        className="rounded-md border border-border px-3 py-1.5 text-muted-foreground hover:text-foreground hover:bg-accent"
+        type="button"
+        onClick={() =>
+          authClient.signOut({
+            fetchOptions: { onSuccess: () => navigate('/login') },
+          })
+        }
+      >
+        Sign out
+      </button>
     </div>
   );
 };

@@ -7,7 +7,20 @@ import { Scalar } from '@scalar/hono-api-reference';
 import { makeDb, migrateDb } from 'db';
 import { openAPISpecs } from 'hono-openapi';
 
-import { HOST, MUSIC_LIBRARY_PATH, PORT, DATABASE_PATH } from './env.js';
+import {
+  authAdminRouter,
+  authAdminUsersRouter,
+  authMeRouter,
+  authSettingsRouter,
+} from './auth-router.js';
+import { makeAuth, seedInitialAccount, type MegawaveAuth } from './auth.js';
+import {
+  HOST,
+  MUSIC_LIBRARY_PATH,
+  PORT,
+  DATABASE_PATH,
+  authEnabled,
+} from './env.js';
 import { Library } from './library.js';
 import {
   albumsRouter,
@@ -24,23 +37,55 @@ declare module 'hono' {
     library: Library;
     db: ReturnType<typeof makeDb>;
     musicLibraryPaths: string[];
+    auth: MegawaveAuth | null;
   }
 }
 
 const db = makeDb(DATABASE_PATH);
 await migrateDb(db);
+const auth = authEnabled ? makeAuth(db) : null;
+if (auth) {
+  await seedInitialAccount(auth, db);
+}
 const library = new Library(db);
 const musicLibraryPaths = MUSIC_LIBRARY_PATH.split(',');
 
 const app = new Hono().basePath('/api');
 app.use(cors());
 app.use(logger());
+if (auth) {
+  app.on(['GET', 'POST'], '/auth/*', (c) => auth.handler(c.req.raw));
+}
 app.use(async (c, next) => {
   c.set('library', library);
   c.set('db', db);
   c.set('musicLibraryPaths', musicLibraryPaths);
+  c.set('auth', auth);
   await next();
 });
+app.route('/', authSettingsRouter);
+app.use(async (c, next) => {
+  if (!auth) {
+    await next();
+    return;
+  }
+
+  const pathname = new URL(c.req.url).pathname;
+  if (pathname === '/api/health' || pathname === '/api/auth-settings') {
+    await next();
+    return;
+  }
+
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  if (!session) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  await next();
+});
+app.route('/', authMeRouter);
+app.route('/', authAdminRouter);
+app.route('/', authAdminUsersRouter);
 
 // chain new routers to the end of this for proper type inference
 const libraryRouter = new Hono().basePath('/library');
